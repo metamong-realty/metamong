@@ -172,8 +172,8 @@ class PublicDataMongoFastWriter(
     companion object {
         private val logger = KotlinLogging.logger {}
 
-        // MongoDB 연결 안정성을 위해 배치 사이즈 축소 (500 → 200)
-        private const val BULK_BATCH_SIZE = 200
+        // MongoDB 연결 안정성을 위해 배치 사이즈 축소 (500 → 300)
+        private const val BULK_BATCH_SIZE = 300
 
         // 병렬 처리 제한 (무제한 → 3개로 제한)
         private const val MAX_CONCURRENT_BATCHES = 3
