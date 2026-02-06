@@ -12,6 +12,11 @@ import com.metamong.application.apartment.response.ApartmentRentListResponse
 import com.metamong.application.apartment.response.ApartmentTradeChartResponse
 import com.metamong.application.apartment.response.ApartmentTradeListResponse
 import com.metamong.application.apartment.response.ApartmentUnitTypeResponse
+import com.metamong.application.apartment.dto.ApartmentTradeChartDto
+import com.metamong.application.apartment.dto.ApartmentRentChartDto
+import com.metamong.application.apartment.dto.ApartmentTradeListDto
+import com.metamong.application.apartment.dto.ApartmentRentListDto
+import com.metamong.application.apartment.dto.ApartmentUnitTypeDto
 import com.metamong.application.apartment.service.ApartmentComplexQueryService
 import com.metamong.common.response.ApiResponse
 import io.swagger.v3.oas.annotations.Operation
@@ -70,7 +75,7 @@ class ApartmentComplexQueryController(
         @PathVariable complexId: Long,
     ): ApiResponse<List<ApartmentUnitTypeResponse>> {
         val result = apartmentComplexQueryService.getUnitTypes(complexId)
-        return ApiResponse.ok(result.map { ApartmentUnitTypeResponse.from(it) })
+        return ApiResponse.ok(result.map { ApartmentUnitTypeResponse.from(ApartmentUnitTypeDto.from(it)) })
     }
 
     @Operation(summary = "아파트 가격 요약 조회", description = "아파트 단지의 최근 평균가격과 전월 대비 변동률을 조회합니다.")
@@ -104,7 +109,7 @@ class ApartmentComplexQueryController(
                 startDate = startDate,
                 pageable = pageable,
             )
-        return ApiResponse.ok(result.map { ApartmentTradeListResponse.from(it) })
+        return ApiResponse.ok(result.map { ApartmentTradeListResponse.from(ApartmentTradeListDto.from(it)) })
     }
 
     @Operation(summary = "아파트 매매 그래프 데이터 조회", description = "아파트 단지의 매매 그래프 데이터를 조회합니다.")
@@ -127,8 +132,8 @@ class ApartmentComplexQueryController(
                 rentType = null,
                 startDate = startDate,
             )
-        val rentCountMap = rentDtos.associate { it.yearMonth to it.rentCount }
-        return ApiResponse.ok(ApartmentTradeChartResponse.from(tradeDtos, rentCountMap))
+        val rentCountMap = rentDtos.associate { ApartmentRentChartDto.from(it).yearMonth to ApartmentRentChartDto.from(it).rentCount }
+        return ApiResponse.ok(ApartmentTradeChartResponse.from(tradeDtos.map { ApartmentTradeChartDto.from(it) }, rentCountMap))
     }
 
     @Operation(summary = "아파트 전월세 내역 조회", description = "아파트 단지의 전월세 거래 내역을 조회합니다.")
@@ -147,7 +152,7 @@ class ApartmentComplexQueryController(
                 startDate = startDate,
                 pageable = pageable,
             )
-        return ApiResponse.ok(result.map { ApartmentRentListResponse.from(it) })
+        return ApiResponse.ok(result.map { ApartmentRentListResponse.from(ApartmentRentListDto.from(it)) })
     }
 
     @Operation(summary = "아파트 전월세 그래프 데이터 조회", description = "아파트 단지의 전월세 그래프 데이터를 조회합니다.")
@@ -170,8 +175,8 @@ class ApartmentComplexQueryController(
                 unitTypeId = request.unitTypeId,
                 startDate = startDate,
             )
-        val tradeCountMap = tradeDtos.associate { it.yearMonth to it.tradeCount }
-        return ApiResponse.ok(ApartmentRentChartResponse.from(rentDtos, tradeCountMap))
+        val tradeCountMap = tradeDtos.associate { ApartmentTradeChartDto.from(it).yearMonth to ApartmentTradeChartDto.from(it).tradeCount }
+        return ApiResponse.ok(ApartmentRentChartResponse.from(rentDtos.map { ApartmentRentChartDto.from(it) }, tradeCountMap))
     }
 
     private fun calculateStartDate(period: PeriodType): LocalDate? =

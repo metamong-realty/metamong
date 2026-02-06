@@ -2,6 +2,7 @@ package com.metamong.application.apartment.service
 
 import com.metamong.application.apartment.dto.ApartmentComplexDetailDto
 import com.metamong.application.apartment.dto.ApartmentComplexListDto
+import com.metamong.application.apartment.dto.ApartmentPriceSummaryDto
 import com.metamong.domain.apartment.model.RentType
 import com.metamong.infrastructure.persistence.apartment.repository.ApartmentComplexRepository
 import com.metamong.infrastructure.persistence.apartment.repository.ApartmentRentRepository
@@ -133,8 +134,11 @@ class ApartmentComplexQueryService(
         complexId: Long,
         unitTypeId: Long?,
         lookbackMonths: Int,
-    ): ApartmentComplexDetailDto {
+    ): ApartmentPriceSummaryDto {
         // TODO: 가격 요약 로직 구현 필요
-        return getComplexDetail(complexId, null, unitTypeId)
+        return ApartmentPriceSummaryDto(
+            trade = null,
+            rent = null
+        )
     }
 }
