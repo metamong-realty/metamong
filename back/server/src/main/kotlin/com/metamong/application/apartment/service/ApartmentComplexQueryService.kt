@@ -4,11 +4,11 @@ import com.metamong.application.apartment.dto.ApartmentComplexDetailDto
 import com.metamong.application.apartment.dto.ApartmentComplexListDto
 import com.metamong.application.apartment.dto.ApartmentPriceSummaryDto
 import com.metamong.domain.apartment.model.RentType
-import com.metamong.infrastructure.persistence.apartment.repository.ApartmentComplexRepository
-import com.metamong.infrastructure.persistence.apartment.repository.ApartmentRentRepository
-import com.metamong.infrastructure.persistence.apartment.repository.ApartmentSubscriptionRepository
-import com.metamong.infrastructure.persistence.apartment.repository.ApartmentTradeRepository
-import com.metamong.infrastructure.persistence.apartment.repository.ApartmentUnitTypeRepository
+import com.metamong.infra.persistence.apartment.repository.ApartmentComplexRepository
+import com.metamong.infra.persistence.apartment.repository.ApartmentRentRepository
+import com.metamong.infra.persistence.apartment.repository.ApartmentSubscriptionRepository
+import com.metamong.infra.persistence.apartment.repository.ApartmentTradeRepository
+import com.metamong.infra.persistence.apartment.repository.ApartmentUnitTypeRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service

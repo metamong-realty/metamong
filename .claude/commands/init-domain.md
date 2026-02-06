@@ -63,7 +63,7 @@ interface UserRepository {
     fun deleteById(id: Long)
 }
 
-// infrastructure/persistence/user/UserRepositoryImpl.kt
+// infra/persistence/user/UserRepositoryImpl.kt
 @Repository
 class UserRepositoryImpl(
     private val jpaRepository: UserJpaRepository,
@@ -72,13 +72,13 @@ class UserRepositoryImpl(
     // 구현
 }
 
-// infrastructure/persistence/user/UserJpaRepository.kt
+// infra/persistence/user/UserJpaRepository.kt
 interface UserJpaRepository : JpaRepository<UserEntity, Long> {
     fun findByEmail(email: String): UserEntity?
     fun existsByEmail(email: String): Boolean
 }
 
-// infrastructure/persistence/user/UserQueryRepository.kt
+// infra/persistence/user/UserQueryRepository.kt
 interface UserQueryRepository {
     fun findUsersWithPaging(pageable: Pageable): Page<UserProjection>
 }
@@ -306,7 +306,7 @@ src/main/kotlin/com/metamong/
 │       │   ├── UserDto.kt
 │       │   └── CreateUserCommand.kt
 │       └── command/
-├── infrastructure/
+├── infra/
 │   └── persistence/
 │       └── user/
 │           ├── UserRepositoryImpl.kt
@@ -326,7 +326,7 @@ src/test/kotlin/com/metamong/
 ├── application/user/service/
 │   ├── UserCommandServiceTest.kt
 │   └── UserQueryServiceTest.kt
-├── infrastructure/persistence/user/
+├── infra/persistence/user/
 │   └── UserRepositoryTest.kt
 └── presentation/api/user/
     └── UserControllerTest.kt

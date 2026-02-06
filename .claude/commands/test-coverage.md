@@ -55,7 +55,7 @@ Overall Coverage: 76.3%
 📁 Package Coverage:
  - com.metamong.domain.user: 89.2% ✅
  - com.metamong.application.user: 71.3% ❌
- - com.metamong.infrastructure: 62.5% ❌
+ - com.metamong.infra: 62.5% ❌
  - com.metamong.presentation: 82.1% ✅
 
 🔍 Files with Low Coverage:

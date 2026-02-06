@@ -32,12 +32,12 @@ const val SLAVE_DATASOURCE = "slaveDataSource"
 @Configuration
 @Profile("!test")
 @EnableJpaRepositories(
-    basePackages = ["com.metamong.infra.persistance.repository"],
+    basePackages = ["com.metamong.infra.persistence.repository"],
     excludeFilters = [
         ComponentScan.Filter(
             type = FilterType.REGEX,
             pattern = [
-                "com\\.metamong\\.infra\\.persistance\\.repository\\.mongo\\..*",
+                "com\\.metamong\\.infra\\.persistence\\.repository\\.mongo\\..*",
             ],
         ),
     ],

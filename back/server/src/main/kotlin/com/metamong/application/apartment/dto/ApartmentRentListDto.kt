@@ -1,7 +1,7 @@
 package com.metamong.application.apartment.dto
 
 import com.metamong.domain.apartment.model.RentType
-import com.metamong.infrastructure.persistence.apartment.projection.ApartmentRentListProjection
+import com.metamong.infra.persistence.apartment.projection.ApartmentRentListProjection
 import java.math.BigDecimal
 import java.time.LocalDate
 

@@ -17,7 +17,7 @@ spring:
   # JPA Configuration  
   jpa:
     hibernate:
-      ddl-auto: update # TODO : 개발 시에만 update로 설정
+      ddl-auto: none # TODO : 개발 시에만 update로 설정
     show-sql: true
     properties:
       hibernate:
@@ -30,18 +30,6 @@ spring:
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017/metamong_realestateinfo}
-
-  # Redis Configuration
-  redis:
-    host: ${REDIS_HOST:localhost}
-    port: ${REDIS_PORT:6379}
-    password: ${REDIS_PASSWORD:}
-    timeout: 5000ms
-    lettuce:
-      pool:
-        max-active: 8
-        max-idle: 8
-        min-idle: 0
 
 # Logging Configuration
 logging:

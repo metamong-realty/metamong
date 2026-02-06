@@ -67,7 +67,7 @@ interface UserRepository {
     fun findByEmail(email: String): User?
 }
 
-// Infrastructure Layer
+// infra Layer
 @Repository
 class UserRepositoryImpl(
     private val jpaRepository: UserJpaRepository
@@ -86,7 +86,7 @@ Domain (중심)
     ↑
 Application
     ↑
-Infrastructure / Presentation
+infra / Presentation
 ```
 
 ### Domain Layer
@@ -119,7 +119,7 @@ class UserService(
 }
 ```
 
-### Infrastructure Layer
+### infra Layer
 - 외부 시스템 연동
 - 데이터베이스 구현
 - 메시징 시스템
@@ -191,7 +191,7 @@ com.metamong/
 │   │   ├── dto/        # Service DTO
 │   │   └── command/    # Command 객체
 │   └── post/
-├── infrastructure/      # 인프라 레이어
+├── infra/      # 인프라 레이어
 │   ├── persistence/    # JPA, MongoDB
 │   ├── messaging/      # Kafka, RabbitMQ
 │   └── external/       # 외부 API 연동

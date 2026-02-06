@@ -48,7 +48,7 @@ metamong/
 │   │   ├── domain/      # 도메인 레이어 (Entity, VO)
 │   │   ├── application/ # 애플리케이션 레이어 (Service)
 │   │   ├── presentation/# 프레젠테이션 레이어 (Controller, DTO)
-│   │   └── infrastructure/ # 인프라 레이어 (Repository구현, 외부연동)
+│   │   └── infra/ # 인프라 레이어 (Repository구현, 외부연동)
 │   ├── batch/          # 배치 작업
 │   └── common/         # 공통 모듈
 └── front/              # 프론트엔드 (추후 개발)
@@ -75,7 +75,7 @@ metamong/
 
 ### 2. Clean Architecture 의존성 규칙
 ```
-Domain → Application → Infrastructure
+Domain → Application → infra
          ↓
     Presentation
 ```

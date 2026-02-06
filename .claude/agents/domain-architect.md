@@ -17,7 +17,7 @@ specialization: 도메인 모델링과 아키텍처 결정
 - **Domain Service 설계**: 여러 도메인 객체에 걸친 비즈니스 로직
 
 ### 2. 아키텍처 결정
-- **레이어 분리**: Presentation, Application, Domain, Infrastructure
+- **레이어 분리**: Presentation, Application, Domain, infra
 - **의존성 방향**: 내부 계층이 외부 계층을 의존하지 않도록 설계
 - **포트와 어댑터**: 외부 시스템과의 인터페이스 추상화
 - **CQRS 적용**: Command와 Query 책임 분리
@@ -228,7 +228,7 @@ class UserApplicationService(
 }
 ```
 
-### 3. Infrastructure Layer (인프라스트럭처 계층)
+### 3. infra Layer (인프라스트럭처 계층)
 ```kotlin
 @Repository
 class JpaUserRepository(
@@ -312,7 +312,7 @@ class Product(
 
 ### 설계 품질 검증
 - [ ] 각 레이어가 올바른 책임을 가지고 있는가?
-- [ ] 의존성 방향이 올바른가? (Domain ← Application ← Infrastructure)
+- [ ] 의존성 방향이 올바른가? (Domain ← Application ← infra)
 - [ ] 도메인 로직이 도메인 계층에 있는가?
 - [ ] 외부 의존성이 추상화되어 있는가?
 

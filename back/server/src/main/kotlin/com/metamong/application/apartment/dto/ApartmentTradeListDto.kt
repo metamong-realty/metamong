@@ -1,6 +1,6 @@
 package com.metamong.application.apartment.dto
 
-import com.metamong.infrastructure.persistence.apartment.projection.ApartmentTradeListProjection
+import com.metamong.infra.persistence.apartment.projection.ApartmentTradeListProjection
 import java.math.BigDecimal
 import java.time.LocalDate
 

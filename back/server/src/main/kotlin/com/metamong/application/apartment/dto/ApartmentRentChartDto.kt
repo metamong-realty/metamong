@@ -1,6 +1,6 @@
 package com.metamong.application.apartment.dto
 
-import com.metamong.infrastructure.persistence.apartment.projection.ApartmentRentChartProjection
+import com.metamong.infra.persistence.apartment.projection.ApartmentRentChartProjection
 
 data class ApartmentRentChartDto(
     val yearMonth: String,

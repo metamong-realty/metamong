@@ -70,7 +70,7 @@ spring:
   # JPA Configuration  
   jpa:
     hibernate:
-      ddl-auto: update # TODO : 개발 시에만 update로 설정
+      ddl-auto: none # TODO : 개발 시에만 update로 설정
     show-sql: true
     properties:
       hibernate:

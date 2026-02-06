@@ -3,8 +3,8 @@ package com.metamong.service.apartment
 import com.metamong.domain.apartment.model.ApartmentRentEntity
 import com.metamong.domain.apartment.model.ApartmentTradeEntity
 import com.metamong.domain.apartment.model.RentType
-import com.metamong.infra.persistance.repository.apartment.ApartmentRentRepository
-import com.metamong.infra.persistance.repository.apartment.ApartmentTradeRepository
+import com.metamong.infra.persistence.repository.apartment.ApartmentRentRepository
+import com.metamong.infra.persistence.repository.apartment.ApartmentTradeRepository
 import com.metamong.model.document.publicdata.ApartmentRentRawDocumentEntity
 import com.metamong.model.document.publicdata.ApartmentTradeRawDocumentEntity
 import com.metamong.util.apartment.AreaConverter

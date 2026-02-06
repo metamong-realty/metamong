@@ -4,9 +4,9 @@ import com.metamong.domain.apartment.model.ApartmentCodeMappingEntity
 import com.metamong.domain.apartment.model.ApartmentCodeType
 import com.metamong.domain.apartment.model.ApartmentComplexEntity
 import com.metamong.domain.apartment.model.ApartmentUnitTypeEntity
-import com.metamong.infra.persistance.repository.apartment.ApartmentCodeMappingRepository
-import com.metamong.infra.persistance.repository.apartment.ApartmentComplexRepository
-import com.metamong.infra.persistance.repository.apartment.ApartmentUnitTypeRepository
+import com.metamong.infra.persistence.repository.apartment.ApartmentCodeMappingRepository
+import com.metamong.infra.persistence.repository.apartment.ApartmentComplexRepository
+import com.metamong.infra.persistence.repository.apartment.ApartmentUnitTypeRepository
 import com.metamong.model.document.publicdata.ApartmentRentRawDocumentEntity
 import com.metamong.model.document.publicdata.ApartmentTradeRawDocumentEntity
 import com.metamong.service.apartment.dto.ComplexWithApartmentSequence

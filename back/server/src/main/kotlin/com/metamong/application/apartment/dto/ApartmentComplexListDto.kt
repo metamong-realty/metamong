@@ -1,6 +1,6 @@
 package com.metamong.application.apartment.dto
 
-import com.metamong.infrastructure.persistence.apartment.projection.ApartmentComplexListProjection
+import com.metamong.infra.persistence.apartment.projection.ApartmentComplexListProjection
 
 data class ApartmentComplexListDto(
     val complexId: Long,

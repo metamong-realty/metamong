@@ -8,6 +8,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import org.springframework.batch.item.Chunk
 import org.springframework.batch.item.ItemWriter
 import org.springframework.data.mongodb.core.BulkOperations
@@ -56,10 +58,22 @@ class PublicDataMongoFastWriter(
         val executeTime = System.currentTimeMillis() - executeStartTime
 
         val totalTime = System.currentTimeMillis() - batchStartTime
+        
+        // 메모리 사용량 체크
+        val runtime = Runtime.getRuntime()
+        val usedMemory = (runtime.totalMemory() - runtime.freeMemory()) / 1024 / 1024 // MB
+        val maxMemory = runtime.maxMemory() / 1024 / 1024 // MB
+        val memoryUsagePercent = (usedMemory.toDouble() / maxMemory * 100).toInt()
+        
         logger.info {
             "$operationName Fast 배치 ${batchIndex + 1}/$totalBatches 완료: " +
                 "신규 ${result.insertedCount}건 | " +
-                "준비 ${prepareTime}ms, 실행 ${executeTime}ms, 총 ${totalTime}ms"
+                "준비 ${prepareTime}ms, 실행 ${executeTime}ms, 총 ${totalTime}ms | " +
+                "메모리 ${usedMemory}/${maxMemory}MB (${memoryUsagePercent}%)"
+        }
+        
+        if (memoryUsagePercent > 80) {
+            logger.warn { "메모리 사용률 높음: ${memoryUsagePercent}% - GC 권장" }
         }
 
         return result.insertedCount
@@ -92,28 +106,46 @@ class PublicDataMongoFastWriter(
 
         val overallStartTime = System.currentTimeMillis()
 
+        val semaphore = Semaphore(MAX_CONCURRENT_BATCHES)
+        
         val results =
             runBlocking {
                 batches
                     .mapIndexed { batchIndex, batch ->
                         CoroutineScope(Dispatchers.IO).async {
-                            executeSingleBatch(
-                                batch = batch,
-                                batchIndex = batchIndex,
-                                totalBatches = totalBatches,
-                                entityClass = entityClass,
-                                operationName = operationName,
-                            )
+                            semaphore.withPermit {
+                                executeSingleBatch(
+                                    batch = batch,
+                                    batchIndex = batchIndex,
+                                    totalBatches = totalBatches,
+                                    entityClass = entityClass,
+                                    operationName = operationName,
+                                )
+                            }
                         }
                     }.awaitAll()
             }
 
         val totalInserted = results.sum()
         val overallTime = System.currentTimeMillis() - overallStartTime
+        val throughputPerSecond = if (overallTime > 0) (totalInserted * 1000 / overallTime) else 0
+        
+        // 최종 메모리 상태
+        val runtime = Runtime.getRuntime()
+        val finalUsedMemory = (runtime.totalMemory() - runtime.freeMemory()) / 1024 / 1024 // MB
+        val finalMaxMemory = runtime.maxMemory() / 1024 / 1024 // MB
+        val finalMemoryUsagePercent = (finalUsedMemory.toDouble() / finalMaxMemory * 100).toInt()
 
         logger.info {
             "$operationName Fast 저장 완료: 신규 ${totalInserted}건 (총 ${uniqueDocuments.size}건) | " +
-                "전체 소요시간 ${overallTime}ms, 평균 ${overallTime / totalBatches}ms/배치"
+                "전체 소요시간 ${overallTime}ms (평균 ${overallTime / totalBatches}ms/배치) | " +
+                "처리량 ${throughputPerSecond}건/초 | " +
+                "최종 메모리 ${finalUsedMemory}/${finalMaxMemory}MB (${finalMemoryUsagePercent}%) | " +
+                "병렬도 ${MAX_CONCURRENT_BATCHES}개"
+        }
+        
+        if (finalMemoryUsagePercent > 85) {
+            logger.warn { "최종 메모리 사용률 매우 높음: ${finalMemoryUsagePercent}% - 시스템 모니터링 필요" }
         }
     }
 
@@ -140,7 +172,10 @@ class PublicDataMongoFastWriter(
     companion object {
         private val logger = KotlinLogging.logger {}
 
-        // Historical용으로 더 큰 배치 사이즈 사용 (기존 300 → 500)
-        private const val BULK_BATCH_SIZE = 500
+        // MongoDB 연결 안정성을 위해 배치 사이즈 축소 (500 → 200)
+        private const val BULK_BATCH_SIZE = 200
+        
+        // 병렬 처리 제한 (무제한 → 3개로 제한)
+        private const val MAX_CONCURRENT_BATCHES = 3
     }
 }

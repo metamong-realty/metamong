@@ -6,8 +6,8 @@ import com.metamong.batch.jobs.publicdata.sync.reader.UnmatchedComplexItemReader
 import com.metamong.domain.apartment.model.ApartmentComplexEntity
 import com.metamong.domain.apartment.model.ApartmentRentEntity
 import com.metamong.domain.apartment.model.ApartmentTradeEntity
-import com.metamong.infra.persistance.repository.mongo.publicdata.ApartmentRentRawRepository
-import com.metamong.infra.persistance.repository.mongo.publicdata.ApartmentTradeRawRepository
+import com.metamong.infra.persistence.repository.mongo.publicdata.ApartmentRentRawRepository
+import com.metamong.infra.persistence.repository.mongo.publicdata.ApartmentTradeRawRepository
 import com.metamong.model.document.publicdata.ApartmentRentRawDocumentEntity
 import com.metamong.model.document.publicdata.ApartmentTradeRawDocumentEntity
 import com.metamong.service.apartment.ApartmentComplexQueryService

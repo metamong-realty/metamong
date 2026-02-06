@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
 @Configuration
 @EnableTransactionManagement
 @Profile("!test")
-@EnableMongoRepositories(basePackages = ["com.metamong.infra.persistance.repository"])
+@EnableMongoRepositories(basePackages = ["com.metamong.infra.persistence.repository"])
 class DocumentDatabaseConfig(
     @Value("\${spring.datasource.document.primary.uri}") private val mongoUri: String,
     @Value("\${spring.datasource.document.database}") private val databaseName: String,

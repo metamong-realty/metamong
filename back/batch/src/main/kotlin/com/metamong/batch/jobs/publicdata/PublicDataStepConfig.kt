@@ -13,7 +13,7 @@ import com.metamong.batch.jobs.publicdata.writer.PublicDataMongoFastWriter
 import com.metamong.batch.jobs.publicdata.writer.PublicDataMongoWriter
 import com.metamong.external.publicdata.dto.RegionCode
 import com.metamong.external.publicdata.dto.RegionCodeWithYearMonth
-import com.metamong.infra.persistance.repository.mongo.publicdata.ApartmentComplexListRawRepository
+import com.metamong.infra.persistence.repository.mongo.publicdata.ApartmentComplexListRawRepository
 import com.metamong.model.document.publicdata.ApartmentComplexInfoRawDocumentEntity
 import com.metamong.model.document.publicdata.ApartmentComplexListRawDocumentEntity
 import com.metamong.model.document.publicdata.ApartmentRentRawDocumentEntity
@@ -179,6 +179,10 @@ class PublicDataStepConfig : DefaultBatchConfiguration() {
             .writer(publicDataMongoFastWriter.apartmentTradeWriter())
             .taskExecutor(batchTaskExecutor)
             .faultTolerant()
+            .retryLimit(3) // MongoDB 연결 에러에 대한 재시도
+            .retry(org.springframework.dao.DataAccessResourceFailureException::class.java)
+            .retry(org.springframework.data.mongodb.UncategorizedMongoDbException::class.java)
+            .retry(java.net.SocketException::class.java)
             .skipPolicy(mongoSkipPolicy)
             .build()
 
@@ -199,6 +203,10 @@ class PublicDataStepConfig : DefaultBatchConfiguration() {
             .writer(publicDataMongoFastWriter.apartmentRentWriter())
             .taskExecutor(batchTaskExecutor)
             .faultTolerant()
+            .retryLimit(3) // MongoDB 연결 에러에 대한 재시도
+            .retry(org.springframework.dao.DataAccessResourceFailureException::class.java)
+            .retry(org.springframework.data.mongodb.UncategorizedMongoDbException::class.java)
+            .retry(java.net.SocketException::class.java)
             .skipPolicy(mongoSkipPolicy)
             .build()
 
@@ -213,25 +221,72 @@ class PublicDataStepConfig : DefaultBatchConfiguration() {
         private const val APARTMENT_COMPLEX_LIST_CHUNK_SIZE = DEFAULT_CHUNK_SIZE
         private const val APARTMENT_COMPLEX_INFO_CHUNK_SIZE = DEFAULT_CHUNK_SIZE
 
-        // Historical 배치용 최적화된 Chunk Size (중복 체크 없이 처리하므로 더 큰 배치 가능)
-        private const val HISTORICAL_APARTMENT_TRADE_CHUNK_SIZE = 10
-        private const val HISTORICAL_APARTMENT_RENT_CHUNK_SIZE = 8
+        // Historical 배치용 최적화된 Chunk Size (MongoDB 안정성을 위해 축소)
+        private const val HISTORICAL_APARTMENT_TRADE_CHUNK_SIZE = 5
+        private const val HISTORICAL_APARTMENT_RENT_CHUNK_SIZE = 4
 
         /**
-         * MongoDB 에러 발생 시 skip하고 다음 chunk로 진행하는 SkipPolicy
-         * - 11601 (operation was interrupted): Transaction 타임아웃
-         * - 112 (Write Conflict): 동시 쓰기 충돌
+         * MongoDB 에러 발생 시 skip하고 다음 chunk로 진행하는 확장된 SkipPolicy
+         * - Connection reset: 네트워크 연결 문제
+         * - Socket timeout: 소켓 타임아웃
+         * - DataAccessResourceFailureException: MongoDB 리소스 문제
+         * - ExhaustedRetryException: 재시도 소진
+         * - MongoSocketReadException: MongoDB 소켓 읽기 에러
+         * - UncategorizedMongoDbException: 기타 MongoDB 예외
          */
         val mongoSkipPolicy =
             SkipPolicy { throwable, _ ->
-                when (throwable) {
-                    is UncategorizedMongoDbException -> {
-                        logger.error(throwable) { "MongoDB 에러 발생, skip 처리: ${throwable.message}" }
+                val shouldSkip = when (throwable) {
+                    // MongoDB 연결 관련 예외들
+                    is org.springframework.dao.DataAccessResourceFailureException -> {
+                        val message = throwable.message ?: ""
+                        val isMongoError = message.contains("Connection reset") ||
+                                         message.contains("Exception receiving message") ||
+                                         message.contains("MongoSocketReadException") ||
+                                         message.contains("Socket") ||
+                                         message.contains("connection")
+                        
+                        if (isMongoError) {
+                            logger.warn(throwable) { "MongoDB 연결 에러 발생, skip 처리: $message" }
+                            true
+                        } else false
+                    }
+                    
+                    // 재시도 소진 예외
+                    is org.springframework.retry.ExhaustedRetryException -> {
+                        logger.warn(throwable) { "재시도 소진, skip 처리하여 배치 계속 진행: ${throwable.message}" }
                         true
                     }
-
+                    
+                    // 기존 MongoDB 예외
+                    is org.springframework.data.mongodb.UncategorizedMongoDbException -> {
+                        logger.warn(throwable) { "MongoDB 에러 발생, skip 처리: ${throwable.message}" }
+                        true
+                    }
+                    
+                    // Java 네트워크 예외
+                    is java.net.SocketException -> {
+                        logger.warn(throwable) { "네트워크 소켓 에러 발생, skip 처리: ${throwable.message}" }
+                        true
+                    }
+                    
+                    // Java IO 예외 (Connection reset 포함)
+                    is java.io.IOException -> {
+                        val message = throwable.message ?: ""
+                        if (message.contains("Connection reset") || message.contains("Broken pipe")) {
+                            logger.warn(throwable) { "네트워크 연결 에러 발생, skip 처리: $message" }
+                            true
+                        } else false
+                    }
+                    
                     else -> false
                 }
+                
+                if (shouldSkip) {
+                    logger.info { "청크 건너뛰기 적용됨 - 배치 작업 계속 진행" }
+                }
+                
+                shouldSkip
             }
     }
 }

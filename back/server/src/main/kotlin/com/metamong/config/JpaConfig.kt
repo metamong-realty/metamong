@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 @Configuration
 @EnableJpaAuditing
-@EnableJpaRepositories(basePackages = ["com.metamong.repository"])
+@EnableJpaRepositories(basePackages = ["com.metamong.infra.persistence"])
 class JpaConfig
