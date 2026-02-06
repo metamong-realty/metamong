@@ -30,10 +30,25 @@ import org.springframework.batch.item.ItemReader
 import org.springframework.batch.support.transaction.ResourcelessTransactionManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.task.TaskExecutor
 import org.springframework.data.mongodb.UncategorizedMongoDbException
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 
 @Configuration
 class PublicDataStepConfig : DefaultBatchConfiguration() {
+    @Bean
+    fun batchTaskExecutor(): TaskExecutor {
+        val executor = ThreadPoolTaskExecutor()
+        executor.corePoolSize = 3
+        executor.maxPoolSize = 5 // API 서버 부하 고려하여 조정
+        executor.queueCapacity = 25
+        executor.setThreadNamePrefix("historical-batch-")
+        executor.setWaitForTasksToCompleteOnShutdown(true)
+        executor.setAwaitTerminationSeconds(30)
+        executor.initialize()
+        return executor
+    }
+
     @Bean
     fun apartmentTradeStep(
         jobRepository: JobRepository,
@@ -153,6 +168,7 @@ class PublicDataStepConfig : DefaultBatchConfiguration() {
         regionCodeYearMonthItemReader: RegionCodeYearMonthItemReader,
         historicalApartmentTradeItemProcessor: HistoricalApartmentTradeItemProcessor,
         publicDataMongoFastWriter: PublicDataMongoFastWriter,
+        batchTaskExecutor: TaskExecutor,
     ): Step =
         StepBuilder("historicalApartmentTradeStep", jobRepository)
             .chunk<RegionCodeWithYearMonth, List<ApartmentTradeRawDocumentEntity>>(
@@ -161,6 +177,7 @@ class PublicDataStepConfig : DefaultBatchConfiguration() {
             ).reader(regionCodeYearMonthItemReader)
             .processor(historicalApartmentTradeItemProcessor)
             .writer(publicDataMongoFastWriter.apartmentTradeWriter())
+            .taskExecutor(batchTaskExecutor)
             .faultTolerant()
             .skipPolicy(mongoSkipPolicy)
             .build()
@@ -171,6 +188,7 @@ class PublicDataStepConfig : DefaultBatchConfiguration() {
         regionCodeYearMonthItemReader: RegionCodeYearMonthItemReader,
         historicalApartmentRentItemProcessor: HistoricalApartmentRentItemProcessor,
         publicDataMongoFastWriter: PublicDataMongoFastWriter,
+        batchTaskExecutor: TaskExecutor,
     ): Step =
         StepBuilder("historicalApartmentRentStep", jobRepository)
             .chunk<RegionCodeWithYearMonth, List<ApartmentRentRawDocumentEntity>>(
@@ -179,6 +197,7 @@ class PublicDataStepConfig : DefaultBatchConfiguration() {
             ).reader(regionCodeYearMonthItemReader)
             .processor(historicalApartmentRentItemProcessor)
             .writer(publicDataMongoFastWriter.apartmentRentWriter())
+            .taskExecutor(batchTaskExecutor)
             .faultTolerant()
             .skipPolicy(mongoSkipPolicy)
             .build()
