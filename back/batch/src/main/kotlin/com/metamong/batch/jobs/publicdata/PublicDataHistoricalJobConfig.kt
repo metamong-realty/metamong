@@ -42,8 +42,8 @@ class PublicDataHistoricalJobConfig {
         @Qualifier("historicalApartmentRentStep") historicalApartmentRentStep: Step,
     ): Job =
         JobBuilder(JOB_NAME, jobRepository)
-//            .start(historicalApartmentTradeStep)
-            .start(historicalApartmentRentStep)
+            .start(historicalApartmentTradeStep)
+            .next(historicalApartmentRentStep)
             .build()
 
     companion object {

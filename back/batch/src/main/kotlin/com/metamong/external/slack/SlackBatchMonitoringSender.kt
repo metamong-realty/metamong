@@ -20,28 +20,31 @@ class SlackBatchMonitoringSender(
     private val environment: Environment,
     private val webClientFactory: WebClientFactory,
 ) {
+    // TODO : 슬랙 발송은 하지 않음. 나중에 필요하면 활성화 할 것.
     fun sendWebhook(payload: SlackBatchMonitoringPayload) {
-        if (isNotProduction()) {
-            println("🔔 Slack 알림 (로컬 환경): ${payload.jobName} - ${if (payload.exception == null) "성공" else "실패"}")
-            return
-        }
-
-        val startDate = getFormattedDateByNow()
-        val duration =
-            ((System.currentTimeMillis() - payload.startTimeMillis) / 1000.0)
-                .let { String.format("%.1f", it) }
-
-        val message: Map<String, Any>
-        if (payload.exception == null) {
-            message = buildSuccessMessage(payload.jobName, startDate, duration, payload.commandArgs)
-        } else {
-            message = buildErrorMessage(payload.jobName, startDate, duration, payload.exception, payload.commandArgs)
-        }
-
-        sendSlackMessage(
-            "/services/YOUR_SLACK_WEBHOOK_PATH", // TODO: 실제 Slack Webhook URL 설정
-            message,
-        )
+        return
+//
+//        if (isNotProduction()) {
+//            println("🔔 Slack 알림 (로컬 환경): ${payload.jobName} - ${if (payload.exception == null) "성공" else "실패"}")
+//            return
+//        }
+//
+//        val startDate = getFormattedDateByNow()
+//        val duration =
+//            ((System.currentTimeMillis() - payload.startTimeMillis) / 1000.0)
+//                .let { String.format("%.1f", it) }
+//
+//        val message: Map<String, Any>
+//        if (payload.exception == null) {
+//            message = buildSuccessMessage(payload.jobName, startDate, duration, payload.commandArgs)
+//        } else {
+//            message = buildErrorMessage(payload.jobName, startDate, duration, payload.exception, payload.commandArgs)
+//        }
+//
+//        sendSlackMessage(
+//            "/services/YOUR_SLACK_WEBHOOK_PATH", // TODO: 실제 Slack Webhook URL 설정
+//            message,
+//        )
     }
 
     private fun sendSlackMessage(

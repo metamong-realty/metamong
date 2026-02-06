@@ -16,6 +16,7 @@ import org.springframework.batch.item.Chunk
 import org.springframework.batch.item.ItemWriter
 import org.springframework.data.mongodb.core.BulkOperations
 import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Component
@@ -139,7 +140,7 @@ class PublicDataMongoWriter(
                 entityClass = ApartmentTradeRawDocumentEntity::class,
                 queryBuilder = { doc ->
                     Query(
-                        org.springframework.data.mongodb.core.query.Criteria
+                        Criteria
                             .where("compositeKey")
                             .`is`(doc.compositeKey),
                     )
@@ -156,7 +157,7 @@ class PublicDataMongoWriter(
                 entityClass = ApartmentRentRawDocumentEntity::class,
                 queryBuilder = { doc ->
                     Query(
-                        org.springframework.data.mongodb.core.query.Criteria
+                        Criteria
                             .where("compositeKey")
                             .`is`(doc.compositeKey),
                     )
@@ -174,7 +175,7 @@ class PublicDataMongoWriter(
                 entityClass = HousingLicenseRawDocumentEntity::class,
                 queryBuilder = { doc ->
                     Query(
-                        org.springframework.data.mongodb.core.query.Criteria
+                        Criteria
                             .where("mgmDongOulnPk")
                             .`is`(doc.mgmDongOulnPk),
                     )
@@ -191,7 +192,7 @@ class PublicDataMongoWriter(
                 entityClass = ApartmentComplexListRawDocumentEntity::class,
                 queryBuilder = { doc ->
                     Query(
-                        org.springframework.data.mongodb.core.query.Criteria
+                        Criteria
                             .where("kaptCode")
                             .`is`(doc.kaptCode),
                     )
@@ -208,7 +209,7 @@ class PublicDataMongoWriter(
                 entityClass = ApartmentComplexInfoRawDocumentEntity::class,
                 queryBuilder = { doc ->
                     Query(
-                        org.springframework.data.mongodb.core.query.Criteria
+                        Criteria
                             .where("kaptCode")
                             .`is`(doc.kaptCode),
                     )
