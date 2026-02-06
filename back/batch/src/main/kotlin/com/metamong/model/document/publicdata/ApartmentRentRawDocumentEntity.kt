@@ -1,0 +1,38 @@
+package com.metamong.model.document.publicdata
+
+import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.index.CompoundIndex
+import org.springframework.data.mongodb.core.index.CompoundIndexes
+import org.springframework.data.mongodb.core.mapping.Document
+import java.time.LocalDateTime
+
+@Document("ApartmentRentRaw")
+@CompoundIndexes(
+    CompoundIndex(name = "idx_lawdCd_dealYearMonth", def = "{'lawdCd': 1, 'dealYear': 1, 'dealMonth': 1}"),
+    CompoundIndex(name = "idx_compositeKey", def = "{'compositeKey': 1}", unique = true),
+)
+data class ApartmentRentRawDocumentEntity(
+    @Id val id: String? = null,
+    val compositeKey: String,
+    val lawdCd: String,
+    val dealYear: String,
+    val dealMonth: String,
+    val dealDay: String?,
+    val aptNm: String?,
+    val aptSeq: String?,
+    val excluUseAr: String?,
+    val deposit: String?,
+    val monthlyRent: String?,
+    val floor: String?,
+    val buildYear: String?,
+    val roadnm: String?,
+    val umdNm: String?,
+    val jibun: String?,
+    val sggCd: String?,
+    val contractType: String?,
+    val contractTerm: String?,
+    val preDeposit: String?,
+    val preMonthlyRent: String?,
+    val useRRRight: String?,
+    val collectedAt: LocalDateTime = LocalDateTime.now(),
+)

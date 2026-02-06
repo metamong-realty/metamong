@@ -1,0 +1,69 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: metamong-batch
+  profiles:
+    active: local
+    
+  # Database Configuration (for Spring Batch metadata)
+  datasource:
+    url: jdbc:mysql://localhost:3306/metamong_batch_meta?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${DB_USERNAME:metamong}
+    password: ${DB_PASSWORD:metamong123}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # JPA Configuration  
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  # MongoDB Configuration (for raw data storage)
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/metamong_publicdata}
+
+  # Spring Batch Configuration
+  batch:
+    job:
+      enabled: false  # Disable auto job execution
+    jdbc:
+      initialize-schema: always
+
+# Public Data API Configuration
+public-data:
+  api:
+    base-url: ${PUBLIC_DATA_API_URL:https://apis.data.go.kr}
+    service-key: ${PUBLIC_DATA_SERVICE_KEY:your-service-key}
+    timeout: 30000
+    retry-count: 3
+
+# Batch Job Scheduling
+batch:
+  scheduling:
+    enabled: ${BATCH_SCHEDULING_ENABLED:true}
+    cron:
+      daily-job: "0 0 2 * * ?" # 매일 오전 2시
+      weekly-job: "0 0 3 * * 1" # 매주 월요일 오전 3시
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.metamong: DEBUG
+    org.springframework.batch: DEBUG
+
+# Management Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,batch
+  endpoint:
+    health:
+      show-details: always
