@@ -1,6 +1,6 @@
 package com.metamong.batch.jobs.publicdata.sync.reader
 
-import com.metamong.entity.apartment.ApartmentComplexEntity
+import com.metamong.domain.apartment.model.ApartmentComplexEntity
 import org.springframework.batch.item.ItemReader
 
 class UnmatchedComplexItemReader(

@@ -1,12 +1,12 @@
 package com.metamong.service.apartment
 
-import com.metamong.entity.apartment.ApartmentRentEntity
-import com.metamong.entity.apartment.ApartmentTradeEntity
-import com.metamong.enums.apartment.RentType
+import com.metamong.domain.apartment.model.ApartmentRentEntity
+import com.metamong.domain.apartment.model.ApartmentTradeEntity
+import com.metamong.domain.apartment.model.RentType
+import com.metamong.infra.persistance.repository.apartment.ApartmentRentRepository
+import com.metamong.infra.persistance.repository.apartment.ApartmentTradeRepository
 import com.metamong.model.document.publicdata.ApartmentRentRawDocumentEntity
 import com.metamong.model.document.publicdata.ApartmentTradeRawDocumentEntity
-import com.metamong.repository.apartment.ApartmentRentRepository
-import com.metamong.repository.apartment.ApartmentTradeRepository
 import com.metamong.util.apartment.AreaConverter
 import com.metamong.util.apartment.PriceParser
 import io.github.oshai.kotlinlogging.KotlinLogging

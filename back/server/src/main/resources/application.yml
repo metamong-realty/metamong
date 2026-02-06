@@ -7,18 +7,18 @@ spring:
   profiles:
     active: local
   
-  # Database Configuration
+  # Database Configuration - MySQL
   datasource:
-    url: jdbc:mysql://localhost:3306/metamong_realestateinfo?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: ${DB_USERNAME:metamong}
-    password: ${DB_PASSWORD:metamong123}
+    url: jdbc:mysql://localhost:3306/metamong?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:password}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   # JPA Configuration  
   jpa:
     hibernate:
-      ddl-auto: none
-    show-sql: false
+      ddl-auto: update # TODO : 개발 시에만 update로 설정
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect

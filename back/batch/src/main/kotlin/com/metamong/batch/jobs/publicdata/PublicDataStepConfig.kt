@@ -9,16 +9,16 @@ import com.metamong.batch.jobs.publicdata.processor.HistoricalApartmentTradeItem
 import com.metamong.batch.jobs.publicdata.processor.HousingLicenseItemProcessor
 import com.metamong.batch.jobs.publicdata.reader.RegionCodeItemReader
 import com.metamong.batch.jobs.publicdata.reader.RegionCodeYearMonthItemReader
-import com.metamong.batch.jobs.publicdata.writer.PublicDataMongoWriter
 import com.metamong.batch.jobs.publicdata.writer.PublicDataMongoFastWriter
+import com.metamong.batch.jobs.publicdata.writer.PublicDataMongoWriter
 import com.metamong.external.publicdata.dto.RegionCode
 import com.metamong.external.publicdata.dto.RegionCodeWithYearMonth
+import com.metamong.infra.persistance.repository.mongo.publicdata.ApartmentComplexListRawRepository
 import com.metamong.model.document.publicdata.ApartmentComplexInfoRawDocumentEntity
 import com.metamong.model.document.publicdata.ApartmentComplexListRawDocumentEntity
 import com.metamong.model.document.publicdata.ApartmentRentRawDocumentEntity
 import com.metamong.model.document.publicdata.ApartmentTradeRawDocumentEntity
 import com.metamong.model.document.publicdata.HousingLicenseRawDocumentEntity
-import com.metamong.repository.publicdata.ApartmentComplexListRawRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.StepScope
@@ -114,8 +114,7 @@ class PublicDataStepConfig : DefaultBatchConfiguration() {
             if (kaptCodes == null) {
                 val codes =
                     apartmentComplexListRawRepository
-                        .findAllKaptCodes()
-                        .mapNotNull { it.kaptCode }
+                        .findAllKaptCodesOnly()
                 logger.info { "공동주택 기본 정보 조회 대상: ${codes.size}개 단지" }
                 kaptCodes = codes.iterator()
             }
@@ -194,7 +193,7 @@ class PublicDataStepConfig : DefaultBatchConfiguration() {
         private const val HOUSING_LICENSE_CHUNK_SIZE = DEFAULT_CHUNK_SIZE
         private const val APARTMENT_COMPLEX_LIST_CHUNK_SIZE = DEFAULT_CHUNK_SIZE
         private const val APARTMENT_COMPLEX_INFO_CHUNK_SIZE = DEFAULT_CHUNK_SIZE
-        
+
         // Historical 배치용 최적화된 Chunk Size (중복 체크 없이 처리하므로 더 큰 배치 가능)
         private const val HISTORICAL_APARTMENT_TRADE_CHUNK_SIZE = 10
         private const val HISTORICAL_APARTMENT_RENT_CHUNK_SIZE = 8

@@ -1,14 +1,14 @@
 package com.metamong.service.apartment
 
-import com.metamong.entity.apartment.ApartmentCodeMappingEntity
-import com.metamong.entity.apartment.ApartmentComplexEntity
-import com.metamong.entity.apartment.ApartmentUnitTypeEntity
-import com.metamong.enums.apartment.ApartmentCodeType
+import com.metamong.domain.apartment.model.ApartmentCodeMappingEntity
+import com.metamong.domain.apartment.model.ApartmentCodeType
+import com.metamong.domain.apartment.model.ApartmentComplexEntity
+import com.metamong.domain.apartment.model.ApartmentUnitTypeEntity
+import com.metamong.infra.persistance.repository.apartment.ApartmentCodeMappingRepository
+import com.metamong.infra.persistance.repository.apartment.ApartmentComplexRepository
+import com.metamong.infra.persistance.repository.apartment.ApartmentUnitTypeRepository
 import com.metamong.model.document.publicdata.ApartmentRentRawDocumentEntity
 import com.metamong.model.document.publicdata.ApartmentTradeRawDocumentEntity
-import com.metamong.repository.apartment.ApartmentCodeMappingRepository
-import com.metamong.repository.apartment.ApartmentComplexRepository
-import com.metamong.repository.apartment.ApartmentUnitTypeRepository
 import com.metamong.service.apartment.dto.ComplexWithApartmentSequence
 import com.metamong.util.apartment.AddressParser
 import com.metamong.util.apartment.ApartmentNameNormalizer

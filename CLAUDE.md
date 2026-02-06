@@ -32,6 +32,7 @@
 2. **테스트 커버리지 80% 이상 유지** - 모든 신규 코드
 3. **보안 체크리스트 자동 검증** - 커밋 전 필수
 4. **DDD 원칙 엄격 적용** - 도메인 경계 명확화
+5. **🚫 @Query 애노테이션 사용 금지** - QueryDSL 또는 method naming 사용 필수
 
 ### 작업 워크플로
 ```
@@ -188,6 +189,33 @@ TYPE: feat|fix|docs|style|refactor|test|chore
 - 인덱스 최적화
 - 쿼리 캐싱 (Redis)
 - Connection Pool 튜닝
+
+### Repository 패턴 가이드
+**🚫 절대 금지:**
+- `@Query` 애노테이션 사용
+
+**✅ 권장 방법:**
+1. **Method Naming**: `findByNameAndAge()`, `existsByEmail()` 등 Spring Data 메소드명 규칙
+2. **QueryDSL**: 복잡한 동적 쿼리는 Custom Repository + QueryDSL 구현
+3. **MongoDB**: `findByFieldStartingWith()` 등 Spring Data MongoDB 메소드명 규칙
+
+**Custom Repository 패턴:**
+```kotlin
+// Interface
+interface UserRepositoryCustom {
+    fun findByComplexCondition(): List<User>
+}
+
+// Implementation  
+@Repository
+class UserRepositoryCustomImpl : QuerydslRepositorySupport(), UserRepositoryCustom {
+    override fun findByComplexCondition(): List<User> = 
+        selectFrom(user).where(...).fetch()
+}
+
+// Main Repository
+interface UserRepository : JpaRepository<User, Long>, UserRepositoryCustom
+```
 
 ### 애플리케이션
 - Lazy Loading 활용

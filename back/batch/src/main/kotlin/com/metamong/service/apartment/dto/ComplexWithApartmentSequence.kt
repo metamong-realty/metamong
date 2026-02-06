@@ -1,6 +1,6 @@
 package com.metamong.service.apartment.dto
 
-import com.metamong.entity.apartment.ApartmentComplexEntity
+import com.metamong.domain.apartment.model.ApartmentComplexEntity
 
 data class ComplexWithApartmentSequence(
     val complex: ApartmentComplexEntity,

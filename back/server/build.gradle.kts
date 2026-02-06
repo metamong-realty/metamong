@@ -24,7 +24,7 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.1")
 
     /** database */
-    implementation("com.mysql:mysql-connector-j")
+    implementation("mysql:mysql-connector-java:8.0.33")
     runtimeOnly("com.h2database:h2")
     implementation("jakarta.persistence:jakarta.persistence-api")
 

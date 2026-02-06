@@ -139,6 +139,7 @@ class PublicDataMongoFastWriter(
 
     companion object {
         private val logger = KotlinLogging.logger {}
+
         // Historical용으로 더 큰 배치 사이즈 사용 (기존 300 → 500)
         private const val BULK_BATCH_SIZE = 500
     }

@@ -1,12 +1,12 @@
 package com.metamong.service.apartment
 
-import com.metamong.entity.apartment.ApartmentComplexEntity
-import com.metamong.enums.apartment.ApartmentCodeType
-import com.metamong.enums.apartment.PlatType
+import com.metamong.domain.apartment.model.ApartmentCodeType
+import com.metamong.domain.apartment.model.ApartmentComplexEntity
+import com.metamong.domain.apartment.model.PlatType
+import com.metamong.infra.persistance.repository.mongo.publicdata.ApartmentComplexInfoRawRepository
+import com.metamong.infra.persistance.repository.mongo.publicdata.HousingLicenseRawRepository
 import com.metamong.model.document.publicdata.ApartmentComplexInfoRawDocumentEntity
 import com.metamong.model.document.publicdata.HousingLicenseRawDocumentEntity
-import com.metamong.repository.publicdata.ApartmentComplexInfoRawRepository
-import com.metamong.repository.publicdata.HousingLicenseRawRepository
 import com.metamong.util.apartment.AddressParser
 import com.metamong.util.apartment.ApartmentNameNormalizer
 import io.github.oshai.kotlinlogging.KotlinLogging

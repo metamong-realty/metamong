@@ -16,7 +16,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("com.mysql:mysql-connector-j")
+    implementation("mysql:mysql-connector-java:8.0.33")
     implementation("jakarta.annotation:jakarta.annotation-api")
     implementation("jakarta.persistence:jakarta.persistence-api")
     implementation("org.redisson:redisson-spring-boot-starter:3.34.1")

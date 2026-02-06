@@ -4,8 +4,8 @@ import com.metamong.common.vo.LegalCode
 import com.metamong.external.publicdata.PublicDataApiClient
 import com.metamong.external.publicdata.PublicDataParser
 import com.metamong.external.publicdata.dto.RegionCode
+import com.metamong.infra.persistance.repository.publicdata.RegionLegalCodeRepository
 import com.metamong.model.document.publicdata.HousingLicenseRawDocumentEntity
-import com.metamong.repository.publicData.RegionLegalCodeRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.batch.item.ItemProcessor
 import org.springframework.stereotype.Component

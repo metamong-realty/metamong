@@ -1,6 +1,6 @@
 package com.metamong.batch.jobs.publicdata.sync.processor
 
-import com.metamong.entity.apartment.ApartmentRentEntity
+import com.metamong.domain.apartment.model.ApartmentRentEntity
 import com.metamong.model.document.publicdata.ApartmentRentRawDocumentEntity
 import com.metamong.service.apartment.ApartmentTradeSyncService
 import org.springframework.batch.item.ItemProcessor

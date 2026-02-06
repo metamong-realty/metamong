@@ -1,6 +1,6 @@
 package com.metamong.batch.jobs.publicdata.sync.writer
 
-import com.metamong.entity.apartment.ApartmentTradeEntity
+import com.metamong.domain.apartment.model.ApartmentTradeEntity
 import com.metamong.service.apartment.ApartmentTradeSyncService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.batch.item.ItemWriter
