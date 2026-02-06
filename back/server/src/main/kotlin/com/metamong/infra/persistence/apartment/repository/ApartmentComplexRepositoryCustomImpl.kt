@@ -1,11 +1,11 @@
 package com.metamong.infra.persistence.apartment.repository
 
-import com.querydsl.core.types.Projections
-import com.querydsl.core.types.dsl.BooleanExpression
-import com.metamong.support.QuerydslRepositorySupport
 import com.metamong.domain.apartment.model.ApartmentComplexEntity
 import com.metamong.domain.apartment.model.QApartmentComplexEntity
 import com.metamong.infra.persistence.apartment.projection.ApartmentComplexListProjection
+import com.metamong.support.QuerydslRepositorySupport
+import com.querydsl.core.types.Projections
+import com.querydsl.core.types.dsl.BooleanExpression
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable

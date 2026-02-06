@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component
  */
 @Component
 class SecurityAuditProvider : AuditProvider {
-    
     override fun getCurrentUserId(): String? {
         val authentication = SecurityContextHolder.getContext().authentication
         if (authentication?.isAuthenticated == true && authentication.name != "anonymousUser") {

@@ -19,7 +19,7 @@ class ApartmentTradeEntity(
     val isCanceled: Boolean = false,
     val canceledDate: LocalDate? = null,
     val rawId: String? = null,
-) : ExtendedBaseEntity(){
+) : ExtendedBaseEntity() {
     companion object {
         fun create(
             unitTypeId: Long,

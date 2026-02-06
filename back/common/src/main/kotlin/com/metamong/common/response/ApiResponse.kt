@@ -17,7 +17,10 @@ data class ApiResponse<T>(
                 data = data,
             )
 
-        fun <T> ok(data: T, message: String): ApiResponse<T> =
+        fun <T> ok(
+            data: T,
+            message: String,
+        ): ApiResponse<T> =
             ApiResponse(
                 success = true,
                 code = 200,
@@ -32,7 +35,10 @@ data class ApiResponse<T>(
                 data = data,
             )
 
-        fun <T> error(message: String, code: Int = 500): ApiResponse<T> =
+        fun <T> error(
+            message: String,
+            code: Int = 500,
+        ): ApiResponse<T> =
             ApiResponse(
                 success = false,
                 code = code,

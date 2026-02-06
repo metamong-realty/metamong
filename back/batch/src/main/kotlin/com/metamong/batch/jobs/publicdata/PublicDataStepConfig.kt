@@ -236,56 +236,62 @@ class PublicDataStepConfig : DefaultBatchConfiguration() {
          */
         val mongoSkipPolicy =
             SkipPolicy { throwable, _ ->
-                val shouldSkip = when (throwable) {
-                    // MongoDB 연결 관련 예외들
-                    is org.springframework.dao.DataAccessResourceFailureException -> {
-                        val message = throwable.message ?: ""
-                        val isMongoError = message.contains("Connection reset") ||
-                                         message.contains("Exception receiving message") ||
-                                         message.contains("MongoSocketReadException") ||
-                                         message.contains("Socket") ||
-                                         message.contains("connection")
-                        
-                        if (isMongoError) {
-                            logger.warn(throwable) { "MongoDB 연결 에러 발생, skip 처리: $message" }
+                val shouldSkip =
+                    when (throwable) {
+                        // MongoDB 연결 관련 예외들
+                        is org.springframework.dao.DataAccessResourceFailureException -> {
+                            val message = throwable.message ?: ""
+                            val isMongoError =
+                                message.contains("Connection reset") ||
+                                    message.contains("Exception receiving message") ||
+                                    message.contains("MongoSocketReadException") ||
+                                    message.contains("Socket") ||
+                                    message.contains("connection")
+
+                            if (isMongoError) {
+                                logger.warn(throwable) { "MongoDB 연결 에러 발생, skip 처리: $message" }
+                                true
+                            } else {
+                                false
+                            }
+                        }
+
+                        // 재시도 소진 예외
+                        is org.springframework.retry.ExhaustedRetryException -> {
+                            logger.warn(throwable) { "재시도 소진, skip 처리하여 배치 계속 진행: ${throwable.message}" }
                             true
-                        } else false
-                    }
-                    
-                    // 재시도 소진 예외
-                    is org.springframework.retry.ExhaustedRetryException -> {
-                        logger.warn(throwable) { "재시도 소진, skip 처리하여 배치 계속 진행: ${throwable.message}" }
-                        true
-                    }
-                    
-                    // 기존 MongoDB 예외
-                    is org.springframework.data.mongodb.UncategorizedMongoDbException -> {
-                        logger.warn(throwable) { "MongoDB 에러 발생, skip 처리: ${throwable.message}" }
-                        true
-                    }
-                    
-                    // Java 네트워크 예외
-                    is java.net.SocketException -> {
-                        logger.warn(throwable) { "네트워크 소켓 에러 발생, skip 처리: ${throwable.message}" }
-                        true
-                    }
-                    
-                    // Java IO 예외 (Connection reset 포함)
-                    is java.io.IOException -> {
-                        val message = throwable.message ?: ""
-                        if (message.contains("Connection reset") || message.contains("Broken pipe")) {
-                            logger.warn(throwable) { "네트워크 연결 에러 발생, skip 처리: $message" }
+                        }
+
+                        // 기존 MongoDB 예외
+                        is org.springframework.data.mongodb.UncategorizedMongoDbException -> {
+                            logger.warn(throwable) { "MongoDB 에러 발생, skip 처리: ${throwable.message}" }
                             true
-                        } else false
+                        }
+
+                        // Java 네트워크 예외
+                        is java.net.SocketException -> {
+                            logger.warn(throwable) { "네트워크 소켓 에러 발생, skip 처리: ${throwable.message}" }
+                            true
+                        }
+
+                        // Java IO 예외 (Connection reset 포함)
+                        is java.io.IOException -> {
+                            val message = throwable.message ?: ""
+                            if (message.contains("Connection reset") || message.contains("Broken pipe")) {
+                                logger.warn(throwable) { "네트워크 연결 에러 발생, skip 처리: $message" }
+                                true
+                            } else {
+                                false
+                            }
+                        }
+
+                        else -> false
                     }
-                    
-                    else -> false
-                }
-                
+
                 if (shouldSkip) {
                     logger.info { "청크 건너뛰기 적용됨 - 배치 작업 계속 진행" }
                 }
-                
+
                 shouldSkip
             }
     }

@@ -11,7 +11,7 @@ class ApartmentUnitTypeEntity(
     val complexId: Long,
     val exclusiveArea: BigDecimal,
     val exclusivePyeong: Short? = null,
-) : ExtendedBaseEntity(){
+) : ExtendedBaseEntity() {
     companion object {
         fun create(
             complexId: Long,

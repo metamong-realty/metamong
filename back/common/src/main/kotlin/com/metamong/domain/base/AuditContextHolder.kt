@@ -6,19 +6,19 @@ package com.metamong.domain.base
  */
 object AuditContextHolder {
     private var auditProvider: AuditProvider? = null
-    
+
     /**
      * AuditProvider를 설정한다.
      */
     fun setAuditProvider(provider: AuditProvider) {
         auditProvider = provider
     }
-    
+
     /**
      * 현재 설정된 AuditProvider를 반환한다.
      */
     fun getAuditProvider(): AuditProvider? = auditProvider
-    
+
     /**
      * 현재 사용자 ID를 반환한다.
      * AuditProvider가 설정되지 않은 경우 null을 반환한다.

@@ -1,8 +1,8 @@
 package com.metamong.infra.persistence.apartment.repository
 
-import com.metamong.support.QuerydslRepositorySupport
 import com.metamong.domain.apartment.model.ApartmentSubscriptionEntity
 import com.metamong.domain.apartment.model.QApartmentSubscriptionEntity
+import com.metamong.support.QuerydslRepositorySupport
 import org.springframework.stereotype.Repository
 
 @Repository

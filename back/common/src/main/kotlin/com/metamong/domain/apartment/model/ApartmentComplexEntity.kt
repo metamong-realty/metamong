@@ -27,8 +27,7 @@ class ApartmentComplexEntity(
     var floorAreaRatio: BigDecimal? = null,
     var buildingCoverageRatio: BigDecimal? = null,
     var heatingType: String? = null,
-) : ExtendedBaseEntity(){
-
+) : ExtendedBaseEntity() {
     fun updateFromLicenseRaw(
         floorAreaRatio: BigDecimal?,
         buildingCoverageRatio: BigDecimal?,

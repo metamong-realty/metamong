@@ -13,7 +13,7 @@ class ApartmentCodeMappingEntity(
     @Enumerated(EnumType.STRING)
     val codeType: ApartmentCodeType,
     val codeValue: String,
-) : ExtendedBaseEntity(){
+) : ExtendedBaseEntity() {
     companion object {
         fun create(
             complexId: Long,

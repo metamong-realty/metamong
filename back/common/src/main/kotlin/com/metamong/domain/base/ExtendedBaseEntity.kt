@@ -56,7 +56,5 @@ abstract class ExtendedBaseEntity {
         updatedAt = LocalDateTime.now()
     }
 
-    private fun getCurrentUserId(): String? {
-        return AuditContextHolder.getCurrentUserId()
-    }
+    private fun getCurrentUserId(): String? = AuditContextHolder.getCurrentUserId()
 }

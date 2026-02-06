@@ -30,12 +30,13 @@ class ApartmentComplexQueryService(
         keyword: String?,
         pageable: Pageable,
     ): Page<ApartmentComplexListDto> {
-        val complexes = apartmentComplexRepository.findComplexesByConditions(
-            sidoSigunguCode = sidoSigunguCode,
-            eupmyeondongCode = eupmyeondongCode,
-            keyword = keyword,
-            pageable = pageable,
-        )
+        val complexes =
+            apartmentComplexRepository.findComplexesByConditions(
+                sidoSigunguCode = sidoSigunguCode,
+                eupmyeondongCode = eupmyeondongCode,
+                keyword = keyword,
+                pageable = pageable,
+            )
 
         return complexes.map { projection ->
             ApartmentComplexListDto.from(
@@ -52,16 +53,19 @@ class ApartmentComplexQueryService(
         userId: Long?,
         unitTypeId: Long?,
     ): ApartmentComplexDetailDto {
-        val complex = apartmentComplexRepository.findById(complexId)
-            .orElseThrow { IllegalArgumentException("단지를 찾을 수 없습니다: $complexId") }
+        val complex =
+            apartmentComplexRepository
+                .findById(complexId)
+                .orElseThrow { IllegalArgumentException("단지를 찾을 수 없습니다: $complexId") }
 
-        val isSubscribed = userId?.let {
-            apartmentSubscriptionRepository.existsByUserIdAndComplexIdAndUnitTypeId(
-                userId = it,
-                complexId = complexId,
-                unitTypeId = unitTypeId,
-            )
-        } ?: false
+        val isSubscribed =
+            userId?.let {
+                apartmentSubscriptionRepository.existsByUserIdAndComplexIdAndUnitTypeId(
+                    userId = it,
+                    complexId = complexId,
+                    unitTypeId = unitTypeId,
+                )
+            } ?: false
 
         return ApartmentComplexDetailDto(
             id = complex.id!!,
@@ -79,8 +83,7 @@ class ApartmentComplexQueryService(
         )
     }
 
-    fun getUnitTypes(complexId: Long) =
-        apartmentUnitTypeRepository.findByComplexIdOrderByExclusiveAreaAsc(complexId)
+    fun getUnitTypes(complexId: Long) = apartmentUnitTypeRepository.findByComplexIdOrderByExclusiveAreaAsc(complexId)
 
     fun getTrades(
         complexId: Long,
@@ -138,7 +141,7 @@ class ApartmentComplexQueryService(
         // TODO: 가격 요약 로직 구현 필요
         return ApartmentPriceSummaryDto(
             trade = null,
-            rent = null
+            rent = null,
         )
     }
 }

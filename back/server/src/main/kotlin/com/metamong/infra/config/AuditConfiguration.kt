@@ -10,9 +10,8 @@ import org.springframework.stereotype.Component
  */
 @Component
 class AuditConfiguration(
-    private val securityAuditProvider: SecurityAuditProvider
+    private val securityAuditProvider: SecurityAuditProvider,
 ) {
-    
     @PostConstruct
     fun configureAudit() {
         AuditContextHolder.setAuditProvider(securityAuditProvider)
