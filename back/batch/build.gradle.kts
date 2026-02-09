@@ -1,5 +1,6 @@
 plugins {
     kotlin("kapt")
+    kotlin("plugin.jpa")
     id("com.adarshr.test-logger") version "3.2.0"
     id("jacoco")
 }

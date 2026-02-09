@@ -94,7 +94,7 @@ class ApartmentComplexCommandService(
                     codeValue = item.apartmentSequence,
                 )
             }
-        apartmentCodeMappingRepository.saveAll(codeMappings)
+        apartmentCodeMappingRepository.batchInsert(codeMappings)
 
         logger.info { "Complex 일괄 저장 완료: ${savedComplexes.size}건" }
         return savedComplexes

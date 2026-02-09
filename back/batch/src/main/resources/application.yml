@@ -71,12 +71,13 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none # TODO : 개발 시에만 update로 설정
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
         use_sql_comments: true
+        physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
         jdbc:
           batch_size: 100
         order_inserts: true

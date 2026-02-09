@@ -1,16 +1,16 @@
 package com.metamong.batch.jobs.publicdata.sync
 
-import com.metamong.batch.jobs.publicdata.sync.reader.DistinctApartmentSequenceItemReader
-import com.metamong.batch.jobs.publicdata.sync.reader.MongoPageItemReader
-import com.metamong.batch.jobs.publicdata.sync.reader.UnmatchedComplexItemReader
+import com.metamong.batch.jobs.publicdata.sync.reader.RentRawDistinctAptSeqReader
+import com.metamong.batch.jobs.publicdata.sync.reader.RentRawPagingReader
+import com.metamong.batch.jobs.publicdata.sync.reader.TradeRawDistinctAptSeqReader
+import com.metamong.batch.jobs.publicdata.sync.reader.TradeRawPagingReader
+import com.metamong.batch.jobs.publicdata.sync.reader.UnmatchedInfoRawComplexReader
+import com.metamong.batch.jobs.publicdata.sync.reader.UnmatchedLicenseRawComplexReader
 import com.metamong.domain.apartment.model.ApartmentComplexEntity
 import com.metamong.domain.apartment.model.ApartmentRentEntity
 import com.metamong.domain.apartment.model.ApartmentTradeEntity
-import com.metamong.infra.persistence.repository.mongo.publicdata.ApartmentRentRawRepository
-import com.metamong.infra.persistence.repository.mongo.publicdata.ApartmentTradeRawRepository
 import com.metamong.model.document.publicdata.ApartmentRentRawDocumentEntity
 import com.metamong.model.document.publicdata.ApartmentTradeRawDocumentEntity
-import com.metamong.service.apartment.ApartmentComplexQueryService
 import com.metamong.service.apartment.dto.ComplexWithApartmentSequence
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.StepScope
@@ -25,142 +25,57 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.PlatformTransactionManager
 
 @Configuration
-class ApartmentMigrationDailyStepConfig {
+class ApartmentMigrationStepConfig {
     // ===== Readers =====
     @Bean
     @StepScope
     fun tradeRawDistinctAptSeqReader(
-        apartmentTradeRawRepository: ApartmentTradeRawRepository,
-        apartmentComplexQueryService: ApartmentComplexQueryService,
+        tradeRawDistinctAptSeqReader: TradeRawDistinctAptSeqReader,
         @Value("#{jobParameters['mode']}") modeStr: String?,
     ): ItemReader<ApartmentTradeRawDocumentEntity> {
-        val mode = MigrationMode.fromString(modeStr)
-        val cutoffDate = mode.getCutoffDate()
-
-        return DistinctApartmentSequenceItemReader(
-            countFetcher = {
-                if (cutoffDate != null) {
-                    apartmentTradeRawRepository.countByCollectedAtGreaterThanEqual(cutoffDate)
-                } else {
-                    apartmentTradeRawRepository.count()
-                }
-            },
-            pageFetcher = { pageable ->
-                if (cutoffDate != null) {
-                    apartmentTradeRawRepository.findByCollectedAtGreaterThanEqual(cutoffDate, pageable).content
-                } else {
-                    apartmentTradeRawRepository.findAllBy(pageable).content
-                }
-            },
-            queryService = apartmentComplexQueryService,
-            apartmentSequenceExtractor = { it.aptSeq },
-            logPrefix = "TradeRaw 전체 데이터",
-            mode = mode,
-        )
+        tradeRawDistinctAptSeqReader.initialize(modeStr)
+        return tradeRawDistinctAptSeqReader
     }
 
     @Bean
     @StepScope
     fun rentRawDistinctAptSeqReader(
-        apartmentRentRawRepository: ApartmentRentRawRepository,
-        apartmentComplexQueryService: ApartmentComplexQueryService,
+        rentRawDistinctAptSeqReader: RentRawDistinctAptSeqReader,
         @Value("#{jobParameters['mode']}") modeStr: String?,
     ): ItemReader<ApartmentRentRawDocumentEntity> {
-        val mode = MigrationMode.fromString(modeStr)
-        val cutoffDate = mode.getCutoffDate()
-
-        return DistinctApartmentSequenceItemReader(
-            countFetcher = {
-                if (cutoffDate != null) {
-                    apartmentRentRawRepository.countByCollectedAtGreaterThanEqual(cutoffDate)
-                } else {
-                    apartmentRentRawRepository.count()
-                }
-            },
-            pageFetcher = { pageable ->
-                if (cutoffDate != null) {
-                    apartmentRentRawRepository.findByCollectedAtGreaterThanEqual(cutoffDate, pageable).content
-                } else {
-                    apartmentRentRawRepository.findAllBy(pageable).content
-                }
-            },
-            queryService = apartmentComplexQueryService,
-            apartmentSequenceExtractor = { it.aptSeq },
-            logPrefix = "RentRaw 전체 데이터 (Complex 생성용)",
-            mode = mode,
-        )
+        rentRawDistinctAptSeqReader.initialize(modeStr)
+        return rentRawDistinctAptSeqReader
     }
 
     @Bean
     @StepScope
-    fun unmatchedInfoRawComplexReader(apartmentComplexQueryService: ApartmentComplexQueryService): ItemReader<ApartmentComplexEntity> =
-        UnmatchedComplexItemReader { limit, offset ->
-            apartmentComplexQueryService.getUnmatchedInfoRawComplexes(limit, offset)
-        }
+    fun unmatchedInfoRawComplexReader(unmatchedInfoRawComplexReader: UnmatchedInfoRawComplexReader): ItemReader<ApartmentComplexEntity> =
+        unmatchedInfoRawComplexReader
 
     @Bean
     @StepScope
-    fun unmatchedLicenseRawComplexReader(apartmentComplexQueryService: ApartmentComplexQueryService): ItemReader<ApartmentComplexEntity> =
-        UnmatchedComplexItemReader { limit, offset ->
-            apartmentComplexQueryService.getUnmatchedLicenseRawComplexes(limit, offset)
-        }
+    fun unmatchedLicenseRawComplexReader(
+        unmatchedLicenseRawComplexReader: UnmatchedLicenseRawComplexReader,
+    ): ItemReader<ApartmentComplexEntity> = unmatchedLicenseRawComplexReader
 
     @Bean
     @StepScope
     fun tradeRawPagingReader(
-        apartmentTradeRawRepository: ApartmentTradeRawRepository,
+        tradeRawPagingReader: TradeRawPagingReader,
         @Value("#{jobParameters['mode']}") modeStr: String?,
     ): ItemReader<ApartmentTradeRawDocumentEntity> {
-        val mode = MigrationMode.fromString(modeStr)
-        val cutoffDate = mode.getCutoffDate()
-
-        return MongoPageItemReader(
-            countFetcher = {
-                if (cutoffDate != null) {
-                    apartmentTradeRawRepository.countByCollectedAtGreaterThanEqual(cutoffDate)
-                } else {
-                    apartmentTradeRawRepository.count()
-                }
-            },
-            pageFetcher = { pageable ->
-                if (cutoffDate != null) {
-                    apartmentTradeRawRepository.findByCollectedAtGreaterThanEqual(cutoffDate, pageable).content
-                } else {
-                    apartmentTradeRawRepository.findAllBy(pageable).content
-                }
-            },
-            logPrefix = "Trade 동기화 대상",
-            mode = mode,
-        )
+        tradeRawPagingReader.initialize(modeStr)
+        return tradeRawPagingReader
     }
 
     @Bean
     @StepScope
     fun rentRawPagingReader(
-        apartmentRentRawRepository: ApartmentRentRawRepository,
+        rentRawPagingReader: RentRawPagingReader,
         @Value("#{jobParameters['mode']}") modeStr: String?,
     ): ItemReader<ApartmentRentRawDocumentEntity> {
-        val mode = MigrationMode.fromString(modeStr)
-        val cutoffDate = mode.getCutoffDate()
-
-        return MongoPageItemReader(
-            countFetcher = {
-                if (cutoffDate != null) {
-                    apartmentRentRawRepository.countByCollectedAtGreaterThanEqual(cutoffDate)
-                } else {
-                    apartmentRentRawRepository.count()
-                }
-            },
-            pageFetcher = { pageable ->
-                if (cutoffDate != null) {
-                    apartmentRentRawRepository.findByCollectedAtGreaterThanEqual(cutoffDate, pageable).content
-                } else {
-                    apartmentRentRawRepository.findAllBy(pageable).content
-                }
-            },
-            logPrefix = "Rent 동기화 대상",
-            mode = mode,
-        )
+        rentRawPagingReader.initialize(modeStr)
+        return rentRawPagingReader
     }
 
     // ===== Steps =====

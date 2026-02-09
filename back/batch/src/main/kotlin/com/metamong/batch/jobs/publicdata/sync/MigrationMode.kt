@@ -17,7 +17,8 @@ enum class MigrationMode {
     companion object {
         fun fromString(value: String?): MigrationMode =
             when (value?.lowercase()) {
-                "daily" -> DAILY
+                "DAILY" -> DAILY
+                "FULL" -> HISTORICAL
                 else -> HISTORICAL
             }
     }

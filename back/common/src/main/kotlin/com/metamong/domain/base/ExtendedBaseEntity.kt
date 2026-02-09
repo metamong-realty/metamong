@@ -20,7 +20,7 @@ import java.time.LocalDateTime
  */
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener::class)
-abstract class ExtendedBaseEntity {
+open class ExtendedBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
