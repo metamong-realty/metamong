@@ -2,6 +2,26 @@
 
 이 문서는 Metamong 프로젝트에서 Claude Code를 최대한 활용하기 위한 AI 최적화 가이드입니다.
 
+## 🎯 최우선 지침
+
+- **모든 답변과 플래닝은 한글로 작성**
+- **무조건 동의하지 말고, 다각도로 객관적 분석 후 답변**
+- **모호한 요구사항은 추측하지 말고 반드시 질문**
+- **복잡한 탐색은 서브에이전트 활용**: `Task(subagent_type="general-purpose", prompt="...")`
+
+---
+
+## ⚡ 워크플로우
+
+```
+"기능 구현해줘" → "스펙 작성해줘" → "플랜 작성해줘" → "구현해줘" → "코드리뷰 해줘"
+```
+
+**복잡한 탐색은 서브에이전트 활용:**
+```
+Task(subagent_type="general-purpose", prompt="User 도메인 관련 Entity, Service, Controller를 찾아서 파일 경로와 핵심 메서드를 요약해줘")
+```
+
 ## 🚀 Quick Start
 
 ```bash
@@ -34,10 +54,15 @@
 4. **DDD 원칙 엄격 적용** - 도메인 경계 명확화
 5. **🚫 @Query 애노테이션 사용 금지** - QueryDSL 또는 method naming 사용 필수
 
-### 작업 워크플로
-```
-/plan → /tdd → 구현 → /test-coverage → /security-audit → 커밋
-```
+### 단계별 작업 가이드
+| 단계 | 자동 진행 | 설명 |
+|------|----------|------|
+| 1 | Spec | 요구사항 명세. 모호한 점 질문 후 spec.md 생성 |
+| 2 | Plan | 구현 계획 수립. **사용자 승인 대기** |
+| 3 | 구현 | 승인 후 plan 순서대로 구현 |
+| 4 | (선택) | "코드리뷰 해줘"로 리뷰 요청 |
+
+**팁**: 코드리뷰는 새 세션에서 하면 더 객관적
 
 ## 🏗️ 프로젝트 구조
 
@@ -67,103 +92,34 @@ metamong/
 
 ## 📐 아키텍처 원칙
 
-### 1. Domain-Driven Design (DDD)
-- **Entity**: 비즈니스 로직 포함, ID로 식별
-- **Value Object**: 불변 객체, equals/hashCode 구현
-- **Aggregate**: 일관성 경계, Root Entity를 통한 접근
-- **Repository**: 도메인 객체 영속성 관리
+- **Domain-Driven Design (DDD)** 적용
+- **Clean Architecture** 의존성 규칙 준수  
+- **SOLID 원칙** 엄격 적용
 
-### 2. Clean Architecture 의존성 규칙
-```
-Domain → Application → infra
-         ↓
-    Presentation
-```
-- 내부 레이어는 외부 레이어를 모름
-- 의존성 역전 원칙(DIP) 적용
-
-### 3. SOLID 원칙
-- **S**ingle Responsibility: 단일 책임
-- **O**pen/Closed: 확장 열림, 수정 닫힘
-- **L**iskov Substitution: 리스코프 치환
-- **I**nterface Segregation: 인터페이스 분리
-- **D**ependency Inversion: 의존성 역전
+> 상세 내용은 `architecture` skill 자동 참조
 
 ## 🎨 코딩 컨벤션
 
-### Kotlin 스타일
-- **네이밍**: camelCase (변수/함수), PascalCase (클래스)
-- **불변성**: val 우선 사용, var는 최소화
-- **Null Safety**: !! 사용 금지, ?. 또는 ?: 활용
-- **함수형**: 고차함수, 람다 적극 활용
+- **Kotlin 스타일**: Trailing comma, runCatching, requireNotNull 사용
+- **네이밍 규칙**: camelCase, PascalCase, snake_case 적절히 사용
+- **코드 품질**: 파일 400줄, 함수 30줄 이하 권장
 
-### 클래스 구조
-```kotlin
-class UserService(
-    private val userRepository: UserRepository,
-    private val passwordEncoder: PasswordEncoder
-) {
-    // 1. 상수
-    companion object {
-        private val logger = KotlinLogging.logger {}
-    }
-    
-    // 2. 주요 비즈니스 메서드
-    fun createUser(request: CreateUserRequest): UserResponse {
-        // 구현
-    }
-    
-    // 3. 보조 private 메서드
-    private fun validateEmail(email: String) {
-        // 구현
-    }
-}
-```
+> 상세 내용은 `code-convention` skill 자동 참조
 
 ## 🧪 테스트 전략
 
-### 테스트 구조 (Kotest BehaviorSpec)
-```kotlin
-class UserServiceTest : BehaviorSpec({
-    val fixture = kotlinFixture()
-    val mockRepository = mockk<UserRepository>()
-    val service = UserService(mockRepository)
-    
-    Given("사용자 생성 요청이 있을 때") {
-        val request = fixture<CreateUserRequest>()
-        every { mockRepository.save(any()) } returns fixture<User>()
-        
-        When("유효한 데이터로 요청하면") {
-            val result = service.createUser(request)
-            
-            Then("사용자가 생성된다") {
-                result shouldNotBe null
-                verify { mockRepository.save(any()) }
-            }
-        }
-    }
-})
-```
+- **Kotest BehaviorSpec** 사용 (Given-When-Then)
+- **테스트 커버리지**: 80% 이상 유지
+- **MockK** 활용한 모킹
 
-### 테스트 커버리지 목표
-- Unit Test: 80% 이상
-- Integration Test: 주요 시나리오 100%
-- E2E Test: Critical Path 100%
+> 상세 테스트 가이드는 `test-guide` skill 자동 참조
 
-## 🔒 보안 체크리스트
+## 🔒 보안 원칙
 
-### API 보안
-- [ ] JWT 토큰 검증
-- [ ] Rate Limiting 적용
-- [ ] SQL Injection 방지 (파라미터 바인딩)
-- [ ] XSS 방지 (입력값 검증)
-- [ ] CSRF 보호
+- **API 보안**: JWT, Rate Limiting, SQL Injection 방지
+- **데이터 보안**: 암호화, 마스킹, 감사 로그
 
-### 데이터 보안
-- [ ] 비밀번호 암호화 (BCrypt)
-- [ ] 민감정보 마스킹
-- [ ] 감사 로그 기록
-- [ ] PII 암호화
+> 상세 체크리스트는 `security-checklist` skill 자동 참조
 
 ## 🚦 Git 워크플로
 
@@ -190,32 +146,12 @@ TYPE: feat|fix|docs|style|refactor|test|chore
 - 쿼리 캐싱 (Redis)
 - Connection Pool 튜닝
 
-### Repository 패턴 가이드
-**🚫 절대 금지:**
-- `@Query` 애노테이션 사용
+## 📊 데이터 액세스
 
-**✅ 권장 방법:**
-1. **Method Naming**: `findByNameAndAge()`, `existsByEmail()` 등 Spring Data 메소드명 규칙
-2. **QueryDSL**: 복잡한 동적 쿼리는 Custom Repository + QueryDSL 구현
-3. **MongoDB**: `findByFieldStartingWith()` 등 Spring Data MongoDB 메소드명 규칙
+- **🚫 @Query 애노테이션 사용 금지**
+- **Method Naming** 또는 **QueryDSL** 사용
 
-**Custom Repository 패턴:**
-```kotlin
-// Interface
-interface UserRepositoryCustom {
-    fun findByComplexCondition(): List<User>
-}
-
-// Implementation  
-@Repository
-class UserRepositoryCustomImpl : QuerydslRepositorySupport(), UserRepositoryCustom {
-    override fun findByComplexCondition(): List<User> = 
-        selectFrom(user).where(...).fetch()
-}
-
-// Main Repository
-interface UserRepository : JpaRepository<User, Long>, UserRepositoryCustom
-```
+> 상세 패턴은 `repository-pattern` skill 자동 참조
 
 ### 애플리케이션
 - Lazy Loading 활용
@@ -237,27 +173,21 @@ logger.error(e) { "에러 발생" }
 - 처리량 (TPS)
 - JVM 메모리
 
-## 🛠️ AI 명령어 레퍼런스
+## 🛠️ AI 워크플로우 명령어
 
-### 도메인 개발
-- `/init-domain [name]` - 새 도메인 초기화
-- `/add-entity [domain] [entity]` - 엔티티 추가
-- `/add-repository [entity]` - 리포지토리 생성
+### 개발 워크플로우
+| 요청 예시 | 설명 |
+|----------|------|
+| "로그인 기능 구현해줘" | 자동으로 spec → plan → 구현 순서 진행 |
+| "스펙 작성해줘" | 요구사항 명세 작성 |
+| "플랜 작성해줘" | 구현 계획 수립 |
+| "코드리뷰 해줘" | 코드 품질 검증 |
 
-### API 개발
-- `/api-create [method] [path]` - API 엔드포인트 생성
-- `/add-validation [dto]` - DTO 검증 추가
-- `/add-swagger [controller]` - Swagger 문서화
-
-### 테스트
-- `/tdd [feature]` - TDD 워크플로 시작
-- `/test-coverage` - 커버리지 체크
-- `/add-test [class]` - 테스트 추가
-
-### 품질 관리
-- `/security-audit` - 보안 검사
-- `/performance-check` - 성능 분석
-- `/code-review` - 코드 리뷰
+### Skills 자동 참조
+- `spec`: 요구사항 명세 작성
+- `plan`: 구현 계획 수립  
+- `implement`: 자동 워크플로우 실행
+- `code-review`: 품질 검증
 
 ## 📚 참고 자료
 
