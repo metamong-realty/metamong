@@ -17,6 +17,7 @@ class MongoPageItemReader<T>(
     private var currentIndex = 0
     private var initialized = false
 
+    @Synchronized
     override fun read(): T? {
         if (!initialized) {
             val totalCount = countFetcher()

@@ -18,4 +18,11 @@ interface ApartmentCodeMappingRepository :
     ): Boolean
 
     fun findAllByComplexId(complexId: Long): List<ApartmentCodeMappingEntity>
+
+    fun findAllByCodeTypeAndCodeValueIn(
+        codeType: ApartmentCodeType,
+        codeValues: Collection<String>,
+    ): List<ApartmentCodeMappingEntity>
+
+    fun findAllByCodeType(codeType: ApartmentCodeType): List<ApartmentCodeMappingEntity>
 }

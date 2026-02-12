@@ -8,15 +8,15 @@ import org.springframework.stereotype.Component
 
 @Component
 class ApartmentMigrationRetryListener : RetryListener {
-
-    override fun <T, E : Throwable> open(context: RetryContext, callback: RetryCallback<T, E>): Boolean {
-        return true
-    }
+    override fun <T, E : Throwable> open(
+        context: RetryContext,
+        callback: RetryCallback<T, E>,
+    ): Boolean = true
 
     override fun <T, E : Throwable> close(
         context: RetryContext,
         callback: RetryCallback<T, E>,
-        throwable: Throwable?
+        throwable: Throwable?,
     ) {
         val retryCount = context.retryCount
         if (retryCount > 0) {
@@ -31,16 +31,16 @@ class ApartmentMigrationRetryListener : RetryListener {
     override fun <T, E : Throwable> onError(
         context: RetryContext,
         callback: RetryCallback<T, E>,
-        throwable: Throwable
+        throwable: Throwable,
     ) {
         val retryCount = context.retryCount
         val maxAttempts = 3 // retryLimit과 동일하게 설정
-        
-        logger.warn { 
-            "재시도 ${retryCount}/${maxAttempts}회 실패: " +
-            "${throwable.javaClass.simpleName} - ${throwable.message}"
+
+        logger.warn {
+            "재시도 $retryCount/${maxAttempts}회 실패: " +
+                "${throwable.javaClass.simpleName} - ${throwable.message}"
         }
-        
+
         // 상세 스택 트레이스는 DEBUG 레벨에서만
         logger.debug(throwable) { "재시도 실패 상세 정보" }
     }

@@ -3,11 +3,11 @@ package com.metamong.batch.jobs.publicdata.sync.reader
 import com.metamong.batch.jobs.publicdata.sync.MigrationMode
 import com.metamong.infra.persistence.repository.mongo.publicdata.ApartmentTradeRawRepository
 import com.metamong.model.document.publicdata.ApartmentTradeRawDocumentEntity
+import jakarta.annotation.PostConstruct
 import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.item.ItemReader
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import jakarta.annotation.PostConstruct
 
 @Component
 @StepScope

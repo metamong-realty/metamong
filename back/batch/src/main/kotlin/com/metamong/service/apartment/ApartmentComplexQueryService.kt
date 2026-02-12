@@ -9,9 +9,9 @@ import com.metamong.infra.persistence.repository.apartment.ApartmentCodeMappingR
 import com.metamong.infra.persistence.repository.apartment.ApartmentComplexRepository
 import com.metamong.infra.persistence.repository.apartment.ApartmentUnitTypeRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.cache.annotation.Cacheable
 import java.math.BigDecimal
 
 @Service
@@ -21,7 +21,6 @@ class ApartmentComplexQueryService(
     private val apartmentCodeMappingRepository: ApartmentCodeMappingRepository,
     private val apartmentUnitTypeRepository: ApartmentUnitTypeRepository,
 ) {
-
     fun getUnmatchedInfoRawComplexes(
         limit: Long,
         offset: Long,
@@ -32,13 +31,18 @@ class ApartmentComplexQueryService(
         offset: Long,
     ): List<ApartmentComplexEntity> = apartmentComplexRepository.findUnmatchedLicenseRawComplexes(limit, offset)
 
-    @Cacheable(value = [CacheType.APARTMENT_SEQUENCE_TO_COMPLEX_ID], key = "#apartmentSequence")
+    @Cacheable(
+        value = [CacheType.APARTMENT_SEQUENCE_TO_COMPLEX_ID],
+        key = "#apartmentSequence",
+        unless = "#result == null",
+    )
     fun getComplexIdByApartmentSequence(apartmentSequence: String): Long? {
-        val result = apartmentCodeMappingRepository
-            .findByCodeTypeAndCodeValue(ApartmentCodeType.APT_SEQ, apartmentSequence)
-            ?.complexId
-        
-        logger.info { "getComplexIdByApartmentSequence - apartmentSequence: $apartmentSequence, result type: ${result?.javaClass?.name}, value: $result" }
+        val result =
+            apartmentCodeMappingRepository
+                .findByCodeTypeAndCodeValue(ApartmentCodeType.APT_SEQ, apartmentSequence)
+                ?.complexId
+
+        logger.debug { "getComplexIdByApartmentSequence - apartmentSequence: $apartmentSequence, result: $result" }
         return result
     }
 
@@ -48,15 +52,23 @@ class ApartmentComplexQueryService(
             apartmentSequence,
         )
 
-    @Cacheable(value = [CacheType.UNIT_TYPE], key = "#complexId + ':' + #exclusiveArea")
+    fun findExistingApartmentSequences(apartmentSequences: Collection<String>): Set<String> {
+        if (apartmentSequences.isEmpty()) return emptySet()
+        return apartmentCodeMappingRepository
+            .findAllByCodeTypeAndCodeValueIn(ApartmentCodeType.APT_SEQ, apartmentSequences)
+            .map { it.codeValue }
+            .toSet()
+    }
+
+    @Cacheable(
+        value = [CacheType.UNIT_TYPE],
+        key = "#complexId + ':' + #exclusiveArea",
+        unless = "#result == null",
+    )
     fun getUnitType(
         complexId: Long,
         exclusiveArea: BigDecimal,
-    ): ApartmentUnitTypeEntity? {
-        return apartmentUnitTypeRepository.findByComplexIdAndExclusiveArea(complexId, exclusiveArea)
-    }
-
-
+    ): ApartmentUnitTypeEntity? = apartmentUnitTypeRepository.findByComplexIdAndExclusiveArea(complexId, exclusiveArea)
 
     fun getUnitTypesByComplexId(complexId: Long): List<ApartmentUnitTypeEntity> = apartmentUnitTypeRepository.findAllByComplexId(complexId)
 

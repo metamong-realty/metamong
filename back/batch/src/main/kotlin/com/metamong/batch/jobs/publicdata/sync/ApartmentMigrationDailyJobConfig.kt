@@ -16,6 +16,7 @@ class ApartmentMigrationDailyJobConfig {
         createComplexFromRentStep: Step,
         matchInfoRawStep: Step,
         matchLicenseRawStep: Step,
+        cacheWarmingStep: Step,
         syncTradeStep: Step,
         syncRentStep: Step,
     ): Job =
@@ -24,6 +25,7 @@ class ApartmentMigrationDailyJobConfig {
             .next(createComplexFromRentStep)
             .next(matchInfoRawStep)
             .next(matchLicenseRawStep)
+            .next(cacheWarmingStep)
             .next(syncTradeStep)
             .next(syncRentStep)
             .build()

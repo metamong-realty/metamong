@@ -10,7 +10,7 @@ sealed class CacheType(
     data object ContentKeywordPattern : CacheType(CONTENT_KEYWORD_PATTERN, Duration.ofDays(1))
 
     data object UnsearchableBoardIds : CacheType(UNSEARCHABLE_BOARD_IDS, Duration.ofHours(1))
-    
+
     data object ApartmentSequenceToComplexId : CacheType(APARTMENT_SEQUENCE_TO_COMPLEX_ID, Duration.ofHours(24))
 
     data object UnitType : CacheType(UNIT_TYPE, Duration.ofHours(24))

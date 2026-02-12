@@ -48,8 +48,8 @@ spring:
           username: ${spring.datasource.aurora.master.hikari.username:}
           password: ${spring.datasource.aurora.master.hikari.password:}
           driver-class-name: com.mysql.cj.jdbc.Driver
-          minimum-idle: 2
-          maximum-pool-size: 10
+          minimum-idle: 10
+          maximum-pool-size: 50
           idle-timeout: 295000
           max-lifetime: 300000
           connection-timeout: 180000
@@ -60,8 +60,8 @@ spring:
           username: ${spring.datasource.aurora.slave.hikari.username:}
           password: ${spring.datasource.aurora.slave.hikari.password:}
           driver-class-name: com.mysql.cj.jdbc.Driver
-          minimum-idle: 2
-          maximum-pool-size: 10
+          minimum-idle: 10
+          maximum-pool-size: 50
           idle-timeout: 295000
           max-lifetime: 300000
           connection-timeout: 180000

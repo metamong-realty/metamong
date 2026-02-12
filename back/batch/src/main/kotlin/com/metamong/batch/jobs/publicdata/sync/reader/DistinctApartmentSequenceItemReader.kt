@@ -12,7 +12,7 @@ import org.springframework.data.domain.Sort
  *
  * 동일한 aptSeq를 가진 거래 데이터가 다수 존재하므로, DISTINCT 처리가 필요함.
  * - 이미 처리한 aptSeq는 스킵 (processedApartmentSequences)
- * - DB에 이미 Complex가 존재하면 스킵 (queryService 조회)
+ * - DB에 이미 Complex가 존재하면 스킵 (페이지 로드 시 배치 조회)
  *
  * 결과적으로 "새로운 Complex를 생성해야 하는" 첫 번째 Raw 데이터만 반환함.
  */
@@ -25,10 +25,10 @@ class DistinctApartmentSequenceItemReader<T>(
     private val mode: MigrationMode,
 ) : ItemReader<T> {
     private var currentPage = 0
-    private var currentPageData: List<T> = emptyList()
-    private var currentIndex = 0
     private val processedApartmentSequences = mutableSetOf<String>()
     private var initialized = false
+    private var filteredItems: MutableList<T> = mutableListOf()
+    private var filteredIndex = 0
 
     override fun read(): T? {
         if (!initialized) {
@@ -38,31 +38,49 @@ class DistinctApartmentSequenceItemReader<T>(
         }
 
         while (true) {
-            if (currentIndex >= currentPageData.size) {
-                val pageable = PageRequest.of(currentPage, PAGE_SIZE, Sort.by("_id"))
-                currentPageData = pageFetcher(pageable)
-                currentIndex = 0
-                currentPage++
-
-                if (currentPageData.isEmpty()) {
-                    return null
-                }
+            // filteredItems에 아직 반환하지 않은 아이템이 있으면 반환
+            if (filteredIndex < filteredItems.size) {
+                return filteredItems[filteredIndex++]
             }
 
-            val item = currentPageData[currentIndex++]
-            val apartmentSequence = apartmentSequenceExtractor(item) ?: continue
+            // 새 페이지 로드 및 배치 필터링
+            val pageable = PageRequest.of(currentPage, PAGE_SIZE, Sort.by("_id"))
+            val pageData = pageFetcher(pageable)
+            currentPage++
 
-            // 이번 배치 실행 중 이미 처리한 aptSeq는 스킵
-            if (processedApartmentSequences.contains(apartmentSequence)) continue
+            if (pageData.isEmpty()) {
+                return null
+            }
 
-            // DB에 이미 Complex가 존재하면 스킵
-            if (queryService.getComplexIdByApartmentSequence(apartmentSequence) != null) {
+            // 페이지 내 모든 고유 aptSeq 수집
+            val pageAptSeqs =
+                pageData
+                    .mapNotNull { apartmentSequenceExtractor(it) }
+                    .filter { !processedApartmentSequences.contains(it) }
+                    .toSet()
+
+            // 1회 배치 DB 조회로 이미 존재하는 aptSeq 확인
+            val existingAptSeqs = queryService.findExistingApartmentSequences(pageAptSeqs)
+            processedApartmentSequences.addAll(existingAptSeqs)
+
+            // 필터링된 아이템 리스트 구성
+            filteredItems = mutableListOf()
+            filteredIndex = 0
+
+            for (item in pageData) {
+                val apartmentSequence = apartmentSequenceExtractor(item) ?: continue
+
+                if (processedApartmentSequences.contains(apartmentSequence)) continue
+
                 processedApartmentSequences.add(apartmentSequence)
-                continue
+                filteredItems.add(item)
             }
 
-            processedApartmentSequences.add(apartmentSequence)
-            return item
+            // filteredItems에 아이템이 있으면 첫 번째 반환
+            if (filteredItems.isNotEmpty()) {
+                return filteredItems[filteredIndex++]
+            }
+            // 없으면 다음 페이지로
         }
     }
 
