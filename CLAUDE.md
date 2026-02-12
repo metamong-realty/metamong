@@ -151,7 +151,7 @@ TYPE: feat|fix|docs|style|refactor|test|chore
 - **🚫 @Query 애노테이션 사용 금지**
 - **Method Naming** 또는 **QueryDSL** 사용
 
-> 상세 패턴은 `repository-pattern` skill 자동 참조
+> 상세 Repository 패턴은 `rules/architecture.md` 자동 참조
 
 ### 애플리케이션
 - Lazy Loading 활용

@@ -148,9 +148,9 @@ logging:
     root: INFO
     com.metamong: DEBUG
     org.springframework.batch: DEBUG
-    com.zaxxer.hikari: DEBUG
+    com.zaxxer.hikari: INFO
     org.springframework.transaction: INFO
-    org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor: DEBUG
+    org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor: INFO
   pattern:
     console: "%d{HH:mm:ss.SSS} [%thread] [%X{dd.trace_id}] [%X{dd.span_id}] [%-5level] [%logger{36}.%M] - [%msg]%n"
 

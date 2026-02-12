@@ -133,7 +133,6 @@ class ApartmentComplexCommandService(
 
         val dbExisting = apartmentUnitTypeRepository.findByComplexIdAndExclusiveArea(complexId, exclusiveArea)
         if (dbExisting != null) {
-            apartmentComplexQueryService.cacheUnitType(dbExisting)
             return dbExisting
         }
 
@@ -147,7 +146,6 @@ class ApartmentComplexCommandService(
 
         return try {
             val saved = apartmentUnitTypeRepository.saveAndFlush(unitType)
-            apartmentComplexQueryService.cacheUnitType(saved)
             logger.debug { "UnitType 생성: complexId=$complexId, area=$exclusiveArea, pyeong=$exclusivePyeong" }
             saved
         } catch (e: DataIntegrityViolationException) {

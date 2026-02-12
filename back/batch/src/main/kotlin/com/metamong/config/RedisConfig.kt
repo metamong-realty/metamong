@@ -1,18 +1,33 @@
 package com.metamong.config
 
+import com.metamong.common.cache.CacheType
 import org.redisson.Redisson
 import org.redisson.api.RedissonClient
 import org.redisson.config.Config
 import org.redisson.spring.data.connection.RedissonConnectionFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.cache.CacheManager
+import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
+import org.springframework.data.redis.cache.RedisCacheConfiguration
+import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer
+import org.springframework.data.redis.serializer.RedisSerializationContext
 import org.springframework.data.redis.serializer.StringRedisSerializer
+import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import java.time.Duration
 
 @Configuration
+@EnableCaching
 @Profile("!test")
 class RedisConfig {
     @Value("\${spring.data.redis.host:localhost}")
@@ -59,5 +74,53 @@ class RedisConfig {
         template.hashKeySerializer = StringRedisSerializer()
         template.hashValueSerializer = StringRedisSerializer()
         return template
+    }
+
+    @Bean
+    fun cacheManager(redisConnectionFactory: RedisConnectionFactory): CacheManager {
+        // 방법 1: JDK Serialization 사용 (타입 완전 보존, 하지만 크기가 큼)
+        val jdkSerializer = JdkSerializationRedisSerializer()
+        
+        // 방법 2: Jackson 개선된 설정 (타입 안전 + 가독성)
+        val objectMapper = ObjectMapper().apply {
+            registerModule(KotlinModule.Builder().build())
+            registerModule(JavaTimeModule())
+            
+            // 타입 정보를 포함하여 직렬화 - 더 안전한 설정
+            activateDefaultTyping(
+                BasicPolymorphicTypeValidator.builder()
+                    .allowIfBaseType(Number::class.java)
+                    .allowIfBaseType(String::class.java)
+                    .allowIfSubType("java.lang.*")
+                    .build(),
+                ObjectMapper.DefaultTyping.EVERYTHING,
+                JsonTypeInfo.As.PROPERTY
+            )
+        }
+        
+        val jsonSerializer = GenericJackson2JsonRedisSerializer(objectMapper)
+        
+        val defaultConfig =
+            RedisCacheConfiguration
+                .defaultCacheConfig()
+                .entryTtl(DEFAULT_TTL)
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jdkSerializer))
+                // Jackson 사용시: .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer))
+
+        val cacheConfigurations =
+            CacheType.entries().associate { cacheType ->
+                cacheType.cacheName to defaultConfig.entryTtl(cacheType.ttl)
+            }
+
+        return RedisCacheManager
+            .builder(redisConnectionFactory)
+            .cacheDefaults(defaultConfig)
+            .withInitialCacheConfigurations(cacheConfigurations)
+            .build()
+    }
+
+    companion object {
+        private val DEFAULT_TTL = Duration.ofHours(24)
     }
 }

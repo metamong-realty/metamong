@@ -1,11 +1,16 @@
 package com.metamong.batch.jobs.publicdata.sync
 
-import com.metamong.batch.jobs.publicdata.sync.reader.RentRawDistinctAptSeqReader
-import com.metamong.batch.jobs.publicdata.sync.reader.RentRawPagingReader
+import com.metamong.batch.jobs.publicdata.sync.listener.ApartmentMigrationStepListener
+import com.metamong.batch.jobs.publicdata.sync.listener.ApartmentMigrationSkipListener
+import com.metamong.batch.jobs.publicdata.sync.listener.ApartmentMigrationRetryListener
+import com.metamong.batch.jobs.publicdata.sync.processor.MatchInfoRawProcessor
 import com.metamong.batch.jobs.publicdata.sync.reader.TradeRawDistinctAptSeqReader
-import com.metamong.batch.jobs.publicdata.sync.reader.TradeRawPagingReader
+import com.metamong.batch.jobs.publicdata.sync.reader.RentRawDistinctAptSeqReader
 import com.metamong.batch.jobs.publicdata.sync.reader.UnmatchedInfoRawComplexReader
 import com.metamong.batch.jobs.publicdata.sync.reader.UnmatchedLicenseRawComplexReader
+import com.metamong.batch.jobs.publicdata.sync.reader.TradeRawPagingReader
+import com.metamong.batch.jobs.publicdata.sync.reader.RentRawPagingReader
+import com.metamong.batch.jobs.publicdata.sync.writer.MatchResultWriter
 import com.metamong.domain.apartment.model.ApartmentComplexEntity
 import com.metamong.domain.apartment.model.ApartmentRentEntity
 import com.metamong.domain.apartment.model.ApartmentTradeEntity
@@ -13,112 +18,81 @@ import com.metamong.model.document.publicdata.ApartmentRentRawDocumentEntity
 import com.metamong.model.document.publicdata.ApartmentTradeRawDocumentEntity
 import com.metamong.service.apartment.dto.ComplexWithApartmentSequence
 import org.springframework.batch.core.Step
-import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemProcessor
-import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.dao.DataAccessException
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.PlatformTransactionManager
 
 @Configuration
 class ApartmentMigrationStepConfig {
-    // ===== Readers =====
-    @Bean
-    @StepScope
-    fun tradeRawDistinctAptSeqReader(
-        tradeRawDistinctAptSeqReader: TradeRawDistinctAptSeqReader,
-        @Value("#{jobParameters['mode']}") modeStr: String?,
-    ): ItemReader<ApartmentTradeRawDocumentEntity> {
-        tradeRawDistinctAptSeqReader.initialize(modeStr)
-        return tradeRawDistinctAptSeqReader
-    }
-
-    @Bean
-    @StepScope
-    fun rentRawDistinctAptSeqReader(
-        rentRawDistinctAptSeqReader: RentRawDistinctAptSeqReader,
-        @Value("#{jobParameters['mode']}") modeStr: String?,
-    ): ItemReader<ApartmentRentRawDocumentEntity> {
-        rentRawDistinctAptSeqReader.initialize(modeStr)
-        return rentRawDistinctAptSeqReader
-    }
-
-    @Bean
-    @StepScope
-    fun unmatchedInfoRawComplexReader(unmatchedInfoRawComplexReader: UnmatchedInfoRawComplexReader): ItemReader<ApartmentComplexEntity> =
-        unmatchedInfoRawComplexReader
-
-    @Bean
-    @StepScope
-    fun unmatchedLicenseRawComplexReader(
-        unmatchedLicenseRawComplexReader: UnmatchedLicenseRawComplexReader,
-    ): ItemReader<ApartmentComplexEntity> = unmatchedLicenseRawComplexReader
-
-    @Bean
-    @StepScope
-    fun tradeRawPagingReader(
-        tradeRawPagingReader: TradeRawPagingReader,
-        @Value("#{jobParameters['mode']}") modeStr: String?,
-    ): ItemReader<ApartmentTradeRawDocumentEntity> {
-        tradeRawPagingReader.initialize(modeStr)
-        return tradeRawPagingReader
-    }
-
-    @Bean
-    @StepScope
-    fun rentRawPagingReader(
-        rentRawPagingReader: RentRawPagingReader,
-        @Value("#{jobParameters['mode']}") modeStr: String?,
-    ): ItemReader<ApartmentRentRawDocumentEntity> {
-        rentRawPagingReader.initialize(modeStr)
-        return rentRawPagingReader
-    }
 
     // ===== Steps =====
     @Bean
     fun createComplexStep(
         jobRepository: JobRepository,
         transactionManager: PlatformTransactionManager,
-        tradeRawDistinctAptSeqReader: ItemReader<ApartmentTradeRawDocumentEntity>,
+        tradeRawDistinctAptSeqReader: TradeRawDistinctAptSeqReader,
         createComplexProcessor: ItemProcessor<ApartmentTradeRawDocumentEntity, ComplexWithApartmentSequence?>,
         complexWriter: ItemWriter<ComplexWithApartmentSequence?>,
+        apartmentMigrationStepListener: ApartmentMigrationStepListener,
+        apartmentMigrationSkipListener: ApartmentMigrationSkipListener,
+        apartmentMigrationRetryListener: ApartmentMigrationRetryListener,
     ): Step =
         StepBuilder("createComplexStep", jobRepository)
-            .chunk<ApartmentTradeRawDocumentEntity, ComplexWithApartmentSequence?>(CHUNK_SIZE, transactionManager)
+            .chunk<ApartmentTradeRawDocumentEntity, ComplexWithApartmentSequence?>(COMPLEX_CHUNK_SIZE, transactionManager)
             .reader(tradeRawDistinctAptSeqReader)
             .processor(createComplexProcessor)
             .writer(complexWriter)
+            .faultTolerant()
+            .skipLimit(100)
+            .skip(DataAccessException::class.java)
+            .skip(IllegalArgumentException::class.java)
+            .retryLimit(3)
+            .retry(DataAccessException::class.java)
+            .listener(apartmentMigrationStepListener)
+            .listener(apartmentMigrationSkipListener)
+            .listener(apartmentMigrationRetryListener)
             .build()
 
     @Bean
     fun createComplexFromRentStep(
         jobRepository: JobRepository,
         transactionManager: PlatformTransactionManager,
-        rentRawDistinctAptSeqReader: ItemReader<ApartmentRentRawDocumentEntity>,
+        rentRawDistinctAptSeqReader: RentRawDistinctAptSeqReader,
         createComplexFromRentProcessor: ItemProcessor<ApartmentRentRawDocumentEntity, ComplexWithApartmentSequence?>,
         complexWriter: ItemWriter<ComplexWithApartmentSequence?>,
+        apartmentMigrationSkipListener: ApartmentMigrationSkipListener,
+        apartmentMigrationRetryListener: ApartmentMigrationRetryListener,
     ): Step =
         StepBuilder("createComplexFromRentStep", jobRepository)
-            .chunk<ApartmentRentRawDocumentEntity, ComplexWithApartmentSequence?>(CHUNK_SIZE, transactionManager)
+            .chunk<ApartmentRentRawDocumentEntity, ComplexWithApartmentSequence?>(COMPLEX_CHUNK_SIZE, transactionManager)
             .reader(rentRawDistinctAptSeqReader)
             .processor(createComplexFromRentProcessor)
             .writer(complexWriter)
+            .faultTolerant()
+            .skipLimit(100)
+            .skip(DataAccessException::class.java)
+            .skip(IllegalArgumentException::class.java)
+            .retryLimit(3)
+            .retry(DataAccessException::class.java)
+            .listener(apartmentMigrationSkipListener)
+            .listener(apartmentMigrationRetryListener)
             .build()
 
     @Bean
     fun matchInfoRawStep(
         jobRepository: JobRepository,
         transactionManager: PlatformTransactionManager,
-        unmatchedInfoRawComplexReader: ItemReader<ApartmentComplexEntity>,
-        matchInfoRawProcessor: ItemProcessor<ApartmentComplexEntity, Boolean>,
-        matchResultWriter: ItemWriter<Boolean>,
+        unmatchedInfoRawComplexReader: UnmatchedInfoRawComplexReader,
+        matchInfoRawProcessor: MatchInfoRawProcessor,
+        matchResultWriter: MatchResultWriter,
     ): Step =
         StepBuilder("matchInfoRawStep", jobRepository)
-            .chunk<ApartmentComplexEntity, Boolean>(CHUNK_SIZE, transactionManager)
+            .chunk<ApartmentComplexEntity, Boolean>(MATCH_CHUNK_SIZE, transactionManager)
             .reader(unmatchedInfoRawComplexReader)
             .processor(matchInfoRawProcessor)
             .writer(matchResultWriter)
@@ -128,12 +102,12 @@ class ApartmentMigrationStepConfig {
     fun matchLicenseRawStep(
         jobRepository: JobRepository,
         transactionManager: PlatformTransactionManager,
-        unmatchedLicenseRawComplexReader: ItemReader<ApartmentComplexEntity>,
+        unmatchedLicenseRawComplexReader: UnmatchedLicenseRawComplexReader,
         matchLicenseRawProcessor: ItemProcessor<ApartmentComplexEntity, Boolean>,
-        matchResultWriter: ItemWriter<Boolean>,
+        matchResultWriter: MatchResultWriter,
     ): Step =
         StepBuilder("matchLicenseRawStep", jobRepository)
-            .chunk<ApartmentComplexEntity, Boolean>(CHUNK_SIZE, transactionManager)
+            .chunk<ApartmentComplexEntity, Boolean>(MATCH_CHUNK_SIZE, transactionManager)
             .reader(unmatchedLicenseRawComplexReader)
             .processor(matchLicenseRawProcessor)
             .writer(matchResultWriter)
@@ -143,33 +117,56 @@ class ApartmentMigrationStepConfig {
     fun syncTradeStep(
         jobRepository: JobRepository,
         transactionManager: PlatformTransactionManager,
-        tradeRawPagingReader: ItemReader<ApartmentTradeRawDocumentEntity>,
+        tradeRawPagingReader: TradeRawPagingReader,
         syncTradeProcessor: ItemProcessor<ApartmentTradeRawDocumentEntity, ApartmentTradeEntity?>,
         tradeWriter: ItemWriter<ApartmentTradeEntity?>,
+        apartmentMigrationSkipListener: ApartmentMigrationSkipListener,
+        apartmentMigrationRetryListener: ApartmentMigrationRetryListener,
     ): Step =
         StepBuilder("syncTradeStep", jobRepository)
-            .chunk<ApartmentTradeRawDocumentEntity, ApartmentTradeEntity?>(CHUNK_SIZE, transactionManager)
+            .chunk<ApartmentTradeRawDocumentEntity, ApartmentTradeEntity?>(SYNC_CHUNK_SIZE, transactionManager)
             .reader(tradeRawPagingReader)
             .processor(syncTradeProcessor)
             .writer(tradeWriter)
+            .faultTolerant()
+            .skipLimit(200)
+            .skip(DataAccessException::class.java)
+            .skip(IllegalArgumentException::class.java)
+            .retryLimit(3)
+            .retry(DataAccessException::class.java)
+            .listener(apartmentMigrationSkipListener)
+            .listener(apartmentMigrationRetryListener)
             .build()
 
     @Bean
     fun syncRentStep(
         jobRepository: JobRepository,
         transactionManager: PlatformTransactionManager,
-        rentRawPagingReader: ItemReader<ApartmentRentRawDocumentEntity>,
+        rentRawPagingReader: RentRawPagingReader,
         syncRentProcessor: ItemProcessor<ApartmentRentRawDocumentEntity, ApartmentRentEntity?>,
         rentWriter: ItemWriter<ApartmentRentEntity?>,
+        apartmentMigrationSkipListener: ApartmentMigrationSkipListener,
+        apartmentMigrationRetryListener: ApartmentMigrationRetryListener,
     ): Step =
         StepBuilder("syncRentStep", jobRepository)
-            .chunk<ApartmentRentRawDocumentEntity, ApartmentRentEntity?>(CHUNK_SIZE, transactionManager)
+            .chunk<ApartmentRentRawDocumentEntity, ApartmentRentEntity?>(SYNC_CHUNK_SIZE, transactionManager)
             .reader(rentRawPagingReader)
             .processor(syncRentProcessor)
             .writer(rentWriter)
+            .faultTolerant()
+            .skipLimit(200)
+            .skip(DataAccessException::class.java)
+            .skip(IllegalArgumentException::class.java)
+            .retryLimit(3)
+            .retry(DataAccessException::class.java)
+            .listener(apartmentMigrationSkipListener)
+            .listener(apartmentMigrationRetryListener)
             .build()
 
     companion object {
-        private const val CHUNK_SIZE = 500
+        // Step별 최적화된 CHUNK_SIZE
+        private const val COMPLEX_CHUNK_SIZE = 200  // DB 조회 많음
+        private const val SYNC_CHUNK_SIZE = 1000    // 단순 배치 인서트
+        private const val MATCH_CHUNK_SIZE = 300    // 중간 복잡도
     }
 }

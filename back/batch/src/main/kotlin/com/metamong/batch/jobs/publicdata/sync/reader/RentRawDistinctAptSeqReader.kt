@@ -4,19 +4,24 @@ import com.metamong.batch.jobs.publicdata.sync.MigrationMode
 import com.metamong.infra.persistence.repository.mongo.publicdata.ApartmentRentRawRepository
 import com.metamong.model.document.publicdata.ApartmentRentRawDocumentEntity
 import com.metamong.service.apartment.ApartmentComplexQueryService
+import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.item.ItemReader
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import jakarta.annotation.PostConstruct
 
 @Component
+@StepScope
 class RentRawDistinctAptSeqReader(
     private val apartmentRentRawRepository: ApartmentRentRawRepository,
     private val apartmentComplexQueryService: ApartmentComplexQueryService,
+    @Value("#{jobParameters['mode']}") private val modeStr: String?,
     @Value("\${job.migration.mode:FULL}") private val defaultModeStr: String,
 ) : ItemReader<ApartmentRentRawDocumentEntity> {
     private var delegate: DistinctApartmentSequenceItemReader<ApartmentRentRawDocumentEntity>? = null
 
-    fun initialize(modeStr: String?) {
+    @PostConstruct
+    fun initialize() {
         val mode = MigrationMode.fromString(modeStr ?: defaultModeStr)
         val cutoffDate = mode.getCutoffDate()
 

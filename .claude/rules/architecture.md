@@ -59,6 +59,7 @@ data class Email(
 - Aggregate 단위로 생성
 - Collection처럼 동작
 
+#### 기본 JPA Repository 패턴
 ```kotlin
 // Domain Layer
 interface UserRepository {
@@ -77,6 +78,52 @@ class UserRepositoryImpl(
     override fun findByEmail(email: String) = jpaRepository.findByEmail(email)
 }
 ```
+
+#### 배치 처리 최적화 Repository 패턴
+일반적인 CRUD와 배치 처리는 기본 JPA Repository로 충분:
+
+```kotlin
+// 기본 JPA Repository 사용
+interface ApartmentComplexRepository : JpaRepository<ApartmentComplexEntity, Long>
+
+@Service
+class ApartmentComplexCommandService(
+    private val apartmentComplexRepository: ApartmentComplexRepository
+) {
+    fun saveComplexes(entities: List<ApartmentComplexEntity>): List<ApartmentComplexEntity> {
+        // JPA saveAll + application.yml의 batch_size: 100 설정으로 배치 최적화
+        return apartmentComplexRepository.saveAll(entities)
+    }
+}
+```
+
+#### JDBC Repository 패턴 (특수 경우만)
+특별한 요구사항이 있을 때만 사용하며, 구현체는 JPA Repository를 주입받아 활용:
+
+```kotlin
+// 인터페이스 정의 (특수 요구사항용)
+interface ApartmentComplexJdbcRepository {
+    fun batchInsert(entities: List<ApartmentComplexEntity>): List<ApartmentComplexEntity>
+}
+
+// 구현체는 JPA Repository를 주입받아 활용
+@Repository
+class ApartmentComplexJdbcRepositoryImpl(
+    private val apartmentComplexRepository: ApartmentComplexRepository  // JPA Repository 주입
+) : ApartmentComplexJdbcRepository {
+    
+    override fun batchInsert(entities: List<ApartmentComplexEntity>): List<ApartmentComplexEntity> {
+        // 특별한 요구사항이 없다면 JPA saveAll 사용
+        // JPA가 ID 자동 할당 + 배치 처리 제공하므로 복잡한 재조회 로직 불필요
+        return apartmentComplexRepository.saveAll(entities)
+    }
+}
+```
+
+**배치 처리 최적화 포인트:**
+- **JPA saveAll**: application.yml의 `batch_size: 100` 설정으로 배치 최적화
+- **ID 자동 할당**: JPA가 자동으로 처리하므로 재조회 불필요
+- **JDBC Repository 회피**: 대부분의 경우 JPA로 충분한 성능 확보 가능
 
 ## Clean Architecture 레이어 규칙
 
