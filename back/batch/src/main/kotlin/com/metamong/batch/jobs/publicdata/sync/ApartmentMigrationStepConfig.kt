@@ -22,6 +22,8 @@ import com.metamong.model.document.publicdata.ApartmentRentRawDocumentEntity
 import com.metamong.model.document.publicdata.ApartmentTradeRawDocumentEntity
 import com.metamong.service.apartment.dto.ComplexWithApartmentSequence
 import org.springframework.batch.core.Step
+import org.springframework.batch.core.job.builder.FlowBuilder
+import org.springframework.batch.core.job.flow.Flow
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemProcessor
@@ -194,9 +196,50 @@ class ApartmentMigrationStepConfig {
             .tasklet(cacheWarmingTasklet, transactionManager)
             .build()
 
+    // ===== Parallel Flows =====
+    @Bean
+    fun parallelFlowTaskExecutor(): TaskExecutor {
+        val executor = ThreadPoolTaskExecutor()
+        executor.corePoolSize = 2
+        executor.maxPoolSize = 2
+        executor.setThreadNamePrefix("parallel-flow-")
+        executor.setWaitForTasksToCompleteOnShutdown(true)
+        executor.setAwaitTerminationSeconds(30)
+        executor.initialize()
+        return executor
+    }
+
+    @Bean
+    fun matchParallelFlow(
+        matchInfoRawStep: Step,
+        matchLicenseRawStep: Step,
+        parallelFlowTaskExecutor: TaskExecutor,
+    ): Flow =
+        FlowBuilder<Flow>("matchParallelFlow")
+            .split(parallelFlowTaskExecutor)
+            .add(
+                FlowBuilder<Flow>("matchInfoFlow").start(matchInfoRawStep).build(),
+                FlowBuilder<Flow>("matchLicenseFlow").start(matchLicenseRawStep).build(),
+            )
+            .build()
+
+    @Bean
+    fun syncParallelFlow(
+        syncTradeStep: Step,
+        syncRentStep: Step,
+        parallelFlowTaskExecutor: TaskExecutor,
+    ): Flow =
+        FlowBuilder<Flow>("syncParallelFlow")
+            .split(parallelFlowTaskExecutor)
+            .add(
+                FlowBuilder<Flow>("syncTradeFlow").start(syncTradeStep).build(),
+                FlowBuilder<Flow>("syncRentFlow").start(syncRentStep).build(),
+            )
+            .build()
+
     companion object {
         // Step별 최적화된 CHUNK_SIZE
-        private const val COMPLEX_CHUNK_SIZE = 200 // DB 조회 많음
+        private const val COMPLEX_CHUNK_SIZE = 300 // DB 조회 많음
         private const val SYNC_CHUNK_SIZE = 1000 // 단순 배치 인서트
         private const val MATCH_CHUNK_SIZE = 300 // 중간 복잡도
     }
