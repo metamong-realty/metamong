@@ -6,7 +6,9 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.mongodb.repository.MongoRepository
 import java.time.LocalDateTime
 
-interface ApartmentTradeRawRepository : MongoRepository<ApartmentTradeRawDocumentEntity, String> {
+interface ApartmentTradeRawRepository :
+    MongoRepository<ApartmentTradeRawDocumentEntity, String>,
+    ApartmentTradeRawRepositoryCustom {
     fun findAllBy(pageable: Pageable): Page<ApartmentTradeRawDocumentEntity>
 
     fun findByCollectedAtGreaterThanEqual(

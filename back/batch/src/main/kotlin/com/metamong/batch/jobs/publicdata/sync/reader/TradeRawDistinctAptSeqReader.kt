@@ -1,5 +1,6 @@
 package com.metamong.batch.jobs.publicdata.sync.reader
 
+import com.metamong.batch.jobs.publicdata.sync.DealYearMonthRange
 import com.metamong.batch.jobs.publicdata.sync.MigrationMode
 import com.metamong.infra.persistence.repository.mongo.publicdata.ApartmentTradeRawRepository
 import com.metamong.model.document.publicdata.ApartmentTradeRawDocumentEntity
@@ -17,6 +18,8 @@ class TradeRawDistinctAptSeqReader(
     private val apartmentComplexQueryService: ApartmentComplexQueryService,
     @Value("#{jobParameters['mode']}") private val modeStr: String?,
     @Value("\${job.migration.mode:FULL}") private val defaultModeStr: String,
+    @Value("#{jobParameters['startYearMonth']}") private val startYearMonth: String?,
+    @Value("#{jobParameters['endYearMonth']}") private val endYearMonth: String?,
 ) : ItemReader<ApartmentTradeRawDocumentEntity> {
     private var delegate: DistinctApartmentSequenceItemReader<ApartmentTradeRawDocumentEntity>? = null
 
@@ -24,21 +27,26 @@ class TradeRawDistinctAptSeqReader(
     fun initialize() {
         val mode = MigrationMode.fromString(modeStr ?: defaultModeStr)
         val cutoffDate = mode.getCutoffDate()
+        val yearMonthRange = DealYearMonthRange.of(startYearMonth, endYearMonth)
 
         delegate =
             DistinctApartmentSequenceItemReader(
                 countFetcher = {
-                    if (cutoffDate != null) {
-                        apartmentTradeRawRepository.countByCollectedAtGreaterThanEqual(cutoffDate)
-                    } else {
-                        apartmentTradeRawRepository.count()
+                    when {
+                        yearMonthRange != null -> apartmentTradeRawRepository.countByDealYearMonthRange(yearMonthRange.buildCriteria())
+                        cutoffDate != null -> apartmentTradeRawRepository.countByCollectedAtGreaterThanEqual(cutoffDate)
+                        else -> apartmentTradeRawRepository.count()
                     }
                 },
                 pageFetcher = { pageable ->
-                    if (cutoffDate != null) {
-                        apartmentTradeRawRepository.findByCollectedAtGreaterThanEqual(cutoffDate, pageable).content
-                    } else {
-                        apartmentTradeRawRepository.findAllBy(pageable).content
+                    when {
+                        yearMonthRange != null ->
+                            apartmentTradeRawRepository.findByDealYearMonthRange(
+                                yearMonthRange.buildCriteria(),
+                                pageable,
+                            )
+                        cutoffDate != null -> apartmentTradeRawRepository.findByCollectedAtGreaterThanEqual(cutoffDate, pageable).content
+                        else -> apartmentTradeRawRepository.findAllBy(pageable).content
                     }
                 },
                 queryService = apartmentComplexQueryService,
