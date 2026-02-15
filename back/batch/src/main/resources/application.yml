@@ -38,15 +38,15 @@ spring:
     document:
       database: metamong
       primary:
-        uri: ${database.document.primary.uri}
+        uri: ${MONGO_PRIMARY_URL}
       secondary:
-        uri: ${database.document.secondary.uri}
+        uri: ${MONGO_SECONDARY_URL}
     aurora:
       master:
         hikari:
-          jdbc-url: ${spring.datasource.aurora.master.hikari.jdbc-url:}
-          username: ${spring.datasource.aurora.master.hikari.username:}
-          password: ${spring.datasource.aurora.master.hikari.password:}
+          jdbc-url: ${JDBC_URL:}
+          username: ${MYSQL_USERNAME:}
+          password: ${MYSQL_PASSWORD:}
           driver-class-name: com.mysql.cj.jdbc.Driver
           minimum-idle: 10
           maximum-pool-size: 50
@@ -91,56 +91,25 @@ spring:
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
 
+## Public Data API Configuration
+#public-data:
+#  api:
+#    base-url: ${PUBLIC_DATA_API_URL:https://apis.data.go.kr}
+#    service-key: ${PUBLIC_DATA_SERVICE_KEY:your-service-key}
+#    timeout: 30000
+#    retry-count: 3
 
+## Batch Job Scheduling
+#batch:
+#  scheduling:
+#    enabled: ${BATCH_SCHEDULING_ENABLED:true}
+#    cron:
+#      daily-job: "0 0 2 * * ?" # 매일 오전 2시
+#      weekly-job: "0 0 3 * * 1" # 매주 월요일 오전 3시
 
-# OpenSearch Configuration
-opensearch:
-  host: ${OPENSEARCH_HOST:localhost}
-  port: ${OPENSEARCH_PORT:9200}
-  username: ${OPENSEARCH_USERNAME:}
-  password: ${OPENSEARCH_PASSWORD:}
-  connect-to-live-seconds: 60
-  index:
-    board-contents: board_contents
-    user-tag-histories: user_tag_histories
-    displays: displays
-    users: users
-    reviews: product_reviews
-
-# Firebase Configuration
-firebase:
-  fcm:
-    account-key: ${FIREBASE_FCM_ACCOUNT_KEY:}
-
-# AWS Configuration
-aws:
-  s3:
-    access-key: ${AWS_S3_ACCESS_KEY:}
-    secret-key: ${AWS_S3_SECRET_KEY:}
-    bucket: ${AWS_S3_BUCKET:metamong-storage}
-    region: ${AWS_REGION:ap-northeast-2}
-  bedrock:
-    region: ${AWS_BEDROCK_REGION:us-east-1}
-
-# Public Data API Configuration
-public-data:
-  api:
-    base-url: ${PUBLIC_DATA_API_URL:https://apis.data.go.kr}
-    service-key: ${PUBLIC_DATA_SERVICE_KEY:your-service-key}
-    timeout: 30000
-    retry-count: 3
-
-# Batch Job Scheduling
-batch:
-  scheduling:
-    enabled: ${BATCH_SCHEDULING_ENABLED:true}
-    cron:
-      daily-job: "0 0 2 * * ?" # 매일 오전 2시
-      weekly-job: "0 0 3 * * 1" # 매주 월요일 오전 3시
-
-# Job Configuration
-job:
-  restart-execution-id: ${JOB_RESTART_EXECUTION_ID:0}
+## Job Configuration
+#job:
+#  restart-execution-id: ${JOB_RESTART_EXECUTION_ID:0}
 
 # Logging Configuration
 logging:

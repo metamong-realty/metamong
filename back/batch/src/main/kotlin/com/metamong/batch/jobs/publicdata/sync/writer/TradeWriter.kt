@@ -14,6 +14,11 @@ class TradeWriter(
     override fun write(chunk: Chunk<out ApartmentTradeEntity?>) {
         val validItems = chunk.items.filterNotNull()
         if (validItems.isNotEmpty()) {
+            val first = validItems.first()
+            logger.info {
+                "Trade 동기화 시작: contractYear=${first.contractYear}, contractMonth=${first.contractMonth}, " +
+                    "rawId=${first.rawId}, 총 ${validItems.size}건"
+            }
             val count = apartmentTradeSyncService.batchUpsertTrades(validItems)
             logger.info { "Trade 동기화 완료: ${count}건" }
         }

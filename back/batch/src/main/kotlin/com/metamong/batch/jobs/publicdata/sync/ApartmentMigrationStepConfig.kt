@@ -220,8 +220,7 @@ class ApartmentMigrationStepConfig {
             .add(
                 FlowBuilder<Flow>("matchInfoFlow").start(matchInfoRawStep).build(),
                 FlowBuilder<Flow>("matchLicenseFlow").start(matchLicenseRawStep).build(),
-            )
-            .build()
+            ).build()
 
     @Bean
     fun syncParallelFlow(
@@ -234,8 +233,7 @@ class ApartmentMigrationStepConfig {
             .add(
                 FlowBuilder<Flow>("syncTradeFlow").start(syncTradeStep).build(),
                 FlowBuilder<Flow>("syncRentFlow").start(syncRentStep).build(),
-            )
-            .build()
+            ).build()
 
     companion object {
         // Step별 최적화된 CHUNK_SIZE
