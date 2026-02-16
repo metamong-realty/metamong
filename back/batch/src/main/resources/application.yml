@@ -15,8 +15,7 @@ spring:
     job:
       enabled: false  # Disable auto job execution
     jdbc:
-      initialize-schema: ALWAYS
-      schema: classpath:org/springframework/batch/core/schema-mysql.sql
+      initialize-schema: never
       
   # Spring Task Configuration
   task:
@@ -56,9 +55,9 @@ spring:
           connection-test-query: select 1
       slave:
         hikari:
-          jdbc-url: ${spring.datasource.aurora.slave.hikari.jdbc-url:}
-          username: ${spring.datasource.aurora.slave.hikari.username:}
-          password: ${spring.datasource.aurora.slave.hikari.password:}
+          jdbc-url: ${JDBC_URL:}
+          username: ${MYSQL_USERNAME:}
+          password: ${MYSQL_PASSWORD:}
           driver-class-name: com.mysql.cj.jdbc.Driver
           minimum-idle: 10
           maximum-pool-size: 50
