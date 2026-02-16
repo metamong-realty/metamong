@@ -59,8 +59,8 @@ spring:
           username: ${MYSQL_USERNAME:}
           password: ${MYSQL_PASSWORD:}
           driver-class-name: com.mysql.cj.jdbc.Driver
-          minimum-idle: 10
-          maximum-pool-size: 50
+          minimum-idle: 2
+          maximum-pool-size: 10
           idle-timeout: 295000
           max-lifetime: 300000
           connection-timeout: 180000
@@ -110,8 +110,8 @@ public-data:
 logging:
   level:
     root: INFO
-    com.metamong: DEBUG
-    org.springframework.batch: DEBUG
+    com.metamong: INFO
+    org.springframework.batch: INFO
     com.zaxxer.hikari: INFO
     org.springframework.transaction: INFO
     org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor: INFO
