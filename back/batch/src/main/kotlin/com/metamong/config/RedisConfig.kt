@@ -30,22 +30,16 @@ import java.time.Duration
 @EnableCaching
 @Profile("!test")
 class RedisConfig {
-    @Value("\${spring.data.redis.host:localhost}")
-    private lateinit var host: String
-
-    @Value("\${spring.data.redis.port:6379}")
-    private var port: Int = 6379
-
-    @Value("\${spring.data.redis.password:}")
-    private var password: String? = null
+    @Value("\${spring.data.redis.url:redis://localhost:6379}")
+    private lateinit var redisUrl: String
 
     @Bean(destroyMethod = "shutdown")
     fun redissonClient(): RedissonClient {
         val config = Config()
-        val address = "redis://$host:$port"
+        val uri = java.net.URI(redisUrl)
 
         config.useSingleServer().apply {
-            setAddress(address)
+            setAddress("redis://${uri.host}:${uri.port}")
             setConnectionMinimumIdleSize(2)
             setConnectionPoolSize(10)
             setConnectTimeout(10000)
@@ -53,9 +47,12 @@ class RedisConfig {
             setRetryAttempts(3)
             setRetryInterval(1500)
 
-            // 비밀번호가 있는 경우에만 설정
-            if (!password.isNullOrEmpty()) {
-                setPassword(password)
+            // URL에 비밀번호가 포함된 경우 설정 (redis://:password@host:port)
+            uri.userInfo?.let { userInfo ->
+                val password = if (userInfo.contains(":")) userInfo.substringAfter(":") else userInfo
+                if (password.isNotEmpty()) {
+                    setPassword(password)
+                }
             }
         }
 
