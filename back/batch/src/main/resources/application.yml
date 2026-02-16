@@ -89,10 +89,8 @@ spring:
       url: ${REDIS_URL}
 
 ## Public Data API Configuration
-#public-data:
-#  api:
-#    base-url: ${PUBLIC_DATA_API_URL:https://apis.data.go.kr}
-#    service-key: ${PUBLIC_DATA_SERVICE_KEY:your-service-key}
+public-data:
+  service-key: ${PUBLIC_DATA_SERVICE_KEY:}
 #    timeout: 30000
 #    retry-count: 3
 
