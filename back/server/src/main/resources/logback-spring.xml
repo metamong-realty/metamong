@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 일반 로그: 읽기 좋은 텍스트 -->
+    <appender name="STDOUT_TEXT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>[%-5level] [%logger{36}.%M] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- RequestBodyAdvice 전용: 내가 만든 JSON 그대로 출력 -->
+    <appender name="REQ_RAW" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- requestLogger는 REQ_RAW만 타게(additivity=false) -->
+    <logger name="requestLogger" level="INFO" additivity="false">
+        <appender-ref ref="REQ_RAW"/>
+    </logger>
+
+    <!-- 기본 로그는 텍스트 -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT_TEXT"/>
+    </root>
+</configuration>
