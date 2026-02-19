@@ -20,7 +20,6 @@ class ApartmentTradeSyncService(
     private val apartmentTradeRepository: ApartmentTradeRepository,
     private val apartmentRentRepository: ApartmentRentRepository,
     private val apartmentComplexQueryService: ApartmentComplexQueryService,
-    private val apartmentComplexCommandService: ApartmentComplexCommandService,
 ) {
     fun buildTradeFromRaw(tradeRaw: ApartmentTradeRawDocumentEntity): ApartmentTradeEntity? {
         val rawId = tradeRaw.id ?: return null
@@ -85,7 +84,12 @@ class ApartmentTradeSyncService(
             return null
         }
 
-        return apartmentComplexCommandService.createOrGetUnitType(complexId, exclusiveArea).id
+        val unitType = apartmentComplexQueryService.getUnitType(complexId, exclusiveArea)
+        if (unitType == null) {
+            logger.warn { "UnitType 없음: complexId=$complexId, area=$exclusiveArea, rawId=$rawId" }
+            return null
+        }
+        return unitType.id
     }
 
     private fun parseContractInfo(

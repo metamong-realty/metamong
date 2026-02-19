@@ -18,6 +18,7 @@ class ApartmentMigrationDailyJobConfig {
         createComplexFromRentStep: Step,
         matchParallelFlow: Flow,
         cacheWarmingStep: Step,
+        createUnitTypeStep: Step,
         syncParallelFlow: Flow,
     ): Job {
         val createComplexFlow =
@@ -30,6 +31,7 @@ class ApartmentMigrationDailyJobConfig {
             .start(createComplexFlow)
             .next(matchParallelFlow)
             .next(cacheWarmingStep)
+            .next(createUnitTypeStep)
             .next(syncParallelFlow)
             .end()
             .build()

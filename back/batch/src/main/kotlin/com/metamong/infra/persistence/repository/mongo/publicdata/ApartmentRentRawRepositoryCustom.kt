@@ -11,4 +11,6 @@ interface ApartmentRentRawRepositoryCustom {
     ): List<ApartmentRentRawDocumentEntity>
 
     fun countByDealYearMonthRange(criteria: Criteria): Long
+
+    fun findDistinctAptSeqAndExcluUseAr(): List<Pair<String, String>>
 }

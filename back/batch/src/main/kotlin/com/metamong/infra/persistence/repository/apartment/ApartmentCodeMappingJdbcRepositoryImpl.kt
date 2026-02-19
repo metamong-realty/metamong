@@ -29,6 +29,6 @@ class ApartmentCodeMappingJdbcRepositoryImpl(
             }
 
         val results = jdbcTemplate.batchUpdate(sql, batchArgs)
-        return results.sum()
+        return results.count { it != java.sql.Statement.EXECUTE_FAILED }
     }
 }

@@ -71,56 +71,56 @@ class ApartmentComplexCommandService(
         return apartmentCodeMappingRepository.save(mapping)
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    fun createOrGetUnitType(
-        complexId: Long,
-        exclusiveArea: BigDecimal,
-    ): ApartmentUnitTypeEntity {
-        val cacheKey = "$complexId:$exclusiveArea"
-
-        // L1: JVM 메모리 캐시
-        unitTypeLocalCache[cacheKey]?.let { return it }
-
-        // L2: Redis 캐시 (@Cacheable)
-        val existing = apartmentComplexQueryService.getUnitType(complexId, exclusiveArea)
-        if (existing != null) {
-            unitTypeLocalCache[cacheKey] = existing
-            return existing
-        }
-
-        // DB 직접 조회
-        val dbExisting = apartmentUnitTypeRepository.findByComplexIdAndExclusiveArea(complexId, exclusiveArea)
-        if (dbExisting != null) {
-            unitTypeLocalCache[cacheKey] = dbExisting
-            putUnitTypeCache(cacheKey, dbExisting)
-            return dbExisting
-        }
-
-        // 신규 생성
-        val exclusivePyeong = AreaConverter.toPyeong(exclusiveArea)
-        val unitType =
-            ApartmentUnitTypeEntity.create(
-                complexId = complexId,
-                exclusiveArea = exclusiveArea,
-                exclusivePyeong = exclusivePyeong,
-            )
-
-        return try {
-            val saved = apartmentUnitTypeRepository.saveAndFlush(unitType)
-            logger.debug { "UnitType 생성: complexId=$complexId, area=$exclusiveArea, pyeong=$exclusivePyeong" }
-            unitTypeLocalCache[cacheKey] = saved
-            putUnitTypeCache(cacheKey, saved)
-            saved
-        } catch (e: DataIntegrityViolationException) {
-            logger.debug { "UnitType 중복, 재조회: complexId=$complexId, area=$exclusiveArea" }
-            val found =
-                apartmentUnitTypeRepository.findByComplexIdAndExclusiveArea(complexId, exclusiveArea)
-                    ?: throw e
-            unitTypeLocalCache[cacheKey] = found
-            putUnitTypeCache(cacheKey, found)
-            found
-        }
-    }
+//    @Transactional(propagation = Propagation.REQUIRES_NEW)
+//    fun createOrGetUnitType(
+//        complexId: Long,
+//        exclusiveArea: BigDecimal,
+//    ): ApartmentUnitTypeEntity {
+//        val cacheKey = "$complexId:$exclusiveArea"
+//
+//        // L1: JVM 메모리 캐시
+//        unitTypeLocalCache[cacheKey]?.let { return it }
+//
+//        // L2: Redis 캐시 (@Cacheable)
+//        val existing = apartmentComplexQueryService.getUnitType(complexId, exclusiveArea)
+//        if (existing != null) {
+//            unitTypeLocalCache[cacheKey] = existing
+//            return existing
+//        }
+//
+//        // DB 직접 조회
+//        val dbExisting = apartmentUnitTypeRepository.findByComplexIdAndExclusiveArea(complexId, exclusiveArea)
+//        if (dbExisting != null) {
+//            unitTypeLocalCache[cacheKey] = dbExisting
+//            putUnitTypeCache(cacheKey, dbExisting)
+//            return dbExisting
+//        }
+//
+//        // 신규 생성
+//        val exclusivePyeong = AreaConverter.toPyeong(exclusiveArea)
+//        val unitType =
+//            ApartmentUnitTypeEntity.create(
+//                complexId = complexId,
+//                exclusiveArea = exclusiveArea,
+//                exclusivePyeong = exclusivePyeong,
+//            )
+//
+//        return try {
+//            val saved = apartmentUnitTypeRepository.saveAndFlush(unitType)
+//            logger.debug { "UnitType 생성: complexId=$complexId, area=$exclusiveArea, pyeong=$exclusivePyeong" }
+//            unitTypeLocalCache[cacheKey] = saved
+//            putUnitTypeCache(cacheKey, saved)
+//            saved
+//        } catch (e: DataIntegrityViolationException) {
+//            logger.debug { "UnitType 중복, 재조회: complexId=$complexId, area=$exclusiveArea" }
+//            val found =
+//                apartmentUnitTypeRepository.findByComplexIdAndExclusiveArea(complexId, exclusiveArea)
+//                    ?: throw e
+//            unitTypeLocalCache[cacheKey] = found
+//            putUnitTypeCache(cacheKey, found)
+//            found
+//        }
+//    }
 
     private fun putUnitTypeCache(
         key: String,

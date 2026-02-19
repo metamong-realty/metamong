@@ -13,6 +13,7 @@ import com.metamong.batch.jobs.publicdata.sync.reader.TradeRawPagingReader
 import com.metamong.batch.jobs.publicdata.sync.reader.UnmatchedInfoRawComplexReader
 import com.metamong.batch.jobs.publicdata.sync.reader.UnmatchedLicenseRawComplexReader
 import com.metamong.batch.jobs.publicdata.sync.tasklet.CacheWarmingTasklet
+import com.metamong.batch.jobs.publicdata.sync.tasklet.CreateUnitTypeTasklet
 import com.metamong.batch.jobs.publicdata.sync.writer.ComplexWriter
 import com.metamong.batch.jobs.publicdata.sync.writer.MatchResultWriter
 import com.metamong.domain.apartment.model.ApartmentComplexEntity
@@ -194,6 +195,16 @@ class ApartmentMigrationStepConfig {
     ): Step =
         StepBuilder("cacheWarmingStep", jobRepository)
             .tasklet(cacheWarmingTasklet, transactionManager)
+            .build()
+
+    @Bean
+    fun createUnitTypeStep(
+        jobRepository: JobRepository,
+        transactionManager: PlatformTransactionManager,
+        createUnitTypeTasklet: CreateUnitTypeTasklet,
+    ): Step =
+        StepBuilder("createUnitTypeStep", jobRepository)
+            .tasklet(createUnitTypeTasklet, transactionManager)
             .build()
 
     // ===== Parallel Flows =====
