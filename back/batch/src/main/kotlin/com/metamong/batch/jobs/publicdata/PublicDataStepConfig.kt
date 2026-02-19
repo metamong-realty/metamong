@@ -22,7 +22,6 @@ import com.metamong.model.document.publicdata.HousingLicenseRawDocumentEntity
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.StepScope
-import org.springframework.batch.core.configuration.support.DefaultBatchConfiguration
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.core.step.skip.SkipPolicy
@@ -35,7 +34,7 @@ import org.springframework.data.mongodb.UncategorizedMongoDbException
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 
 @Configuration
-class PublicDataStepConfig : DefaultBatchConfiguration() {
+class PublicDataStepConfig {
     @Bean
     fun batchTaskExecutor(): TaskExecutor {
         val executor = ThreadPoolTaskExecutor()
