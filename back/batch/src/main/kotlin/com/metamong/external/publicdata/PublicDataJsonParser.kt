@@ -30,6 +30,7 @@ class PublicDataJsonParser {
     private val objectMapper: ObjectMapper =
         ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
             .apply {
                 coercionConfigFor(LogicalType.POJO)
                     .setCoercion(CoercionInputShape.EmptyString, CoercionAction.AsNull)

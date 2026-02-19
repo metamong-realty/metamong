@@ -14,8 +14,7 @@ import org.springframework.stereotype.Component
 @StepScope
 class TradeRawPagingReader(
     private val apartmentTradeRawRepository: ApartmentTradeRawRepository,
-    @Value("#{jobParameters['mode']}") private val modeStr: String?,
-    @Value("\${job.migration.mode:FULL}") private val defaultModeStr: String,
+    @Value("#{jobParameters['name']}") private val jobName: String?,
     @Value("#{jobParameters['startYearMonth']}") private val startYearMonth: String?,
     @Value("#{jobParameters['endYearMonth']}") private val endYearMonth: String?,
 ) : ItemReader<ApartmentTradeRawDocumentEntity> {
@@ -23,7 +22,7 @@ class TradeRawPagingReader(
 
     @PostConstruct
     fun initialize() {
-        val mode = MigrationMode.fromString(modeStr ?: defaultModeStr)
+        val mode = MigrationMode.fromJobName(jobName)
         val cutoffDate = mode.getCutoffDate()
         val yearMonthRange = DealYearMonthRange.of(startYearMonth, endYearMonth)
 

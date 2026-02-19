@@ -16,8 +16,7 @@ import org.springframework.stereotype.Component
 class RentRawDistinctAptSeqReader(
     private val apartmentRentRawRepository: ApartmentRentRawRepository,
     private val apartmentComplexQueryService: ApartmentComplexQueryService,
-    @Value("#{jobParameters['mode']}") private val modeStr: String?,
-    @Value("\${job.migration.mode:FULL}") private val defaultModeStr: String,
+    @Value("#{jobParameters['name']}") private val jobName: String?,
     @Value("#{jobParameters['startYearMonth']}") private val startYearMonth: String?,
     @Value("#{jobParameters['endYearMonth']}") private val endYearMonth: String?,
 ) : ItemReader<ApartmentRentRawDocumentEntity> {
@@ -25,7 +24,7 @@ class RentRawDistinctAptSeqReader(
 
     @PostConstruct
     fun initialize() {
-        val mode = MigrationMode.fromString(modeStr ?: defaultModeStr)
+        val mode = MigrationMode.fromJobName(jobName)
         val cutoffDate = mode.getCutoffDate()
         val yearMonthRange = DealYearMonthRange.of(startYearMonth, endYearMonth)
 

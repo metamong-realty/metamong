@@ -15,10 +15,9 @@ enum class MigrationMode {
         }
 
     companion object {
-        fun fromString(value: String?): MigrationMode =
-            when (value?.lowercase()) {
-                "DAILY" -> DAILY
-                "FULL" -> HISTORICAL
+        fun fromJobName(jobName: String?): MigrationMode =
+            when {
+                jobName?.contains("Daily", ignoreCase = true) == true -> DAILY
                 else -> HISTORICAL
             }
     }
