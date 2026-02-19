@@ -33,7 +33,7 @@ class ApartmentComplexCommandService(
     fun saveAllComplexesWithMappings(items: List<ComplexWithApartmentSequence>): List<ApartmentComplexEntity> {
         if (items.isEmpty()) return emptyList()
 
-        val savedComplexes = apartmentComplexRepository.saveAll(items.map { it.complex })
+        val savedComplexes = apartmentComplexRepository.batchInsert(items.map { it.complex })
 
         val codeMappings =
             savedComplexes.zip(items).map { (saved, item) ->
