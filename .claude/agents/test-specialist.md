@@ -1,5 +1,6 @@
 ---
 name: Test Specialist
+model: sonnet
 description: "Kotest, MockK, 테스트 전략 전문가. BehaviorSpec, 커버리지 분석, 테스트 설계"
 tools:
   - Read
