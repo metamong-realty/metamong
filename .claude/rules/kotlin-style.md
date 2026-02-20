@@ -1,7 +1,3 @@
----
-globs: "**/*.kt"
----
-
 # Kotlin Style Guidelines
 
 ## Naming Rules
@@ -33,10 +29,9 @@ class UserDto(var id: Long, var email: String)
 ```kotlin
 // Good
 val userName = user?.name ?: "Unknown"
-fun findUser(id: Long): User? = userRepository.findByIdOrNull(id)
 
 // Bad - !! 사용 금지
-fun findUser(id: Long): User = userRepository.findById(id)!!
+val userName = user!!.name
 ```
 
 ## Class Structure Order
@@ -54,28 +49,10 @@ fun findUser(id: Long): User = userRepository.findById(id)!!
 
 표현식으로 사용. enum은 모든 케이스 처리하여 `else` 불필요하게 작성.
 
-```kotlin
-val message = when (status) {
-    Status.SUCCESS -> "성공"
-    Status.FAIL -> "실패"
-    Status.PENDING -> "대기중"
-}
-
-val max = if (a > b) a else b
-```
-
 ## Exception Handling
 
-```kotlin
-// 검증: require (인자), check (상태), checkNotNull (null)
-require(age >= 0) { "나이는 0 이상이어야 합니다" }
-check(isInitialized) { "초기화되지 않았습니다" }
-
-// 안전한 실행: runCatching
-val result = runCatching { riskyOperation() }
-    .onFailure { logger.error(it) { "실패" } }
-    .getOrNull()
-```
+- 검증: `require` (인자), `check` (상태), `checkNotNull` (null)
+- 안전한 실행: `runCatching { }.onFailure { }.getOrNull()`
 
 ## Data Class vs Class
 

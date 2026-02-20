@@ -10,63 +10,17 @@ argument-hint: "<method> <path>"
 
 ### Controller Method
 
-method에 따라 아래 템플릿을 적용하라:
+method에 따라 아래 패턴을 적용하라:
 
-**POST** (생성)
-```kotlin
-@PostMapping
-@Operation(summary = "{리소스} 생성")
-@ApiResponses(ApiResponse(responseCode = "201"), ApiResponse(responseCode = "400"), ApiResponse(responseCode = "409"))
-fun create(@Valid @RequestBody request: CreateRequest): ResponseEntity<Response> {
-    val result = commandService.create(request.toCommand())
-    return ResponseEntity.created(URI.create("{path}/${result.id}")).body(Response.from(result))
-}
-```
-
-**GET** (단건 조회)
-```kotlin
-@GetMapping("/{id}")
-@Operation(summary = "{리소스} 조회")
-fun get(@PathVariable id: Long): ResponseEntity<Response> {
-    val result = queryService.get(id) ?: return ResponseEntity.notFound().build()
-    return ResponseEntity.ok(Response.from(result))
-}
-```
-
-**GET** (목록 + 페이징)
-```kotlin
-@GetMapping
-@Operation(summary = "{리소스} 목록 조회")
-fun list(
-    @PageableDefault(size = 20, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable,
-    @RequestParam(required = false) keyword: String?,
-    @RequestParam(required = false) status: Status?
-): ResponseEntity<Page<Response>> {
-    return ResponseEntity.ok(queryService.search(keyword, status, pageable).map { Response.from(it) })
-}
-```
-
-**PUT** (수정)
-```kotlin
-@PutMapping("/{id}")
-@Operation(summary = "{리소스} 수정")
-fun update(@PathVariable id: Long, @Valid @RequestBody request: UpdateRequest): ResponseEntity<Response> {
-    val result = commandService.update(id, request.toCommand()) ?: return ResponseEntity.notFound().build()
-    return ResponseEntity.ok(Response.from(result))
-}
-```
-
-**DELETE** (삭제)
-```kotlin
-@DeleteMapping("/{id}")
-@Operation(summary = "{리소스} 삭제")
-@ResponseStatus(HttpStatus.NO_CONTENT)
-fun delete(@PathVariable id: Long) { commandService.delete(id) }
-```
+- **POST**: 생성 → `201 Created` + Location 헤더 + Response body
+- **GET (단건)**: `/{id}` 조회 → `200 OK` 또는 `404 Not Found`
+- **GET (목록)**: 페이징 조회 → `@PageableDefault` + `Page<Response>`
+- **PUT**: `/{id}` 수정 → `200 OK` 또는 `404 Not Found`
+- **DELETE**: `/{id}` 삭제 → `204 No Content`
 
 ### Request/Response DTO
 
-- **CreateRequest**: `@field:NotBlank`, `@field:Email`, `@field:Size` 등 검증 + `toCommand()` 변환 메서드
+- **CreateRequest**: `@field:` 검증 어노테이션 + `toCommand()` 변환 메서드
 - **UpdateRequest**: nullable 필드 + `toCommand()` 변환
 - **Response**: `companion object { fun from(dto) }` 패턴, `@Schema` 문서화
 
@@ -79,19 +33,13 @@ fun delete(@PathVariable id: Long) { commandService.delete(id) }
 
 ### Controller 테스트
 
-```kotlin
-@WebMvcTest(Controller::class)
-class ApiTest(
-    @Autowired val mockMvc: MockMvc,
-    @MockkBean val commandService: CommandService,
-    @MockkBean val queryService: QueryService
-) : BehaviorSpec({
-    Given("{METHOD} {path}") {
-        When("유효한 요청시") { Then("성공 응답") { /* 검증 */ } }
-        When("유효하지 않은 요청시") { Then("에러 응답") { /* 검증 */ } }
-    }
-})
-```
+- `@WebMvcTest` + BehaviorSpec으로 작성
+- 유효한 요청 / 유효하지 않은 요청 시나리오 포함
+
+## 코드 패턴 참조
+
+- `docs/patterns/domain-patterns.md` — DTO, Command 패턴
+- `docs/patterns/testing-patterns.md` — Controller 테스트 패턴
 
 ## 옵션 처리
 

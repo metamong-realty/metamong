@@ -9,24 +9,18 @@ disable-model-invocation: true
 
 ### 1. 커버리지 측정
 
-```bash
-./gradlew test jacocoTestReport
-```
-
-리포트 파일(`build/reports/jacoco/test/html/index.html`)을 분석하여 아래 형식으로 보고하라:
+`./gradlew test jacocoTestReport`를 실행하고 리포트(`build/reports/jacoco/test/html/index.html`)를 분석하여 아래 형식으로 보고하라:
 
 ```
-📊 Test Coverage Report
-================================
 Overall Coverage: XX.X%
  - Line Coverage: XX.X% (Target: 80%)
  - Branch Coverage: XX.X% (Target: 70%)
 
-📁 Package Coverage:
- - com.metamong.domain.user: XX.X% ✅/❌
- - com.metamong.application.user: XX.X% ✅/❌
+Package Coverage:
+ - com.metamong.domain.user: XX.X%
+ - com.metamong.application.user: XX.X%
 
-🔍 Low Coverage Files:
+Low Coverage Files:
 1. SomeService.kt: XX.X%
 2. AnotherService.kt: XX.X%
 ```
@@ -40,43 +34,20 @@ Overall Coverage: XX.X%
 
 ### 3. 테스트 생성
 
-누락된 테스트를 BehaviorSpec으로 작성하라:
-
-```kotlin
-class ServiceTest : BehaviorSpec({
-    Given("커버되지 않은 시나리오") {
-        // mock 설정
-
-        When("해당 기능을 실행하면") {
-            Then("기대 결과를 검증한다") {
-                // assertion
-            }
-        }
-    }
-})
-```
+누락된 테스트를 BehaviorSpec으로 작성하라. when/if 표현식의 모든 분기에 대한 테스트를 포함하라.
 
 **우선순위:**
 1. CRITICAL: 핵심 비즈니스 로직 (결제, 인증, 주문) → 85%+
 2. HIGH: 주요 기능 (알림, 검색) → 80%+
 3. MEDIUM: 유틸리티/설정 → 60%+
 
-### 4. 브랜치 커버리지 보완
-
-when/if 표현식의 모든 분기에 대한 테스트를 작성하라:
-
-```kotlin
-Given("조건부 로직 테스트") {
-    When("조건 A일 때") { Then("결과 A") }
-    When("조건 B일 때") { Then("결과 B") }
-    When("조건 C일 때") { Then("결과 C") }
-    // 모든 분기 커버
-}
-```
-
-### 5. 재측정
+### 4. 재측정
 
 테스트 추가 후 다시 `./gradlew jacocoTestReport`를 실행하여 개선 결과를 보고하라.
+
+## 코드 패턴 참조
+
+- `docs/patterns/testing-patterns.md` — BehaviorSpec, MockK, Fixture, Matcher 패턴
 
 ## 목표
 

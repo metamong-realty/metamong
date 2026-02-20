@@ -9,110 +9,36 @@ argument-hint: "<domain-name>"
 ## 생성할 파일 목록
 
 ### 1. Domain Layer
-
-**`domain/{name}/model/{Name}Entity.kt`**
-```kotlin
-@Entity
-@Table(name = "{names}")  // 복수형
-class {Name}Entity(
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
-    // 도메인 필드들
-    @Enumerated(EnumType.STRING)
-    val status: {Name}Status = {Name}Status.ACTIVE
-) : BaseEntity()
-```
-
-**`domain/{name}/model/{Name}Status.kt`**
-```kotlin
-enum class {Name}Status { ACTIVE, INACTIVE }
-```
-
-**`domain/{name}/repository/{Name}Repository.kt`** — 인터페이스만
-```kotlin
-interface {Name}Repository {
-    fun save(entity: {Name}Entity): {Name}Entity
-    fun findById(id: Long): {Name}Entity?
-    fun deleteById(id: Long)
-}
-```
+- `domain/{name}/model/{Name}Entity.kt` — Entity, BaseEntity 상속
+- `domain/{name}/model/{Name}Status.kt` — enum class (ACTIVE, INACTIVE)
+- `domain/{name}/repository/{Name}Repository.kt` — 인터페이스만 (save, findById, deleteById)
 
 ### 2. Infra Layer
-
-**`infra/persistence/{name}/{Name}JpaRepository.kt`**
-```kotlin
-interface {Name}JpaRepository : JpaRepository<{Name}Entity, Long>
-```
-
-**`infra/persistence/{name}/{Name}RepositoryImpl.kt`** — Repository 구현
-```kotlin
-@Repository
-class {Name}RepositoryImpl(
-    private val jpaRepository: {Name}JpaRepository
-) : {Name}Repository { /* 위임 구현 */ }
-```
-
-**`infra/persistence/{name}/{Name}QueryRepository.kt`** — QueryDSL 조회
-```kotlin
-interface {Name}QueryRepository {
-    fun search(pageable: Pageable): Page<{Name}Entity>
-}
-```
+- `infra/persistence/{name}/{Name}JpaRepository.kt` — JpaRepository 상속
+- `infra/persistence/{name}/{Name}RepositoryImpl.kt` — Repository 구현 (위임)
+- `infra/persistence/{name}/{Name}QueryRepository.kt` — QueryDSL 조회 인터페이스
 
 ### 3. Application Layer
-
-**`application/{name}/service/{Name}CommandService.kt`**
-```kotlin
-@Service
-@Transactional
-class {Name}CommandService(private val repository: {Name}Repository) {
-    fun create(command: Create{Name}Command): {Name}Dto { /* 생성 */ }
-}
-```
-
-**`application/{name}/service/{Name}QueryService.kt`**
-```kotlin
-@Service
-@Transactional(readOnly = true)
-class {Name}QueryService(private val repository: {Name}Repository) {
-    fun get(id: Long): {Name}Dto? { /* 조회 */ }
-}
-```
-
-**`application/{name}/dto/{Name}Dto.kt`** — `companion object from(entity)` 포함
-
-**`application/{name}/command/Create{Name}Command.kt`**
+- `application/{name}/service/{Name}CommandService.kt` — `@Transactional`, create
+- `application/{name}/service/{Name}QueryService.kt` — `@Transactional(readOnly = true)`, get
+- `application/{name}/dto/{Name}Dto.kt` — `companion object from(entity)` 포함
+- `application/{name}/command/Create{Name}Command.kt`
 
 ### 4. Presentation Layer
-
-**`presentation/api/{name}/{Name}Controller.kt`**
-```kotlin
-@RestController
-@RequestMapping("/api/v1/{names}")
-@Tag(name = "{Name}", description = "{Name} 관리 API")
-class {Name}Controller(
-    private val commandService: {Name}CommandService,
-    private val queryService: {Name}QueryService
-) {
-    @PostMapping
-    @Operation(summary = "{Name} 생성")
-    fun create(@Valid @RequestBody request: Create{Name}Request): ResponseEntity<{Name}Response>
-
-    @GetMapping("/{id}")
-    @Operation(summary = "{Name} 조회")
-    fun get(@PathVariable id: Long): ResponseEntity<{Name}Response>
-}
-```
-
-**`presentation/api/{name}/dto/Create{Name}Request.kt`** — @field:NotBlank + toCommand()
-
-**`presentation/api/{name}/dto/{Name}Response.kt`** — `companion object from(dto)` 포함
+- `presentation/api/{name}/{Name}Controller.kt` — REST 엔드포인트, Swagger 문서화
+- `presentation/api/{name}/dto/Create{Name}Request.kt` — `@field:` 검증 + `toCommand()`
+- `presentation/api/{name}/dto/{Name}Response.kt` — `companion object from(dto)` 포함
 
 ### 5. Test
+- `test/.../application/{name}/service/{Name}CommandServiceTest.kt` — BehaviorSpec, MockK
+- `test/.../presentation/api/{name}/{Name}ControllerTest.kt` — @WebMvcTest, BehaviorSpec
 
-**`test/.../application/{name}/service/{Name}CommandServiceTest.kt`** — BehaviorSpec, MockK
+## 코드 패턴 참조
 
-**`test/.../presentation/api/{name}/{Name}ControllerTest.kt`** — @WebMvcTest, BehaviorSpec
+각 레이어의 코드 패턴은 아래 파일을 참조하라:
+- `docs/patterns/domain-patterns.md` — Entity, VO, Repository 패턴
+- `docs/patterns/querydsl-patterns.md` — QueryDSL 조회 패턴
+- `docs/patterns/testing-patterns.md` — 테스트 구조 패턴
 
 ## 규칙
 

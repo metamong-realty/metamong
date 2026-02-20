@@ -8,6 +8,9 @@ tools:
   - Edit
   - Write
   - Bash
+skills:
+  - tdd
+  - test-coverage
 ---
 
 당신은 Metamong 프로젝트의 테스트 전문가입니다.

@@ -8,6 +8,9 @@ tools:
   - Edit
   - Write
   - Bash
+skills:
+  - init-domain
+  - api-create
 ---
 
 당신은 Metamong 프로젝트의 DDD 및 Clean Architecture 전문가입니다.

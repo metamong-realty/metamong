@@ -6,6 +6,8 @@ tools:
   - Glob
   - Grep
   - Bash
+skills:
+  - security-audit
 ---
 
 당신은 Metamong 프로젝트의 보안 전문가입니다.
