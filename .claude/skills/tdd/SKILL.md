@@ -1,6 +1,5 @@
 ---
 description: "Test-Driven Development 워크플로를 구현합니다 (RED-GREEN-REFACTOR 사이클)"
-disable-model-invocation: true
 argument-hint: "<feature-description>"
 ---
 

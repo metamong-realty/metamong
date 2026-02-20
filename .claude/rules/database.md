@@ -7,6 +7,7 @@
 - **연관관계 매핑 금지** — QueryDSL로 JOIN 처리
 - **@Column**: 이름이 다를 때만 사용, 제약조건은 DB에서 관리
 - Auditing: `BaseEntity` 상속 (`@CreatedDate`, `@LastModifiedDate`)
+- **금액 필드는 `BigDecimal` 사용** (`Long`/`Int` 금지) — DDL: `DECIMAL(15,0)` 또는 적절한 precision
 
 ## QueryDSL 사용법
 
@@ -30,7 +31,7 @@
 
 ## 기타
 
-- **배치 처리**: JPA `saveAll` + `batch_size` 설정 (JDBC 직접 사용은 특수 경우만)
+- **배치 처리**: Spring Batch Writer에서는 JDBC batch insert 사용. 일반 Service에서는 JPA `saveAll` + `batch_size`
 - **인덱스**: `@Table(indexes = [...])`, 자주 조회하는 컬럼에 설정
 - **마이그레이션**: Flyway, `V{번호}__{설명}.sql` 네이밍
 - **Connection Pool**: HikariCP, `application.yml`에서 관리

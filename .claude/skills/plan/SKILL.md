@@ -1,6 +1,5 @@
 ---
 description: "spec을 바탕으로 구체적인 구현 계획을 수립합니다"
-disable-model-invocation: true
 ---
 
 spec 기반으로 구현 계획을 수립하는 스킬이다. 다음 절차대로 진행하라.

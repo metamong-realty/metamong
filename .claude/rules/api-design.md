@@ -31,9 +31,22 @@
 
 ## Request/Response DTO 규칙
 
-- **Request**: `data class` + `@field:` validation + `toCommand()` 변환
+- **Request**: `data class` + `@field:` validation + `toDto()` 변환
+- **RequestDto**: Request에서 변환된 순수 데이터 클래스 (같은 파일 내 정의)
+- **네이밍**: `Create{Domain}RequestDto`, `Update{Domain}RequestDto` (`Command` 접미사 사용 안함)
 - **Response**: `data class` + `companion object { fun from(entity/dto) }` 팩토리
+- **Response 필드에 `@Schema` 필수** — description, example 명시
 - Request/Response는 Presentation 레이어에만 존재
+
+```kotlin
+// Response @Schema 예시
+data class UserResponse(
+    @Schema(description = "사용자 ID", example = "1")
+    val id: Long,
+    @Schema(description = "이메일", example = "user@example.com")
+    val email: String,
+)
+```
 
 ## 에러 처리
 

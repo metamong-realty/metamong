@@ -1,6 +1,5 @@
 ---
 description: "보안 취약점을 스캔하고 보안 강화 방안을 제안합니다 (OWASP Top 10 기준)"
-disable-model-invocation: true
 ---
 
 프로젝트의 보안 취약점을 OWASP Top 10 기준으로 스캔하라. 모든 소스 코드와 설정 파일을 분석하라.

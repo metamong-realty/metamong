@@ -50,6 +50,13 @@ com.metamong/
 └── presentation/        # Controller, Request/Response DTO
 ```
 
+## Service 레이어 규칙
+
+- **Entity는 Service 밖으로 노출 금지** → ResponseDto로 변환하여 반환
+- Request → Dto 변환 메서드: `toDto()` (`toCommand()` 사용 안함)
+- Dto 네이밍: `Create{Domain}RequestDto`, `Update{Domain}RequestDto` (`Command` 접미사 사용 안함)
+- Query(조회)와 Command(변경) Service 분리 권장
+
 ## 설계 원칙
 
 - 생성자 주입으로 불변성 보장, 모든 의존성은 주입 가능 (테스트 용이)
