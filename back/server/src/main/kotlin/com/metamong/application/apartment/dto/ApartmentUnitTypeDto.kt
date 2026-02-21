@@ -11,7 +11,7 @@ data class ApartmentUnitTypeDto(
     companion object {
         fun from(entity: ApartmentUnitTypeEntity) =
             ApartmentUnitTypeDto(
-                unitTypeId = entity.id!!,
+                unitTypeId = entity.id,
                 exclusiveArea = entity.exclusiveArea,
                 exclusivePyeong = entity.exclusivePyeong?.toInt(),
             )

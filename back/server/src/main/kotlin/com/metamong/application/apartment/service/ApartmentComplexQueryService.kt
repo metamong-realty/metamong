@@ -68,7 +68,7 @@ class ApartmentComplexQueryService(
             } ?: false
 
         return ApartmentComplexDetailDto(
-            id = complex.id!!,
+            id = complex.id,
             name = complex.nameRaw,
             addressRoad = complex.addressRoad,
             addressJibun = complex.addressJibun,

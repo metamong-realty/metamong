@@ -1,6 +1,6 @@
 package com.metamong.domain.apartment.model
 
-import com.metamong.domain.base.ExtendedBaseEntity
+import com.metamong.domain.base.BaseEntity
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
 import java.math.BigDecimal
@@ -11,7 +11,7 @@ class ApartmentUnitTypeEntity(
     val complexId: Long,
     val exclusiveArea: BigDecimal,
     val exclusivePyeong: Short? = null,
-) : ExtendedBaseEntity() {
+) : BaseEntity() {
     companion object {
         fun create(
             complexId: Long,

@@ -20,7 +20,7 @@ class ApartmentComplexJdbcRepositoryImpl(
 
         val now = LocalDateTime.now()
         val userId = AuditContextHolder.getCurrentUserId() ?: "unknown"
-        val auditUser = "WEBAPP:$userId"
+        val auditUser = "METAMONG:$userId"
 
         return jdbcTemplate.execute(
             ConnectionCallback<List<ApartmentComplexEntity>> { connection: Connection ->

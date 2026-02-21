@@ -6,6 +6,8 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.MappedSuperclass
+import jakarta.persistence.PrePersist
+import jakarta.persistence.PreUpdate
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -16,7 +18,10 @@ import java.time.LocalDateTime
 abstract class BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null
+    var id: Long = 0
+
+    var createdBy: String? = null
+    var updatedBy: String? = null
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
@@ -27,4 +32,19 @@ abstract class BaseEntity {
     @Column(nullable = false)
     var updatedAt: LocalDateTime = LocalDateTime.now()
         protected set
+
+    @PrePersist
+    fun prePersist() {
+        val userId = getCurrentUserId() ?: "unknown"
+        createdBy = "METAMONG:$userId"
+    }
+
+    @PreUpdate
+    fun preUpdate() {
+        val userId = getCurrentUserId() ?: "unknown"
+        updatedBy = "METAMONG:$userId"
+        updatedAt = LocalDateTime.now()
+    }
+
+    private fun getCurrentUserId(): String? = AuditContextHolder.getCurrentUserId()
 }

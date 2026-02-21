@@ -56,7 +56,7 @@ class ApartmentMatchingService(
         apartmentComplexCommandService.saveComplex(complex)
 
         apartmentComplexCommandService.addCodeMapping(
-            complexId = complex.id!!,
+            complexId = complex.id,
             codeType = ApartmentCodeType.KAPT_CODE,
             codeValue = infoRaw.kaptCode,
         )
@@ -89,7 +89,7 @@ class ApartmentMatchingService(
 
         licenseRaw.mgmHsrgstPk?.let { pk ->
             apartmentComplexCommandService.addCodeMapping(
-                complexId = complex.id!!,
+                complexId = complex.id,
                 codeType = ApartmentCodeType.LICENSE_PK,
                 codeValue = pk,
             )

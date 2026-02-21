@@ -19,6 +19,7 @@ import com.metamong.application.apartment.response.ApartmentTradeListResponse
 import com.metamong.application.apartment.response.ApartmentUnitTypeResponse
 import com.metamong.application.apartment.service.ApartmentComplexQueryService
 import com.metamong.common.response.ApiResponse
+import com.metamong.infra.security.CurrentUser
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
@@ -61,11 +62,9 @@ class ApartmentComplexQueryController(
     fun getComplexDetail(
         @PathVariable complexId: Long,
         @RequestParam(required = false) unitTypeId: Long?,
-        // TODO: AuthenticationPrincipal로 현재 사용자 정보 가져오기
-        // @AuthenticationPrincipal user: AuthorizedUser?,
+        @CurrentUser userId: Long?,
     ): ApiResponse<ApartmentComplexDetailResponse> {
-        // TODO: 실제 인증 사용자 ID를 전달하도록 수정 필요
-        val result = apartmentComplexQueryService.getComplexDetail(complexId, null, unitTypeId)
+        val result = apartmentComplexQueryService.getComplexDetail(complexId, userId, unitTypeId)
         return ApiResponse.ok(ApartmentComplexDetailResponse.from(result))
     }
 

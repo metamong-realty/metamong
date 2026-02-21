@@ -1,6 +1,6 @@
 package com.metamong.domain.apartment.model
 
-import com.metamong.domain.base.ExtendedBaseEntity
+import com.metamong.domain.base.BaseEntity
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -23,7 +23,7 @@ class ApartmentRentEntity(
     val isCanceled: Boolean = false,
     val canceledDate: LocalDate? = null,
     val rawId: String? = null,
-) : ExtendedBaseEntity() {
+) : BaseEntity() {
     companion object {
         fun create(
             unitTypeId: Long,

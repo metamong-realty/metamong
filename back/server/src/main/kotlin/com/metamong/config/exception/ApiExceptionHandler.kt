@@ -1,5 +1,6 @@
 package com.metamong.config.exception
 
+import com.metamong.common.exception.CustomException
 import com.metamong.common.response.ApiResponse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
@@ -61,18 +62,18 @@ class ApiExceptionHandler {
             .badRequest()
             .body(ApiResponse.badRequest(e.message ?: "잘못된 인자입니다."))
 
-    @ExceptionHandler(BaseException::class)
-    fun handleBaseException(e: BaseException): ResponseEntity<ApiResponse<Nothing>> =
+    @ExceptionHandler(CustomException::class)
+    fun handleCustomException(e: CustomException): ResponseEntity<ApiResponse<Nothing>> =
         ResponseEntity
-            .status(e.httpStatus)
-            .body(ApiResponse.error(e.message, e.httpStatus.value()))
+            .status(e.status)
+            .body(ApiResponse.error(e.message, e.status.value()))
 
     @ExceptionHandler(Exception::class)
     fun handleException(e: Exception): ResponseEntity<ApiResponse<Nothing>> {
         logger.error(e) { "예상치 못한 에러 발생" }
         return ResponseEntity
             .internalServerError()
-            .body(ApiResponse.error(ErrorCodes.GLOBAL_ERROR.message))
+            .body(ApiResponse.error("요청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."))
     }
 
     companion object {

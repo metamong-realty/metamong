@@ -50,10 +50,11 @@ data class UserResponse(
 
 ## 에러 처리
 
-- 통일된 `ErrorResponse` 포맷: code(String) + message(String) + details(Map?) + timestamp
-- `@RestControllerAdvice`로 글로벌 예외 처리
-- 필수 핸들러: `EntityNotFoundException` → 404, `MethodArgumentNotValidException` → 400, `DuplicateKeyException` → 409, `Exception` → 500
-- 비즈니스 예외는 도메인별 커스텀 예외 클래스 사용. Spring에서 제공하는 기본 Error 사용 금지
+- `ApiResponse<T>` 통일 응답 포맷: `success`, `code`(Int), `message`, `data`
+- `@ControllerAdvice` + `ApiExceptionHandler`에서 글로벌 예외 처리
+- `CustomException` 단일 핸들러로 모든 비즈니스 예외 처리 (`e.status`, `e.message` 활용)
+- 비즈니스 예외는 도메인별 `sealed class` 사용 (`UserException.NotFound()` 등)
+- HTTP 상태별 예외 클래스(`BadRequestException` 등) 사용 금지
 - 에러 메시지에 내부 구현 상세/스택트레이스 노출 금지
 
 ## 페이징

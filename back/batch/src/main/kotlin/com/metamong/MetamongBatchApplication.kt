@@ -1,7 +1,6 @@
 package com.metamong
 
-import com.metamong.config.exception.BadRequestException
-import com.metamong.config.exception.ErrorCodes
+import com.metamong.config.exception.BatchException
 import com.metamong.external.slack.SlackBatchMonitoringPayload
 import com.metamong.external.slack.SlackBatchMonitoringSender
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -39,12 +38,12 @@ class MetamongBatchApplication(
         val currentTimeMillis = System.currentTimeMillis()
         val name = jobName
         if (name.isNullOrBlank()) {
-            logger.error { "❌ Job name parameter is required" }
+            logger.error { "Job name parameter is required" }
             slackSender.sendWebhook(
                 SlackBatchMonitoringPayload(
                     jobName = "UNKNOWN",
                     startTimeMillis = currentTimeMillis,
-                    exception = BadRequestException(ErrorCodes.PARAMETER_REQUIRED),
+                    exception = BatchException.ParameterInvalid(),
                     commandArgs =
                         args.filterNotNull().joinToString("\n") {
                             it.split("=").let { parts ->
@@ -57,12 +56,12 @@ class MetamongBatchApplication(
         }
         val job = jobs[name]
         if (job == null) {
-            logger.error { "❌ Job not found: $name" }
+            logger.error { "Job not found: $name" }
             slackSender.sendWebhook(
                 SlackBatchMonitoringPayload(
                     jobName = name,
                     startTimeMillis = currentTimeMillis,
-                    exception = BadRequestException(ErrorCodes.BATCH_JOB_NOT_FOUND),
+                    exception = BatchException.JobNotFound(),
                     commandArgs =
                         args.filterNotNull().joinToString("\n") {
                             it.split("=").let { parts ->
@@ -108,7 +107,7 @@ class MetamongBatchApplication(
                             commandArgs = commandArgs,
                         ),
                     )
-                    logger.info { "✅ 배치 작업 완료 - 애플리케이션 종료" }
+                    logger.info { "배치 작업 완료 - 애플리케이션 종료" }
                 }
                 else -> {
                     val ex = jobExecution.allFailureExceptions.firstOrNull()
@@ -120,7 +119,7 @@ class MetamongBatchApplication(
                             commandArgs = commandArgs,
                         ),
                     )
-                    logger.error(ex) { "❌ 배치 실행 실패 - 애플리케이션 종료" }
+                    logger.error(ex) { "배치 실행 실패 - 애플리케이션 종료" }
                 }
             }
         }.onFailure { ignore ->
@@ -130,7 +129,7 @@ class MetamongBatchApplication(
 
         // exit code는 오직 잡 결과로만 결정
         val exit = if (jobExecution.exitStatus == ExitStatus.COMPLETED) 0 else 1
-        logger.info { "🔄 Spring 애플리케이션 종료 시작 (exit code: $exit)" }
+        logger.info { "Spring 애플리케이션 종료 시작 (exit code: $exit)" }
 
         // 컨텍스트 종료 중 발생하는 경미한 예외는 삼켜서 프로세스 코드는 유지
         runCatching {

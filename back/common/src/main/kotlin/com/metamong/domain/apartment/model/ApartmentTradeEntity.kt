@@ -1,6 +1,6 @@
 package com.metamong.domain.apartment.model
 
-import com.metamong.domain.base.ExtendedBaseEntity
+import com.metamong.domain.base.BaseEntity
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
 import java.time.LocalDate
@@ -19,7 +19,7 @@ class ApartmentTradeEntity(
     val isCanceled: Boolean = false,
     val canceledDate: LocalDate? = null,
     val rawId: String? = null,
-) : ExtendedBaseEntity() {
+) : BaseEntity() {
     companion object {
         fun create(
             unitTypeId: Long,
