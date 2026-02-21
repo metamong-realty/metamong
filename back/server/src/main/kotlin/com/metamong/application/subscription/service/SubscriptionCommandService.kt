@@ -8,6 +8,7 @@ import com.metamong.common.vo.LegalCode
 import com.metamong.domain.subscription.exception.SubscriptionException
 import com.metamong.domain.subscription.model.SubscriptionEntity
 import com.metamong.domain.subscription.model.SubscriptionType
+import com.metamong.infra.lock.distributedLock
 import com.metamong.infra.persistence.apartment.repository.ApartmentComplexRepository
 import com.metamong.infra.persistence.region.repository.RegionLegalCodeRepository
 import com.metamong.infra.persistence.subscription.repository.SubscriptionRepository
@@ -26,17 +27,18 @@ class SubscriptionCommandService(
     fun create(
         userId: Long,
         dto: CreateSubscriptionRequestDto,
-    ): SubscriptionResponse {
-        val count = subscriptionRepository.countByUserId(userId)
-        if (count >= MAX_SUBSCRIPTIONS) {
-            throw SubscriptionException.LimitExceeded()
+    ): SubscriptionResponse =
+        distributedLock("subscription:create:$userId") {
+            val count = subscriptionRepository.countByUserId(userId)
+            if (count >= MAX_SUBSCRIPTIONS) {
+                throw SubscriptionException.LimitExceeded()
+            }
+
+            validateByType(dto)
+
+            val entity = dto.toEntity(userId)
+            SubscriptionResponse.from(subscriptionRepository.save(entity))
         }
-
-        validateByType(dto)
-
-        val entity = dto.toEntity(userId)
-        return SubscriptionResponse.from(subscriptionRepository.save(entity))
-    }
 
     fun update(
         id: Long,
@@ -93,24 +95,24 @@ class SubscriptionCommandService(
     private fun validateByType(dto: CreateSubscriptionRequestDto) {
         when (dto.type) {
             SubscriptionType.COMPLEX -> {
-                requireNotNull(dto.apartmentComplexId) {
-                    throw CommonException.InvalidParameter()
-                }
-                require(apartmentComplexRepository.existsById(dto.apartmentComplexId)) {
+                val complexId =
+                    dto.apartmentComplexId
+                        ?: throw CommonException.ParameterRequired("아파트 단지 ID는 필수입니다.")
+                if (!apartmentComplexRepository.existsById(complexId)) {
                     throw CommonException.ResourceNotFound()
                 }
             }
             SubscriptionType.REGION -> {
-                requireNotNull(dto.regionCode) {
-                    throw CommonException.InvalidParameter()
-                }
-                validateRegionCode(dto.regionCode)
+                val regionCode =
+                    dto.regionCode
+                        ?: throw CommonException.ParameterRequired("지역코드는 필수입니다.")
+                validateRegionCode(regionCode)
             }
             SubscriptionType.CONDITION -> {
-                requireNotNull(dto.regionCode) {
-                    throw CommonException.InvalidParameter()
-                }
-                validateRegionCode(dto.regionCode)
+                val regionCode =
+                    dto.regionCode
+                        ?: throw CommonException.ParameterRequired("지역코드는 필수입니다.")
+                validateRegionCode(regionCode)
                 val hasCondition =
                     (dto.exclusiveArea != null) || (dto.minPrice != null) || (dto.maxPrice != null)
                 if (!hasCondition) {

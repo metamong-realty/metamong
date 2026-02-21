@@ -1,5 +1,8 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(echo \"${GEMINI_API_KEY:+SET}\")"
+    ],
     "deny": [
       "Read(back/**/application-local.yml)",
       "Read(.env)",

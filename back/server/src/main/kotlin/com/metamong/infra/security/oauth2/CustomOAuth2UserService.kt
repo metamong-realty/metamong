@@ -4,6 +4,7 @@ import com.metamong.domain.user.exception.UserException
 import com.metamong.domain.user.model.SocialProvider
 import com.metamong.domain.user.model.UserEntity
 import com.metamong.domain.user.model.UserStatus
+import com.metamong.infra.lock.distributedLock
 import com.metamong.infra.persistence.user.repository.UserRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
@@ -32,33 +33,34 @@ class CustomOAuth2UserService(
     private fun findOrCreateUser(
         userInfo: OAuth2UserInfo,
         email: String,
-    ): UserEntity {
-        val existingByProvider = findByProvider(userInfo.provider, userInfo.providerId)
-        if (existingByProvider != null) {
-            check(existingByProvider.status != UserStatus.WITHDRAWN) {
-                throw UserException.AlreadyWithdrawn()
+    ): UserEntity =
+        distributedLock("user:oauth:$email") {
+            val existingByProvider = findByProvider(userInfo.provider, userInfo.providerId)
+            if (existingByProvider != null) {
+                if (existingByProvider.status == UserStatus.WITHDRAWN) {
+                    throw UserException.AlreadyWithdrawn()
+                }
+                return@distributedLock existingByProvider
             }
-            return existingByProvider
-        }
 
-        val existingByEmail = userRepository.findByEmail(email)
-        if (existingByEmail != null) {
-            check(existingByEmail.status != UserStatus.WITHDRAWN) {
-                throw UserException.AlreadyWithdrawn()
+            val existingByEmail = userRepository.findByEmail(email)
+            if (existingByEmail != null) {
+                if (existingByEmail.status == UserStatus.WITHDRAWN) {
+                    throw UserException.AlreadyWithdrawn()
+                }
+                existingByEmail.linkSocialProvider(userInfo.provider, userInfo.providerId)
+                return@distributedLock existingByEmail
             }
-            existingByEmail.linkSocialProvider(userInfo.provider, userInfo.providerId)
-            return userRepository.save(existingByEmail)
-        }
 
-        val newUser =
-            UserEntity.create(
-                email = email,
-                nickname = userInfo.name ?: email.substringBefore("@"),
-                provider = userInfo.provider,
-                providerId = userInfo.providerId,
-            )
-        return userRepository.save(newUser)
-    }
+            val newUser =
+                UserEntity.create(
+                    email = email,
+                    nickname = userInfo.name ?: email.substringBefore("@"),
+                    provider = userInfo.provider,
+                    providerId = userInfo.providerId,
+                )
+            userRepository.save(newUser)
+        }
 
     private fun findByProvider(
         provider: SocialProvider,
