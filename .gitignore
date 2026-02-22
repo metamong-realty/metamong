@@ -61,6 +61,9 @@ temp/
 .env.local
 .env.*.local
 
+# Sh
+*.local.sh
+
 **/src/main/resources/application-local.yml
 **/src/main/resources/bootstrap-local.yml
 **/src/test/resources/application-test.yml

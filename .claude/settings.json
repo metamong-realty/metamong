@@ -6,7 +6,9 @@
     "deny": [
       "Read(back/**/application-local.yml)",
       "Read(.env)",
-      "Read(.env.*)"
+      "Read(.env.*)",
+      "Bash(*application-local.yml*)",
+      "Bash(*.env*)"
     ]
   },
   "hooks": {
@@ -19,30 +21,6 @@
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-edit-actions.sh",
             "timeout": 60,
             "statusMessage": "코드 품질 검사 중..."
-          }
-        ]
-      },
-      {
-        "matcher": "Skill|Task",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/log-skill-agent-usage.sh",
-            "timeout": 5,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "find \"$CLAUDE_PROJECT_DIR\"/logs -name '*.log' -mtime +30 -delete 2>/dev/null; exit 0",
-            "timeout": 10,
-            "async": true
           }
         ]
       }
