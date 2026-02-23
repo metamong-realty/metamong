@@ -6,11 +6,14 @@ MAX_FILES=20
 MAX_FILE_BYTES=204800  # 200KB per file
 MAX_TOTAL_BYTES=512000 # 500KB total source context
 GEMINI_MODEL="gemini-3-flash-preview"
-GEMINI_URL="https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY:-}"
+GEMINI_URL="https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent"
 
 # ─── 환경 검증 ──────────────────────────────────────────
-if [[ -z "${GEMINI_API_KEY:-}" ]]; then
-  echo "ERROR: GEMINI_API_KEY 환경변수가 설정되지 않았습니다." >&2
+command -v gcloud >/dev/null 2>&1 || { echo "ERROR: gcloud CLI가 설치되어 있지 않습니다. https://cloud.google.com/sdk/docs/install" >&2; exit 1; }
+
+ACCESS_TOKEN=$(gcloud auth print-access-token 2>/dev/null)
+if [[ -z "$ACCESS_TOKEN" ]]; then
+  echo "ERROR: gcloud 인증이 필요합니다. 'gcloud auth login'을 실행해주세요." >&2
   exit 1
 fi
 
@@ -199,6 +202,7 @@ jq -n --arg text "$PROMPT" '{
 # ─── API 호출 ───────────────────────────────────────────
 HTTP_CODE=$(curl -s -o /dev/stdout -w "\n%{http_code}" \
   -X POST "$GEMINI_URL" \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d @"$TMPFILE" 2>/dev/null)
 
@@ -224,7 +228,7 @@ case "$HTTP_STATUS" in
     exit 1
     ;;
   401|403)
-    echo "ERROR: API 키가 유효하지 않습니다. GEMINI_API_KEY를 확인해주세요." >&2
+    echo "ERROR: 인증이 만료되었거나 권한이 없습니다. 'gcloud auth login'으로 재인증해주세요." >&2
     exit 1
     ;;
   429)
