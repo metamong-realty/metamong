@@ -13,7 +13,7 @@ import com.metamong.batch.jobs.publicdata.writer.PublicDataMongoFastWriter
 import com.metamong.batch.jobs.publicdata.writer.PublicDataMongoWriter
 import com.metamong.external.publicdata.dto.RegionCode
 import com.metamong.external.publicdata.dto.RegionCodeWithYearMonth
-import com.metamong.infra.persistence.repository.mongo.publicdata.ApartmentComplexListRawRepository
+import com.metamong.infra.persistence.mongo.publicdata.repository.ApartmentComplexListRawRepository
 import com.metamong.model.document.publicdata.ApartmentComplexInfoRawDocumentEntity
 import com.metamong.model.document.publicdata.ApartmentComplexListRawDocumentEntity
 import com.metamong.model.document.publicdata.ApartmentRentRawDocumentEntity

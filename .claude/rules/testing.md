@@ -1,3 +1,7 @@
+---
+paths: "**/*Test*.kt, **/*Spec*.kt, **/test/**/*.kt"
+---
+
 # Testing Guidelines
 
 ## 커버리지 목표

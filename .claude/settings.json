@@ -12,6 +12,19 @@
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pre-repository-check.sh",
+            "timeout": 10,
+            "statusMessage": "Repository 중복 메서드 확인 중..."
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit",

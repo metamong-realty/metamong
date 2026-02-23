@@ -2,8 +2,8 @@ package com.metamong.batch.jobs.publicdata.sync.tasklet
 
 import com.metamong.common.cache.CacheType
 import com.metamong.domain.apartment.model.ApartmentCodeType
-import com.metamong.infra.persistence.repository.apartment.ApartmentCodeMappingRepository
-import com.metamong.infra.persistence.repository.apartment.ApartmentUnitTypeRepository
+import com.metamong.infra.persistence.apartment.repository.ApartmentCodeMappingRepository
+import com.metamong.infra.persistence.apartment.repository.ApartmentUnitTypeRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.batch.core.StepContribution
 import org.springframework.batch.core.scope.context.ChunkContext

@@ -2,7 +2,7 @@ package com.metamong.batch.jobs.subscription.reader
 
 import com.metamong.domain.apartment.model.ApartmentTradeEntity
 import com.metamong.domain.subscription.model.TradeType
-import com.metamong.infra.persistence.repository.apartment.ApartmentTradeRepository
+import com.metamong.infra.persistence.apartment.repository.ApartmentTradeRepository
 import com.metamong.infra.persistence.subscription.repository.SubscriptionMatchingCheckpointRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PostConstruct

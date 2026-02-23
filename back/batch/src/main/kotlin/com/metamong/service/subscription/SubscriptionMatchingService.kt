@@ -5,8 +5,8 @@ import com.metamong.domain.apartment.model.ApartmentTradeEntity
 import com.metamong.domain.apartment.model.ApartmentUnitTypeEntity
 import com.metamong.domain.subscription.model.NotificationEventEntity
 import com.metamong.domain.subscription.model.SubscriptionEntity
-import com.metamong.infra.persistence.repository.apartment.ApartmentComplexRepository
-import com.metamong.infra.persistence.repository.apartment.ApartmentUnitTypeRepository
+import com.metamong.infra.persistence.apartment.repository.ApartmentComplexRepository
+import com.metamong.infra.persistence.apartment.repository.ApartmentUnitTypeRepository
 import com.metamong.infra.persistence.subscription.repository.NotificationEventRepository
 import com.metamong.infra.persistence.subscription.repository.SubscriptionRepository
 import io.github.oshai.kotlinlogging.KotlinLogging

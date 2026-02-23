@@ -1,3 +1,7 @@
+---
+paths: "**/repository/**/*.kt, **/infra/**/*.kt, **/persistence/**/*.kt, **/entity/**/*.kt"
+---
+
 # Database Guidelines
 
 ## JPA Entity 규칙
@@ -8,6 +12,13 @@
 - **@Column**: 이름이 다를 때만 사용, 제약조건은 DB에서 관리
 - Auditing: `BaseEntity` 상속 (`@CreatedDate`, `@LastModifiedDate`)
 - **금액 필드는 `BigDecimal` 사용** (`Long`/`Int` 금지) — DDL: `DECIMAL(15,0)` 또는 적절한 precision
+
+## Repository 메서드 중복 방지 (필수)
+
+- **새 쿼리 메서드 작성 전, 반드시 같은 도메인의 Repository/RepositoryCustom/RepositoryCustomImpl 파일을 Read로 확인**
+- 유사한 쿼리가 이미 있으면 재사용 (파라미터 추가로 확장 가능한 경우 포함)
+- 단, 기존 메서드의 시그니처/반환타입 변경은 금지 (기존 호출측 영향 방지)
+- 새 메서드가 필요한 경우에만 추가
 
 ## QueryDSL 사용법
 

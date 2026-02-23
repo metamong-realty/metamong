@@ -3,8 +3,8 @@ package com.metamong.service.apartment
 import com.metamong.domain.apartment.model.ApartmentCodeType
 import com.metamong.domain.apartment.model.ApartmentComplexEntity
 import com.metamong.domain.apartment.model.PlatType
-import com.metamong.infra.persistence.repository.mongo.publicdata.ApartmentComplexInfoRawRepository
-import com.metamong.infra.persistence.repository.mongo.publicdata.HousingLicenseRawRepository
+import com.metamong.infra.persistence.mongo.publicdata.repository.ApartmentComplexInfoRawRepository
+import com.metamong.infra.persistence.mongo.publicdata.repository.HousingLicenseRawRepository
 import com.metamong.model.document.publicdata.ApartmentComplexInfoRawDocumentEntity
 import com.metamong.model.document.publicdata.HousingLicenseRawDocumentEntity
 import com.metamong.util.apartment.AddressParser

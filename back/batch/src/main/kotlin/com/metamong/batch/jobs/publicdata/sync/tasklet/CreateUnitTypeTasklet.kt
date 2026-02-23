@@ -2,9 +2,9 @@ package com.metamong.batch.jobs.publicdata.sync.tasklet
 
 import com.metamong.common.cache.CacheType
 import com.metamong.domain.apartment.model.ApartmentUnitTypeEntity
-import com.metamong.infra.persistence.repository.apartment.ApartmentUnitTypeJdbcRepository
-import com.metamong.infra.persistence.repository.mongo.publicdata.ApartmentRentRawRepository
-import com.metamong.infra.persistence.repository.mongo.publicdata.ApartmentTradeRawRepository
+import com.metamong.infra.persistence.apartment.repository.ApartmentUnitTypeJdbcRepository
+import com.metamong.infra.persistence.mongo.publicdata.repository.ApartmentRentRawRepository
+import com.metamong.infra.persistence.mongo.publicdata.repository.ApartmentTradeRawRepository
 import com.metamong.service.apartment.ApartmentComplexQueryService
 import com.metamong.util.apartment.AreaConverter
 import io.github.oshai.kotlinlogging.KotlinLogging
