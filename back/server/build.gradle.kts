@@ -11,7 +11,6 @@ dependencies {
     /** spring */
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -67,7 +66,6 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.12")
     testImplementation("com.ninja-squad:springmockk:4.0.2")
     testImplementation("org.testcontainers:mysql")
-    testImplementation("org.testcontainers:mongodb")
     testImplementation("com.appmattus.fixture:fixture:1.2.0")
 }
 

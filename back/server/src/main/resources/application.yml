@@ -23,12 +23,6 @@ spring:
       idle-timeout: 295000
       max-lifetime: 300000
       connection-timeout: 180000
-    document:
-      database: metamong
-      primary:
-        uri: ${MONGO_PRIMARY_URL}
-      secondary:
-        uri: ${MONGO_SECONDARY_URL}
 
   # OAuth2 Configuration
   security:
@@ -110,3 +104,10 @@ management:
   endpoint:
     health:
       show-details: never
+
+# Swagger Configuration
+springdoc:
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:true}
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:true}
