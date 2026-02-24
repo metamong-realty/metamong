@@ -12,25 +12,28 @@ class ApartmentComplexRepositoryCustomImpl :
 
     override fun findUnmatchedInfoRawComplexes(
         limit: Long,
-        offset: Long,
+        lastId: Long,
     ): List<ApartmentComplexEntity> =
         from(complex)
             .select(complex)
-            .where(complex.eupmyeondongRiCode.isNull)
-            .offset(offset)
+            .where(
+                complex.id.gt(lastId),
+                complex.eupmyeondongRiCode.isNull,
+            ).orderBy(complex.id.asc())
             .limit(limit)
             .fetch()
 
     override fun findUnmatchedLicenseRawComplexes(
         limit: Long,
-        offset: Long,
+        lastId: Long,
     ): List<ApartmentComplexEntity> =
         from(complex)
             .select(complex)
             .where(
+                complex.id.gt(lastId),
                 complex.eupmyeondongRiCode.isNotNull,
                 complex.floorAreaRatio.isNull,
-            ).offset(offset)
+            ).orderBy(complex.id.asc())
             .limit(limit)
             .fetch()
 

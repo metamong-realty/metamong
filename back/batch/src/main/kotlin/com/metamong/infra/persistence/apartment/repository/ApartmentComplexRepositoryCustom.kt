@@ -6,12 +6,12 @@ import com.metamong.domain.apartment.model.PlatType
 interface ApartmentComplexRepositoryCustom {
     fun findUnmatchedInfoRawComplexes(
         limit: Long,
-        offset: Long,
+        lastId: Long,
     ): List<ApartmentComplexEntity>
 
     fun findUnmatchedLicenseRawComplexes(
         limit: Long,
-        offset: Long,
+        lastId: Long,
     ): List<ApartmentComplexEntity>
 
     fun findBySidoSigunguAndNameNormalizedAndBuiltYearBetween(

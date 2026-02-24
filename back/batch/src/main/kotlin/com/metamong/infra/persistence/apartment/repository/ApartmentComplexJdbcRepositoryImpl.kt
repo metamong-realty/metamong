@@ -110,6 +110,52 @@ class ApartmentComplexJdbcRepositoryImpl(
         if (value != null) setBigDecimal(index, value) else setNull(index, java.sql.Types.DECIMAL)
     }
 
+    override fun batchUpdate(entities: List<ApartmentComplexEntity>): Int {
+        if (entities.isEmpty()) return 0
+
+        val now = LocalDateTime.now()
+        val userId = AuditContextHolder.getCurrentUserId() ?: "unknown"
+        val auditUser = "METAMONG:$userId"
+
+        return jdbcTemplate.execute(
+            ConnectionCallback<Int> { connection: Connection ->
+                val ps = connection.prepareStatement(UPDATE_SQL)
+
+                ps.use { stmt ->
+                    for (entity in entities) {
+                        setUpdateParameters(stmt, entity, auditUser, now)
+                        stmt.addBatch()
+                    }
+
+                    val results = stmt.executeBatch()
+                    results.count { it != Statement.EXECUTE_FAILED }
+                }
+            },
+        )!!
+    }
+
+    private fun setUpdateParameters(
+        ps: PreparedStatement,
+        entity: ApartmentComplexEntity,
+        auditUser: String,
+        now: LocalDateTime,
+    ) {
+        var idx = 1
+        ps.setNullableInt(idx++, entity.eupmyeondongRiCode)
+        ps.setNullableString(idx++, entity.addressRoad)
+        ps.setNullableString(idx++, entity.addressJibun)
+        ps.setNullableShort(idx++, entity.bonNo)
+        ps.setNullableShort(idx++, entity.buNo)
+        ps.setNullableInt(idx++, entity.totalHousehold)
+        ps.setNullableInt(idx++, entity.totalBuilding)
+        ps.setNullableString(idx++, entity.heatingType)
+        ps.setNullableBigDecimal(idx++, entity.floorAreaRatio)
+        ps.setNullableBigDecimal(idx++, entity.buildingCoverageRatio)
+        ps.setString(idx++, auditUser)
+        ps.setTimestamp(idx++, Timestamp.valueOf(now))
+        ps.setLong(idx, entity.id)
+    }
+
     companion object {
         private val INSERT_SQL =
             """
@@ -120,6 +166,18 @@ class ApartmentComplexJdbcRepositoryImpl(
                 building_coverage_ratio, heating_type,
                 created_by, updated_by, created_at, updated_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """.trimIndent()
+
+        private val UPDATE_SQL =
+            """
+            UPDATE apartment_complexes SET
+                eupmyeondong_ri_code = ?, address_road = ?, address_jibun = ?,
+                bon_no = ?, bu_no = ?,
+                total_household = ?, total_building = ?,
+                heating_type = ?,
+                floor_area_ratio = ?, building_coverage_ratio = ?,
+                updated_by = ?, updated_at = ?
+            WHERE id = ?
             """.trimIndent()
     }
 }

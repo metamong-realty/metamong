@@ -82,7 +82,7 @@ class SubscriptionMatchingService(
         val conditionSubscriptions =
             subscriptionRepository.findActiveConditionByRegionCodes(
                 regionCodes,
-                unitType.exclusiveArea,
+                trade.exclusiveArea,
                 BigDecimal.valueOf(trade.price.toLong()),
             )
 

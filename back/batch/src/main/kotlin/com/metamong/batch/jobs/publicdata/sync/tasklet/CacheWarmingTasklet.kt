@@ -1,5 +1,6 @@
 package com.metamong.batch.jobs.publicdata.sync.tasklet
 
+import com.metamong.batch.jobs.publicdata.sync.cache.InMemoryMigrationCache
 import com.metamong.common.cache.CacheType
 import com.metamong.domain.apartment.model.ApartmentCodeType
 import com.metamong.infra.persistence.apartment.repository.ApartmentCodeMappingRepository
@@ -17,6 +18,7 @@ class CacheWarmingTasklet(
     private val apartmentCodeMappingRepository: ApartmentCodeMappingRepository,
     private val apartmentUnitTypeRepository: ApartmentUnitTypeRepository,
     private val cacheManager: CacheManager,
+    private val inMemoryMigrationCache: InMemoryMigrationCache,
 ) : Tasklet {
     override fun execute(
         contribution: StepContribution,
@@ -40,6 +42,10 @@ class CacheWarmingTasklet(
             cache.put(mapping.codeValue, mapping.complexId)
         }
 
+        inMemoryMigrationCache.loadAptSeqMappings(
+            mappings.associate { it.codeValue to it.complexId },
+        )
+
         logger.info { "aptSeq->complexId 캐시 워밍 완료: ${mappings.size}건" }
     }
 
@@ -53,9 +59,13 @@ class CacheWarmingTasklet(
 
         val unitTypes = apartmentUnitTypeRepository.findAll()
         unitTypes.forEach { unitType ->
-            val key = "${unitType.complexId}:${unitType.exclusiveArea}"
+            val key = "${unitType.complexId}:${unitType.exclusivePyeong}"
             cache.put(key, unitType)
         }
+
+        inMemoryMigrationCache.loadUnitTypes(
+            unitTypes.associate { "${it.complexId}:${it.exclusivePyeong}" to it.id },
+        )
 
         logger.info { "unitType 캐시 워밍 완료: ${unitTypes.size}건" }
     }

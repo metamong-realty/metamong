@@ -14,11 +14,12 @@ class ApartmentTradeJdbcRepositoryImpl(
         val sql =
             """
             INSERT INTO apartment_trades (
-                unit_type_id, price, floor, contract_year, contract_month, contract_day,
+                unit_type_id, exclusive_area, price, floor, contract_year, contract_month, contract_day,
                 contract_date, deal_type, is_canceled, canceled_date, raw_id,
                 created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW()) AS new_vals
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW()) AS new_vals
             ON DUPLICATE KEY UPDATE
+                exclusive_area = new_vals.exclusive_area,
                 price = new_vals.price,
                 floor = new_vals.floor,
                 contract_day = new_vals.contract_day,
@@ -33,6 +34,7 @@ class ApartmentTradeJdbcRepositoryImpl(
             entities.map { entity ->
                 arrayOf(
                     entity.unitTypeId,
+                    entity.exclusiveArea,
                     entity.price,
                     entity.floor,
                     entity.contractYear,

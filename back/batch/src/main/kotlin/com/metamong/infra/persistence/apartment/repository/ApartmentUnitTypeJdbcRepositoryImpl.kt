@@ -63,12 +63,7 @@ class ApartmentUnitTypeJdbcRepositoryImpl(
     ) {
         var idx = 1
         ps.setLong(idx++, entity.complexId)
-        ps.setBigDecimal(idx++, entity.exclusiveArea)
-        if (entity.exclusivePyeong != null) {
-            ps.setShort(idx++, entity.exclusivePyeong!!)
-        } else {
-            ps.setNull(idx++, java.sql.Types.SMALLINT)
-        }
+        ps.setShort(idx++, entity.exclusivePyeong)
         ps.setString(idx++, auditUser)
         ps.setString(idx++, auditUser)
         ps.setTimestamp(idx++, Timestamp.valueOf(now))
@@ -79,9 +74,9 @@ class ApartmentUnitTypeJdbcRepositoryImpl(
         private val INSERT_SQL =
             """
             INSERT INTO apartment_unit_types (
-                complex_id, exclusive_area, exclusive_pyeong,
+                complex_id, exclusive_pyeong,
                 created_by, updated_by, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?)
             """.trimIndent()
     }
 }

@@ -2,12 +2,11 @@ package com.metamong.infra.persistence.apartment.repository
 
 import com.metamong.domain.apartment.model.ApartmentUnitTypeEntity
 import org.springframework.data.jpa.repository.JpaRepository
-import java.math.BigDecimal
 
 interface ApartmentUnitTypeRepository : JpaRepository<ApartmentUnitTypeEntity, Long> {
-    fun findByComplexIdAndExclusiveArea(
+    fun findByComplexIdAndExclusivePyeong(
         complexId: Long,
-        exclusiveArea: BigDecimal,
+        exclusivePyeong: Short,
     ): ApartmentUnitTypeEntity?
 
     fun findAllByComplexId(complexId: Long): List<ApartmentUnitTypeEntity>

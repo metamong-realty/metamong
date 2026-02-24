@@ -1,5 +1,6 @@
 package com.metamong.service.apartment
 
+import com.metamong.batch.jobs.publicdata.sync.cache.InMemoryMigrationCache
 import com.metamong.domain.apartment.model.ApartmentRentEntity
 import com.metamong.domain.apartment.model.ApartmentTradeEntity
 import com.metamong.domain.apartment.model.RentType
@@ -10,20 +11,23 @@ import com.metamong.util.apartment.PriceParser
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
 import java.time.LocalDate
 
 @Service
 @Transactional(readOnly = true)
 class ApartmentTradeSyncQueryService(
     private val apartmentComplexQueryService: ApartmentComplexQueryService,
+    private val inMemoryMigrationCache: InMemoryMigrationCache,
 ) {
     fun buildTradeFromRaw(tradeRaw: ApartmentTradeRawDocumentEntity): ApartmentTradeEntity? {
         val rawId = tradeRaw.id ?: return null
-        val unitTypeId = getUnitTypeId(tradeRaw.aptSeq, tradeRaw.excluUseAr, rawId) ?: return null
+        val unitTypeInfo = resolveUnitType(tradeRaw.aptSeq, tradeRaw.excluUseAr, rawId) ?: return null
         val contractInfo = parseContractInfo(tradeRaw.dealYear, tradeRaw.dealMonth, tradeRaw.dealDay) ?: return null
 
         return ApartmentTradeEntity.create(
-            unitTypeId = unitTypeId,
+            unitTypeId = unitTypeInfo.unitTypeId,
+            exclusiveArea = unitTypeInfo.exclusiveArea,
             price = PriceParser.parsePriceOrZero(tradeRaw.dealAmount),
             floor = tradeRaw.floor?.toShortOrNull(),
             contractYear = contractInfo.year,
@@ -39,14 +43,15 @@ class ApartmentTradeSyncQueryService(
 
     fun buildRentFromRaw(rentRaw: ApartmentRentRawDocumentEntity): ApartmentRentEntity? {
         val rawId = rentRaw.id ?: return null
-        val unitTypeId = getUnitTypeId(rentRaw.aptSeq, rentRaw.excluUseAr, rawId) ?: return null
+        val unitTypeInfo = resolveUnitType(rentRaw.aptSeq, rentRaw.excluUseAr, rawId) ?: return null
         val contractInfo = parseContractInfo(rentRaw.dealYear, rentRaw.dealMonth, rentRaw.dealDay) ?: return null
 
         val deposit = PriceParser.parsePriceOrZero(rentRaw.deposit)
         val monthlyRent = PriceParser.parsePriceOrZero(rentRaw.monthlyRent)
 
         return ApartmentRentEntity.create(
-            unitTypeId = unitTypeId,
+            unitTypeId = unitTypeInfo.unitTypeId,
+            exclusiveArea = unitTypeInfo.exclusiveArea,
             rentType = RentType.fromMonthlyRent(monthlyRent),
             deposit = deposit,
             monthlyRent = monthlyRent,
@@ -61,14 +66,21 @@ class ApartmentTradeSyncQueryService(
         )
     }
 
-    private fun getUnitTypeId(
+    private data class UnitTypeInfo(
+        val unitTypeId: Long,
+        val exclusiveArea: BigDecimal,
+    )
+
+    private fun resolveUnitType(
         apartmentSequence: String?,
         exclusiveUseArea: String?,
         rawId: String,
-    ): Long? {
+    ): UnitTypeInfo? {
         if (apartmentSequence == null) return null
 
-        val complexId = apartmentComplexQueryService.getComplexIdByApartmentSequence(apartmentSequence)
+        val complexId =
+            inMemoryMigrationCache.getComplexId(apartmentSequence)
+                ?: apartmentComplexQueryService.getComplexIdByApartmentSequence(apartmentSequence)
         if (complexId == null) {
             logger.warn { "Complex 없음: aptSeq=$apartmentSequence, rawId=$rawId" }
             return null
@@ -80,12 +92,21 @@ class ApartmentTradeSyncQueryService(
             return null
         }
 
-        val unitType = apartmentComplexQueryService.getUnitType(complexId, exclusiveArea)
-        if (unitType == null) {
-            logger.warn { "UnitType 없음: complexId=$complexId, area=$exclusiveArea, rawId=$rawId" }
+        val exclusivePyeong = AreaConverter.toPyeong(exclusiveArea)
+        if (exclusivePyeong == null) {
+            logger.warn { "평형 변환 실패: exclusiveArea=$exclusiveArea" }
             return null
         }
-        return unitType.id
+
+        val unitTypeId = inMemoryMigrationCache.getUnitTypeId(complexId, exclusivePyeong)
+        if (unitTypeId != null) return UnitTypeInfo(unitTypeId, exclusiveArea)
+
+        val unitType = apartmentComplexQueryService.getUnitType(complexId, exclusivePyeong)
+        if (unitType == null) {
+            logger.warn { "UnitType 없음: complexId=$complexId, pyeong=$exclusivePyeong, rawId=$rawId" }
+            return null
+        }
+        return UnitTypeInfo(unitType.id, exclusiveArea)
     }
 
     private fun parseContractInfo(

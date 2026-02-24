@@ -12,7 +12,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.math.BigDecimal
 
 @Service
 @Transactional(readOnly = true)
@@ -23,13 +22,13 @@ class ApartmentComplexQueryService(
 ) {
     fun getUnmatchedInfoRawComplexes(
         limit: Long,
-        offset: Long,
-    ): List<ApartmentComplexEntity> = apartmentComplexRepository.findUnmatchedInfoRawComplexes(limit, offset)
+        lastId: Long,
+    ): List<ApartmentComplexEntity> = apartmentComplexRepository.findUnmatchedInfoRawComplexes(limit, lastId)
 
     fun getUnmatchedLicenseRawComplexes(
         limit: Long,
-        offset: Long,
-    ): List<ApartmentComplexEntity> = apartmentComplexRepository.findUnmatchedLicenseRawComplexes(limit, offset)
+        lastId: Long,
+    ): List<ApartmentComplexEntity> = apartmentComplexRepository.findUnmatchedLicenseRawComplexes(limit, lastId)
 
     @Cacheable(
         value = [CacheType.APARTMENT_SEQUENCE_TO_COMPLEX_ID],
@@ -62,13 +61,13 @@ class ApartmentComplexQueryService(
 
     @Cacheable(
         value = [CacheType.UNIT_TYPE],
-        key = "#complexId + ':' + #exclusiveArea",
+        key = "#complexId + ':' + #exclusivePyeong",
         unless = "#result == null",
     )
     fun getUnitType(
         complexId: Long,
-        exclusiveArea: BigDecimal,
-    ): ApartmentUnitTypeEntity? = apartmentUnitTypeRepository.findByComplexIdAndExclusiveArea(complexId, exclusiveArea)
+        exclusivePyeong: Short,
+    ): ApartmentUnitTypeEntity? = apartmentUnitTypeRepository.findByComplexIdAndExclusivePyeong(complexId, exclusivePyeong)
 
     fun getUnitTypesByComplexId(complexId: Long): List<ApartmentUnitTypeEntity> = apartmentUnitTypeRepository.findAllByComplexId(complexId)
 

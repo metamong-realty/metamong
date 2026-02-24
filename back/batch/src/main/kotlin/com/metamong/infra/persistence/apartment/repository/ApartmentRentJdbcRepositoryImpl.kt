@@ -14,12 +14,13 @@ class ApartmentRentJdbcRepositoryImpl(
         val sql =
             """
             INSERT INTO apartment_rents (
-                unit_type_id, rent_type, deposit, monthly_rent, floor,
+                unit_type_id, exclusive_area, rent_type, deposit, monthly_rent, floor,
                 contract_year, contract_month, contract_day, contract_date,
                 is_canceled, canceled_date, raw_id,
                 created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW()) AS new_vals
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW()) AS new_vals
             ON DUPLICATE KEY UPDATE
+                exclusive_area = new_vals.exclusive_area,
                 deposit = new_vals.deposit,
                 monthly_rent = new_vals.monthly_rent,
                 floor = new_vals.floor,
@@ -34,6 +35,7 @@ class ApartmentRentJdbcRepositoryImpl(
             entities.map { entity ->
                 arrayOf(
                     entity.unitTypeId,
+                    entity.exclusiveArea,
                     entity.rentType.name,
                     entity.deposit,
                     entity.monthlyRent,

@@ -50,7 +50,7 @@ class ApartmentTradeRepositoryCustomImpl :
                         ApartmentTradeListProjection::class.java,
                         trade.id,
                         trade.contractDate,
-                        unitType.exclusiveArea,
+                        trade.exclusiveArea,
                         unitType.exclusivePyeong,
                         trade.floor,
                         trade.price,

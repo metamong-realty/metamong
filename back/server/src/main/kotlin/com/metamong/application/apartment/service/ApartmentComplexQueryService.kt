@@ -83,7 +83,7 @@ class ApartmentComplexQueryService(
         )
     }
 
-    fun getUnitTypes(complexId: Long) = apartmentUnitTypeRepository.findByComplexIdOrderByExclusiveAreaAsc(complexId)
+    fun getUnitTypes(complexId: Long) = apartmentUnitTypeRepository.findByComplexIdOrderByExclusivePyeongAsc(complexId)
 
     fun getTrades(
         complexId: Long,

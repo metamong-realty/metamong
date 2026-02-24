@@ -53,7 +53,7 @@ class ApartmentRentRepositoryCustomImpl :
                         ApartmentRentListProjection::class.java,
                         rent.id,
                         rent.contractDate,
-                        unitType.exclusiveArea,
+                        rent.exclusiveArea,
                         unitType.exclusivePyeong,
                         rent.floor,
                         rent.rentType,

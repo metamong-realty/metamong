@@ -64,15 +64,15 @@ class CreateUnitTypeTasklet(
                 return@mapNotNull null
             }
 
-            val cacheKey = "$complexId:$exclusiveArea"
+            val exclusivePyeong = AreaConverter.toPyeong(exclusiveArea) ?: return@mapNotNull null
+
+            val cacheKey = "$complexId:$exclusivePyeong"
             if (unitTypeCache?.get(cacheKey) != null) {
                 return@mapNotNull null
             }
 
-            val exclusivePyeong = AreaConverter.toPyeong(exclusiveArea)
             ApartmentUnitTypeEntity.create(
                 complexId = complexId,
-                exclusiveArea = exclusiveArea,
                 exclusivePyeong = exclusivePyeong,
             )
         }
@@ -82,7 +82,7 @@ class CreateUnitTypeTasklet(
         val cache = cacheManager.getCache(CacheType.UNIT_TYPE) ?: return
 
         entities.forEach { entity ->
-            val key = "${entity.complexId}:${entity.exclusiveArea}"
+            val key = "${entity.complexId}:${entity.exclusivePyeong}"
             cache.put(key, entity)
         }
     }

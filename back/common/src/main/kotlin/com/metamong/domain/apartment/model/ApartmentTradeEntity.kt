@@ -3,12 +3,14 @@ package com.metamong.domain.apartment.model
 import com.metamong.domain.base.BaseEntity
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
+import java.math.BigDecimal
 import java.time.LocalDate
 
 @Entity
 @Table(name = "apartment_trades")
 class ApartmentTradeEntity(
     val unitTypeId: Long,
+    val exclusiveArea: BigDecimal,
     val price: Int,
     val floor: Short? = null,
     val contractYear: Short,
@@ -23,6 +25,7 @@ class ApartmentTradeEntity(
     companion object {
         fun create(
             unitTypeId: Long,
+            exclusiveArea: BigDecimal,
             price: Int,
             floor: Short?,
             contractYear: Short,
@@ -36,6 +39,7 @@ class ApartmentTradeEntity(
         ): ApartmentTradeEntity =
             ApartmentTradeEntity(
                 unitTypeId = unitTypeId,
+                exclusiveArea = exclusiveArea,
                 price = price,
                 floor = floor,
                 contractYear = contractYear,
