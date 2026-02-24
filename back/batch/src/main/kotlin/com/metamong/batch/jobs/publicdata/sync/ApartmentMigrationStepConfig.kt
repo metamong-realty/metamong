@@ -54,6 +54,18 @@ class ApartmentMigrationStepConfig {
         return executor
     }
 
+    @Bean
+    fun complexStepTaskExecutor(): TaskExecutor {
+        val executor = ThreadPoolTaskExecutor()
+        executor.corePoolSize = 8
+        executor.maxPoolSize = 8
+        executor.setThreadNamePrefix("complex-step-")
+        executor.setWaitForTasksToCompleteOnShutdown(true)
+        executor.setAwaitTerminationSeconds(30)
+        executor.initialize()
+        return executor
+    }
+
     // ===== Steps =====
     @Bean
     fun createComplexStep(
@@ -65,12 +77,14 @@ class ApartmentMigrationStepConfig {
         apartmentMigrationStepListener: ApartmentMigrationStepListener,
         apartmentMigrationSkipListener: ApartmentMigrationSkipListener,
         apartmentMigrationRetryListener: ApartmentMigrationRetryListener,
+        complexStepTaskExecutor: TaskExecutor,
     ): Step =
         StepBuilder("createComplexStep", jobRepository)
             .chunk<ApartmentTradeRawDocumentEntity, ComplexWithApartmentSequence?>(COMPLEX_CHUNK_SIZE, transactionManager)
             .reader(tradeRawDistinctAptSeqReader)
             .processor(createComplexProcessor)
             .writer(complexWriter)
+            .taskExecutor(complexStepTaskExecutor)
             .faultTolerant()
             .skipLimit(100)
             .skip(DataAccessException::class.java)
@@ -91,12 +105,14 @@ class ApartmentMigrationStepConfig {
         complexWriter: ComplexWriter,
         apartmentMigrationSkipListener: ApartmentMigrationSkipListener,
         apartmentMigrationRetryListener: ApartmentMigrationRetryListener,
+        complexStepTaskExecutor: TaskExecutor,
     ): Step =
         StepBuilder("createComplexFromRentStep", jobRepository)
             .chunk<ApartmentRentRawDocumentEntity, ComplexWithApartmentSequence?>(COMPLEX_CHUNK_SIZE, transactionManager)
             .reader(rentRawDistinctAptSeqReader)
             .processor(createComplexFromRentProcessor)
             .writer(complexWriter)
+            .taskExecutor(complexStepTaskExecutor)
             .faultTolerant()
             .skipLimit(100)
             .skip(DataAccessException::class.java)

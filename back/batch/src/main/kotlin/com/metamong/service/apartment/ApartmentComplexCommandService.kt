@@ -29,17 +29,29 @@ class ApartmentComplexCommandService(
     fun saveAllComplexesWithMappings(items: List<ComplexWithApartmentSequence>): List<ApartmentComplexEntity> {
         if (items.isEmpty()) return emptyList()
 
-        val savedComplexes = apartmentComplexRepository.batchInsert(items.map { it.complex })
+        // 병렬 실행 시 race condition 방어: 이미 매핑이 존재하는 aptSeq 제외
+        val aptSeqs = items.map { it.apartmentSequence }.toSet()
+        val existingAptSeqs =
+            apartmentCodeMappingRepository
+                .findAllByCodeTypeAndCodeValueIn(ApartmentCodeType.APT_SEQ, aptSeqs)
+                .map { it.codeValue }
+                .toSet()
+        val newItems = items.filter { it.apartmentSequence !in existingAptSeqs }
+
+        if (newItems.isEmpty()) return emptyList()
+
+        val savedComplexes = apartmentComplexRepository.batchInsert(newItems.map { it.complex })
 
         val codeMappings =
-            savedComplexes.zip(items).map { (saved, item) ->
+            savedComplexes.zip(newItems).map { (saved, item) ->
                 ApartmentCodeMappingEntity.create(
                     complexId = saved.id,
                     codeType = ApartmentCodeType.APT_SEQ,
                     codeValue = item.apartmentSequence,
                 )
             }
-        apartmentCodeMappingRepository.batchInsert(codeMappings)
+        // INSERT IGNORE로 최종 안전망 (race condition 최종 방어)
+        apartmentCodeMappingRepository.batchInsertIgnore(codeMappings)
 
         logger.info { "Complex 일괄 저장 완료: ${savedComplexes.size}건" }
         return savedComplexes
