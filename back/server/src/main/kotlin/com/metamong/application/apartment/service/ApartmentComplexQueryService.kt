@@ -68,7 +68,7 @@ class ApartmentComplexQueryService(
             } ?: false
 
         return ApartmentComplexDetailDto(
-            id = complex.id!!,
+            id = complex.id,
             name = complex.nameRaw,
             addressRoad = complex.addressRoad,
             addressJibun = complex.addressJibun,
@@ -83,7 +83,7 @@ class ApartmentComplexQueryService(
         )
     }
 
-    fun getUnitTypes(complexId: Long) = apartmentUnitTypeRepository.findByComplexIdOrderByExclusiveAreaAsc(complexId)
+    fun getUnitTypes(complexId: Long) = apartmentUnitTypeRepository.findByComplexIdOrderByExclusivePyeongAsc(complexId)
 
     fun getTrades(
         complexId: Long,

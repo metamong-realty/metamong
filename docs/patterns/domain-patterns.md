@@ -76,13 +76,13 @@ abstract class AggregateRoot<T> : BaseEntity<T>() {
     // 비즈니스 규칙 검증 헬퍼
     protected fun require(condition: Boolean, lazyMessage: () -> String) {
         if (!condition) {
-            throw DomainException(lazyMessage())
+            throw CommonException.BadRequest(lazyMessage())
         }
     }
-    
+
     protected fun ensure(condition: Boolean, lazyMessage: () -> String) {
         if (!condition) {
-            throw BusinessRuleViolationException(lazyMessage())
+            throw CommonException.BadRequest(lazyMessage())
         }
     }
 }
@@ -430,7 +430,7 @@ class UserDomainServiceImpl(
     
     override fun calculateUserRank(userId: Long): UserRank {
         val user = userRepository.findById(userId)
-            ?: throw UserNotFoundException("User not found: $userId")
+            ?: throw UserException.NotFound()
         
         val totalOrderAmount = orderRepository.getTotalOrderAmountByUserId(userId)
         val orderCount = orderRepository.countByUserId(userId)
@@ -555,30 +555,120 @@ class UserEventHandler(
 
 ## Exception 패턴
 
-### 도메인 예외 계층
+### 예외 계층 구조
+```
+CustomException (common 모듈, open class)
+├── CommonException (common 모듈, sealed class)
+│   ├── BadRequest, InvalidParameter, ParameterRequired
+│   ├── ResourceNotFound
+│   └── InternalServerError
+├── AuthException (server 모듈, sealed class)
+│   ├── TokenExpired, TokenInvalid, Unauthorized
+│   └── RefreshTokenNotFound, RefreshTokenMismatch
+├── OAuthException (server 모듈, sealed class)
+│   └── UnsupportedProvider
+├── UserException (server 모듈, sealed class)
+│   ├── NotFound, AlreadyWithdrawn, EmailRequired
+├── SubscriptionException (server 모듈, sealed class)
+│   ├── NotFound, LimitExceeded, AccessDenied
+│   └── InvalidRegionCode, InvalidPriceRange, ConditionRequired
+└── BatchException (batch 모듈, sealed class)
+    ├── JobNotFound, JobExecutionFailed, ParameterInvalid
+    └── ExternalApiError
+```
+
+### CustomException 베이스 클래스 (common 모듈)
 ```kotlin
-// 최상위 도메인 예외
-abstract class DomainException(
+// back/common/.../common/exception/CustomException.kt
+open class CustomException(
+    val status: HttpStatus,
+    override val message: String,
+    val code: String? = null,
+) : RuntimeException(message)
+```
+
+### 도메인별 sealed class 예외 (server 모듈)
+```kotlin
+// back/server/.../domain/{도메인}/exception/{도메인}Exception.kt
+sealed class UserException(
+    status: HttpStatus,
     message: String,
-    cause: Throwable? = null
-) : RuntimeException(message, cause)
+    code: String? = null,
+) : CustomException(status, message, code) {
 
-// 비즈니스 규칙 위반
-class BusinessRuleViolationException(
-    message: String,
-    cause: Throwable? = null
-) : DomainException(message, cause)
+    class NotFound(
+        message: String = "사용자를 찾을 수 없습니다.",
+    ) : UserException(HttpStatus.NOT_FOUND, message, "USER_001")
 
-// 엔티티를 찾을 수 없음
-class EntityNotFoundException(
-    entityType: String,
-    identifier: Any
-) : DomainException("$entityType not found: $identifier")
+    class AlreadyWithdrawn(
+        message: String = "이미 탈퇴한 사용자입니다.",
+    ) : UserException(HttpStatus.BAD_REQUEST, message, "USER_002")
+}
+```
 
-// 구체적인 도메인 예외들
-class UserNotFoundException(userId: Long) : EntityNotFoundException("User", userId)
-class DuplicateEmailException(email: String) : BusinessRuleViolationException("Email already exists: $email")
-class InactiveUserException(userId: Long) : BusinessRuleViolationException("User is inactive: $userId")
+### 사용 예시
+```kotlin
+// 기본 메시지 사용
+throw UserException.NotFound()
+throw SubscriptionException.LimitExceeded()
+throw AuthException.TokenInvalid()
+
+// 커스텀 메시지
+throw CommonException.InvalidParameter("regionCode는 5자리 또는 10자리여야 합니다.")
+```
+
+### 새 도메인 예외 추가 시
+1. `back/server/.../domain/{도메인}/exception/{도메인}Exception.kt` 생성
+2. `sealed class {도메인}Exception : CustomException(...)` 정의
+3. 하위 클래스에 기본 메시지, HttpStatus, code 지정
+
+## Service 레이어 패턴
+
+### Entity 노출 금지 + RequestDto 패턴
+```kotlin
+// Request → RequestDto 변환
+data class CreateUserRequest(
+    @field:NotBlank val email: String,
+    @field:NotBlank val name: String,
+) {
+    fun toDto(): CreateUserRequestDto = CreateUserRequestDto(email = email, name = name)
+}
+
+data class CreateUserRequestDto(
+    val email: String,
+    val name: String,
+)
+
+// Service는 ResponseDto 반환 (Entity 노출 금지)
+@Service
+class UserService(private val userRepository: UserRepository) {
+    @Transactional
+    fun create(dto: CreateUserRequestDto): UserResponse {
+        val entity = UserEntity(email = dto.email, name = dto.name)
+        return UserResponse.from(userRepository.save(entity))
+    }
+
+    @Transactional(readOnly = true)
+    fun getById(id: Long): UserResponse {
+        val entity = userRepository.findByIdOrNull(id)
+            ?: throw UserException.NotFound()
+        return UserResponse.from(entity)
+    }
+}
+```
+
+### 금액 필드 타입
+```kotlin
+// Good - BigDecimal 사용
+class SubscriptionEntity(
+    var minPrice: BigDecimal? = null,
+    var maxPrice: BigDecimal? = null,
+)
+
+// Bad - Long/Int 사용 금지
+class SubscriptionEntity(
+    var minPrice: Long? = null,
+)
 ```
 
 ## 패턴 사용 가이드

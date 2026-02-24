@@ -1,7 +1,3 @@
----
-globs: "**/*.kt"
----
-
 # Kotlin Style Guidelines
 
 ## Naming Rules
@@ -18,9 +14,19 @@ globs: "**/*.kt"
 
 `val` 우선, `var` 최소화. DTO는 `data class` + `val`, Entity는 일반 `class`.
 
+- **DTO/VO**: 반드시 `val` only
+- **Entity**: 상태 변경이 필요한 필드만 `var`, 나머지는 `val`
+- **허용 예외**: Entity의 `@LastModifiedDate var updatedAt`, 도메인 메서드로 변경하는 상태 필드
+
 ```kotlin
 // Good
 data class UserDto(val id: Long, val email: String)
+
+// Good - Entity 상태 변경 필드
+class UserEntity(
+    val userId: Long,        // 불변 - val
+    var status: UserStatus,  // 상태 변경 필요 - var
+)
 
 // Bad
 class UserDto(var id: Long, var email: String)
@@ -28,15 +34,18 @@ class UserDto(var id: Long, var email: String)
 
 ## Null Safety
 
-`!!` 사용 금지. safe call(`?.`)과 Elvis(`?:`) 활용.
+**`!!` 사용 절대 금지.** safe call(`?.`), Elvis(`?:`), `checkNotNull()`, `requireNotNull()` 활용.
 
 ```kotlin
 // Good
 val userName = user?.name ?: "Unknown"
-fun findUser(id: Long): User? = userRepository.findByIdOrNull(id)
+val id = checkNotNull(entity.id) { "영속화되지 않은 Entity" }
+val code = requireNotNull(regionCode) { "지역코드는 필수입니다" }
+val id = entity.id ?: error("영속화되지 않은 Entity")
 
-// Bad - !! 사용 금지
-fun findUser(id: Long): User = userRepository.findById(id)!!
+// Bad - !! 사용 절대 금지
+val userName = user!!.name
+val id = entity.id!!
 ```
 
 ## Class Structure Order
@@ -54,28 +63,10 @@ fun findUser(id: Long): User = userRepository.findById(id)!!
 
 표현식으로 사용. enum은 모든 케이스 처리하여 `else` 불필요하게 작성.
 
-```kotlin
-val message = when (status) {
-    Status.SUCCESS -> "성공"
-    Status.FAIL -> "실패"
-    Status.PENDING -> "대기중"
-}
-
-val max = if (a > b) a else b
-```
-
 ## Exception Handling
 
-```kotlin
-// 검증: require (인자), check (상태), checkNotNull (null)
-require(age >= 0) { "나이는 0 이상이어야 합니다" }
-check(isInitialized) { "초기화되지 않았습니다" }
-
-// 안전한 실행: runCatching
-val result = runCatching { riskyOperation() }
-    .onFailure { logger.error(it) { "실패" } }
-    .getOrNull()
-```
+- 검증: `require` (인자), `check` (상태), `checkNotNull` (null)
+- 안전한 실행: `runCatching { }.onFailure { }.getOrNull()`
 
 ## Data Class vs Class
 

@@ -1,11 +1,14 @@
 ---
 description: "자동으로 spec → plan → 구현 순서로 진행하는 워크플로우입니다"
-disable-model-invocation: true
 ---
 
 spec → plan → 구현을 자동으로 이어서 진행하는 워크플로우 스킬이다.
 
 ## 절차
+
+### 0단계 : 워크플로우 진행 여부 확인
+- skill이 실행되면, 먼저 사용자에게 워크플로우 진행 여부를 확인하라
+- 예: "이 작업은 새 Service 생성 + API 3개가 필요한 복잡한 작업입니다. spec → plan → 구현 순서로 진행할까요, 아니면 바로 구현할까요?"
 
 ### 1단계: Spec 생성
 - 관련 파일을 서브에이전트(`Task(subagent_type="general-purpose")`)로 탐색하라.

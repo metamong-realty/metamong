@@ -1,6 +1,5 @@
 ---
 description: "보안 취약점을 스캔하고 보안 강화 방안을 제안합니다 (OWASP Top 10 기준)"
-disable-model-invocation: true
 ---
 
 프로젝트의 보안 취약점을 OWASP Top 10 기준으로 스캔하라. 모든 소스 코드와 설정 파일을 분석하라.
@@ -37,35 +36,19 @@ disable-model-invocation: true
 각 발견 사항을 아래 형식으로 보고하라:
 
 ```
-❌ CRITICAL: [문제 설명]
+CRITICAL: [문제 설명]
    File: 파일명:라인번호
    Code: 문제가 되는 코드
    Fix: 수정 방법 (코드 포함)
 
-❌ HIGH: ...
-⚠️  MEDIUM: ...
-✅ PASS: [통과한 항목]
+HIGH: ...
+MEDIUM: ...
+PASS: [통과한 항목]
 ```
 
-## 수정 제안 시 적용할 패턴
+## 수정 패턴 참조
 
-**Access Control**
-```kotlin
-// @PreAuthorize("hasRole('ADMIN') or principal.id == #id") 추가
-```
-
-**Injection 방지**
-```kotlin
-// QueryDSL: queryFactory.selectFrom(user).where(user.email.eq(email))
-// 절대 문자열 연결 쿼리 사용 금지
-```
-
-**암호화**
-```kotlin
-// 비밀번호: BCryptPasswordEncoder
-// 민감정보: AES/GCM/NoPadding
-// 키: @Value("${app.secret-key}") — 환경변수에서 주입
-```
+- `docs/patterns/security-patterns.md` — Access Control, Injection 방지, 암호화 패턴
 
 ## 완료 후
 

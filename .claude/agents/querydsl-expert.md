@@ -1,5 +1,6 @@
 ---
 name: QueryDSL Expert
+model: sonnet
 description: "QueryDSL, JPA 쿼리 최적화 전문가. 동적 쿼리, Projection, N+1 해결"
 tools:
   - Read

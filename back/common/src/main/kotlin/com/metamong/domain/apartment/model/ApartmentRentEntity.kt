@@ -1,16 +1,18 @@
 package com.metamong.domain.apartment.model
 
-import com.metamong.domain.base.ExtendedBaseEntity
+import com.metamong.domain.base.BaseEntity
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
+import java.math.BigDecimal
 import java.time.LocalDate
 
 @Entity
 @Table(name = "apartment_rents")
 class ApartmentRentEntity(
     val unitTypeId: Long,
+    val exclusiveArea: BigDecimal,
     @Enumerated(EnumType.STRING)
     val rentType: RentType,
     val deposit: Int,
@@ -23,10 +25,11 @@ class ApartmentRentEntity(
     val isCanceled: Boolean = false,
     val canceledDate: LocalDate? = null,
     val rawId: String? = null,
-) : ExtendedBaseEntity() {
+) : BaseEntity() {
     companion object {
         fun create(
             unitTypeId: Long,
+            exclusiveArea: BigDecimal,
             rentType: RentType,
             deposit: Int,
             monthlyRent: Int,
@@ -41,6 +44,7 @@ class ApartmentRentEntity(
         ): ApartmentRentEntity =
             ApartmentRentEntity(
                 unitTypeId = unitTypeId,
+                exclusiveArea = exclusiveArea,
                 rentType = rentType,
                 deposit = deposit,
                 monthlyRent = monthlyRent,

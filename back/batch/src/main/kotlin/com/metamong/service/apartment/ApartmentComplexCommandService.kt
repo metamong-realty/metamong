@@ -5,18 +5,14 @@ import com.metamong.domain.apartment.model.ApartmentCodeMappingEntity
 import com.metamong.domain.apartment.model.ApartmentCodeType
 import com.metamong.domain.apartment.model.ApartmentComplexEntity
 import com.metamong.domain.apartment.model.ApartmentUnitTypeEntity
-import com.metamong.infra.persistence.repository.apartment.ApartmentCodeMappingRepository
-import com.metamong.infra.persistence.repository.apartment.ApartmentComplexRepository
-import com.metamong.infra.persistence.repository.apartment.ApartmentUnitTypeRepository
+import com.metamong.infra.persistence.apartment.repository.ApartmentCodeMappingRepository
+import com.metamong.infra.persistence.apartment.repository.ApartmentComplexRepository
+import com.metamong.infra.persistence.apartment.repository.ApartmentUnitTypeRepository
 import com.metamong.service.apartment.dto.ComplexWithApartmentSequence
-import com.metamong.util.apartment.AreaConverter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.cache.CacheManager
-import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.math.BigDecimal
 import java.util.concurrent.ConcurrentHashMap
 
 @Service
@@ -38,7 +34,7 @@ class ApartmentComplexCommandService(
         val codeMappings =
             savedComplexes.zip(items).map { (saved, item) ->
                 ApartmentCodeMappingEntity.create(
-                    complexId = saved.id!!,
+                    complexId = saved.id,
                     codeType = ApartmentCodeType.APT_SEQ,
                     codeValue = item.apartmentSequence,
                 )

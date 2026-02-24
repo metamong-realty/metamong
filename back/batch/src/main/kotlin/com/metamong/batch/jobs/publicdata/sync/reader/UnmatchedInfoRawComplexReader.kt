@@ -10,8 +10,8 @@ class UnmatchedInfoRawComplexReader(
     private val apartmentComplexQueryService: ApartmentComplexQueryService,
 ) : ItemReader<ApartmentComplexEntity> {
     private val delegate: UnmatchedComplexItemReader =
-        UnmatchedComplexItemReader { limit, offset ->
-            apartmentComplexQueryService.getUnmatchedInfoRawComplexes(limit, offset)
+        UnmatchedComplexItemReader { limit, lastId ->
+            apartmentComplexQueryService.getUnmatchedInfoRawComplexes(limit, lastId)
         }
 
     override fun read(): ApartmentComplexEntity? = delegate.read()

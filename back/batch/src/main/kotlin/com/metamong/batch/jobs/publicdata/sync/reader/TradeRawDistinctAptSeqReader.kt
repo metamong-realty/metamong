@@ -2,7 +2,7 @@ package com.metamong.batch.jobs.publicdata.sync.reader
 
 import com.metamong.batch.jobs.publicdata.sync.DealYearMonthRange
 import com.metamong.batch.jobs.publicdata.sync.MigrationMode
-import com.metamong.infra.persistence.repository.mongo.publicdata.ApartmentTradeRawRepository
+import com.metamong.infra.persistence.mongo.publicdata.repository.ApartmentTradeRawRepository
 import com.metamong.model.document.publicdata.ApartmentTradeRawDocumentEntity
 import com.metamong.service.apartment.ApartmentComplexQueryService
 import jakarta.annotation.PostConstruct

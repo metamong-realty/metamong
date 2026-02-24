@@ -1,6 +1,6 @@
 package com.metamong.domain.apartment.model
 
-import com.metamong.domain.base.ExtendedBaseEntity
+import com.metamong.domain.base.BaseEntity
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -13,7 +13,7 @@ class ApartmentCodeMappingEntity(
     @Enumerated(EnumType.STRING)
     val codeType: ApartmentCodeType,
     val codeValue: String,
-) : ExtendedBaseEntity() {
+) : BaseEntity() {
     companion object {
         fun create(
             complexId: Long,

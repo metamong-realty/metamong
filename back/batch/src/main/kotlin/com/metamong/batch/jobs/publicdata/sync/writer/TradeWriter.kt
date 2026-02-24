@@ -1,7 +1,7 @@
 package com.metamong.batch.jobs.publicdata.sync.writer
 
 import com.metamong.domain.apartment.model.ApartmentTradeEntity
-import com.metamong.service.apartment.ApartmentTradeSyncService
+import com.metamong.service.apartment.ApartmentTradeSyncCommandService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.batch.item.Chunk
 import org.springframework.batch.item.ItemWriter
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class TradeWriter(
-    private val apartmentTradeSyncService: ApartmentTradeSyncService,
+    private val apartmentTradeSyncCommandService: ApartmentTradeSyncCommandService,
 ) : ItemWriter<ApartmentTradeEntity?> {
     override fun write(chunk: Chunk<out ApartmentTradeEntity?>) {
         val validItems = chunk.items.filterNotNull()
@@ -19,7 +19,7 @@ class TradeWriter(
                 "Trade 동기화 시작: contractYear=${first.contractYear}, contractMonth=${first.contractMonth}, " +
                     "rawId=${first.rawId}, 총 ${validItems.size}건"
             }
-            val count = apartmentTradeSyncService.batchUpsertTrades(validItems)
+            val count = apartmentTradeSyncCommandService.batchUpsertTrades(validItems)
             logger.info { "Trade 동기화 완료: ${count}건" }
         }
     }

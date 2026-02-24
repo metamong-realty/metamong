@@ -1,5 +1,6 @@
 ---
 name: Kotlin Expert
+model: sonnet
 description: "Kotlin 코딩 컨벤션, 함수형 프로그래밍, 확장 함수 전문가"
 tools:
   - Read

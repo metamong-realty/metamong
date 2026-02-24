@@ -6,22 +6,20 @@ import org.springframework.batch.item.ItemReader
 class UnmatchedComplexItemReader(
     private val fetcher: (Long, Long) -> List<ApartmentComplexEntity>,
 ) : ItemReader<ApartmentComplexEntity> {
-    private var currentPage = 0
     private var currentPageData: List<ApartmentComplexEntity> = emptyList()
     private var currentIndex = 0
+    private var lastProcessedId: Long = 0
 
     override fun read(): ApartmentComplexEntity? {
         if (currentIndex >= currentPageData.size) {
-            currentPageData = fetcher(PAGE_SIZE.toLong(), (currentPage * PAGE_SIZE).toLong())
+            currentPageData = fetcher(PAGE_SIZE.toLong(), lastProcessedId)
             currentIndex = 0
-            currentPage++
-
-            if (currentPageData.isEmpty()) {
-                return null
-            }
+            if (currentPageData.isEmpty()) return null
         }
 
-        return currentPageData[currentIndex++]
+        val item = currentPageData[currentIndex++]
+        lastProcessedId = item.id
+        return item
     }
 
     companion object {

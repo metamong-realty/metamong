@@ -3,10 +3,11 @@ package com.metamong.service.apartment
 import com.metamong.domain.apartment.model.ApartmentCodeType
 import com.metamong.domain.apartment.model.ApartmentComplexEntity
 import com.metamong.domain.apartment.model.PlatType
-import com.metamong.infra.persistence.repository.mongo.publicdata.ApartmentComplexInfoRawRepository
-import com.metamong.infra.persistence.repository.mongo.publicdata.HousingLicenseRawRepository
+import com.metamong.infra.persistence.mongo.publicdata.repository.ApartmentComplexInfoRawRepository
+import com.metamong.infra.persistence.mongo.publicdata.repository.HousingLicenseRawRepository
 import com.metamong.model.document.publicdata.ApartmentComplexInfoRawDocumentEntity
 import com.metamong.model.document.publicdata.HousingLicenseRawDocumentEntity
+import com.metamong.service.apartment.dto.MatchResult
 import com.metamong.util.apartment.AddressParser
 import com.metamong.util.apartment.ApartmentNameNormalizer
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -18,25 +19,24 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.abs
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 class ApartmentMatchingService(
     private val apartmentComplexInfoRawRepository: ApartmentComplexInfoRawRepository,
     private val housingLicenseRawRepository: HousingLicenseRawRepository,
-    private val apartmentComplexCommandService: ApartmentComplexCommandService,
 ) {
     private val infoRawCacheBySidoSigungu = ConcurrentHashMap<Int, List<ApartmentComplexInfoRawDocumentEntity>>()
     private val licenseRawCacheBySidoSigunguEupmyeondongRi = ConcurrentHashMap<String, List<HousingLicenseRawDocumentEntity>>()
 
-    fun matchInfoRaw(complex: ApartmentComplexEntity): Boolean {
-        val nameNormalized = complex.nameNormalized ?: return false
-        val builtYear = complex.builtYear ?: return false
+    fun matchInfoRaw(complex: ApartmentComplexEntity): MatchResult? {
+        val nameNormalized = complex.nameNormalized ?: return null
+        val builtYear = complex.builtYear ?: return null
         val sidoSigunguCode = complex.sidoSigunguCode
         val addressRoad = complex.addressRoad
 
         val infoRaw = findMatchingInfoRaw(sidoSigunguCode, nameNormalized, builtYear, addressRoad)
         if (infoRaw == null) {
             logger.debug { "InfoRaw 매칭 실패: complexId=${complex.id}, name=${complex.nameRaw}" }
-            return false
+            return null
         }
 
         val eupmyeondongRiCode = AddressParser.extractEupmyeondongRiCodeFromBjdCode(infoRaw.bjdCode)
@@ -53,29 +53,25 @@ class ApartmentMatchingService(
             heatingType = infoRaw.codeHeatNm,
         )
 
-        apartmentComplexCommandService.saveComplex(complex)
-
-        apartmentComplexCommandService.addCodeMapping(
-            complexId = complex.id!!,
-            codeType = ApartmentCodeType.KAPT_CODE,
-            codeValue = infoRaw.kaptCode,
-        )
-
         logger.info { "InfoRaw 매칭 성공: complexId=${complex.id}, kaptCode=${infoRaw.kaptCode}" }
-        return true
+        return MatchResult(
+            complex = complex,
+            codeMappingType = ApartmentCodeType.KAPT_CODE,
+            codeMappingValue = infoRaw.kaptCode,
+        )
     }
 
-    fun matchLicenseRaw(complex: ApartmentComplexEntity): Boolean {
+    fun matchLicenseRaw(complex: ApartmentComplexEntity): MatchResult? {
         val sidoSigunguCode = complex.sidoSigunguCode
-        val eupmyeondongRiCode = complex.eupmyeondongRiCode ?: return false
-        val platType = complex.platType ?: PlatType.LAND
-        val bonNo = complex.bonNo ?: return false
-        val buNo = complex.buNo ?: return false
+        val eupmyeondongRiCode = complex.eupmyeondongRiCode ?: return null
+        val platType = complex.platType
+        val bonNo = complex.bonNo ?: return null
+        val buNo = complex.buNo ?: return null
 
         val licenseRaw = findMatchingLicenseRaw(sidoSigunguCode, eupmyeondongRiCode, platType, bonNo, buNo)
         if (licenseRaw == null) {
             logger.debug { "LicenseRaw 매칭 실패: complexId=${complex.id}" }
-            return false
+            return null
         }
 
         val floorAreaRatio = calculateFloorAreaRatio(licenseRaw)
@@ -85,18 +81,12 @@ class ApartmentMatchingService(
             buildingCoverageRatio = null,
         )
 
-        apartmentComplexCommandService.saveComplex(complex)
-
-        licenseRaw.mgmHsrgstPk?.let { pk ->
-            apartmentComplexCommandService.addCodeMapping(
-                complexId = complex.id!!,
-                codeType = ApartmentCodeType.LICENSE_PK,
-                codeValue = pk,
-            )
-        }
-
         logger.info { "LicenseRaw 매칭 성공: complexId=${complex.id}, floorAreaRatio=$floorAreaRatio" }
-        return true
+        return MatchResult(
+            complex = complex,
+            codeMappingType = licenseRaw.mgmHsrgstPk?.let { ApartmentCodeType.LICENSE_PK },
+            codeMappingValue = licenseRaw.mgmHsrgstPk,
+        )
     }
 
     /**
@@ -123,7 +113,7 @@ class ApartmentMatchingService(
 
     private fun getInfoRawCandidates(sidoSigunguCode: Int): List<ApartmentComplexInfoRawDocumentEntity> {
         val sidoSigunguCodeStr = sidoSigunguCode.toString().padStart(5, '0')
-        return infoRawCacheBySidoSigungu.getOrPut(sidoSigunguCode) {
+        return infoRawCacheBySidoSigungu.computeIfAbsent(sidoSigunguCode) {
             logger.debug { "InfoRaw 캐시 로드: sidoSigunguCode=$sidoSigunguCode" }
             apartmentComplexInfoRawRepository.findByBjdCodeStartingWith("^$sidoSigunguCodeStr")
         }
@@ -198,7 +188,7 @@ class ApartmentMatchingService(
         val eupmyeondongRiCodeStr = eupmyeondongRiCode.toString().padStart(5, '0')
 
         val allCandidates =
-            licenseRawCacheBySidoSigunguEupmyeondongRi.getOrPut(cacheKey) {
+            licenseRawCacheBySidoSigunguEupmyeondongRi.computeIfAbsent(cacheKey) {
                 logger.debug { "LicenseRaw 캐시 로드: sidoSigunguCode=$sidoSigunguCode, eupmyeondongRiCode=$eupmyeondongRiCode" }
                 housingLicenseRawRepository.findBySigunguCdAndBjdongCd(sidoSigunguCodeStr, eupmyeondongRiCodeStr)
             }

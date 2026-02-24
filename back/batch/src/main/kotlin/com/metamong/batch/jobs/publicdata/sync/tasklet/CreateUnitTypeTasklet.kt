@@ -2,9 +2,9 @@ package com.metamong.batch.jobs.publicdata.sync.tasklet
 
 import com.metamong.common.cache.CacheType
 import com.metamong.domain.apartment.model.ApartmentUnitTypeEntity
-import com.metamong.infra.persistence.repository.apartment.ApartmentUnitTypeJdbcRepository
-import com.metamong.infra.persistence.repository.mongo.publicdata.ApartmentRentRawRepository
-import com.metamong.infra.persistence.repository.mongo.publicdata.ApartmentTradeRawRepository
+import com.metamong.infra.persistence.apartment.repository.ApartmentUnitTypeJdbcRepository
+import com.metamong.infra.persistence.mongo.publicdata.repository.ApartmentRentRawRepository
+import com.metamong.infra.persistence.mongo.publicdata.repository.ApartmentTradeRawRepository
 import com.metamong.service.apartment.ApartmentComplexQueryService
 import com.metamong.util.apartment.AreaConverter
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -64,15 +64,15 @@ class CreateUnitTypeTasklet(
                 return@mapNotNull null
             }
 
-            val cacheKey = "$complexId:$exclusiveArea"
+            val exclusivePyeong = AreaConverter.toPyeong(exclusiveArea) ?: return@mapNotNull null
+
+            val cacheKey = "$complexId:$exclusivePyeong"
             if (unitTypeCache?.get(cacheKey) != null) {
                 return@mapNotNull null
             }
 
-            val exclusivePyeong = AreaConverter.toPyeong(exclusiveArea)
             ApartmentUnitTypeEntity.create(
                 complexId = complexId,
-                exclusiveArea = exclusiveArea,
                 exclusivePyeong = exclusivePyeong,
             )
         }
@@ -82,7 +82,7 @@ class CreateUnitTypeTasklet(
         val cache = cacheManager.getCache(CacheType.UNIT_TYPE) ?: return
 
         entities.forEach { entity ->
-            val key = "${entity.complexId}:${entity.exclusiveArea}"
+            val key = "${entity.complexId}:${entity.exclusivePyeong}"
             cache.put(key, entity)
         }
     }

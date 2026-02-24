@@ -1,6 +1,5 @@
 ---
 description: "기능 요구사항을 명확하게 정의하고 spec.md를 생성합니다"
-disable-model-invocation: true
 ---
 
 기능 요구사항을 명세하는 스킬이다. 다음 절차대로 진행하라.

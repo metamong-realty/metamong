@@ -1,5 +1,30 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(echo \"${GEMINI_API_KEY:+SET}\")"
+    ],
+    "deny": [
+      "Read(back/**/application-local.yml)",
+      "Read(.env)",
+      "Read(.env.*)",
+      "Bash(*application-local.yml*)",
+      "Bash(*.env*)"
+    ]
+  },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pre-repository-check.sh",
+            "timeout": 10,
+            "statusMessage": "Repository 중복 메서드 확인 중..."
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
@@ -9,19 +34,6 @@
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-edit-actions.sh",
             "timeout": 60,
             "statusMessage": "코드 품질 검사 중..."
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "find \"$CLAUDE_PROJECT_DIR\"/logs -name '*.log' -mtime +7 -delete 2>/dev/null; exit 0",
-            "timeout": 10,
-            "async": true
           }
         ]
       }

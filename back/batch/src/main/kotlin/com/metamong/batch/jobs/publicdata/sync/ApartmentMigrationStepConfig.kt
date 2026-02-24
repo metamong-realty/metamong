@@ -6,6 +6,9 @@ import com.metamong.batch.jobs.publicdata.sync.listener.ApartmentMigrationStepLi
 import com.metamong.batch.jobs.publicdata.sync.processor.CreateComplexFromRentProcessor
 import com.metamong.batch.jobs.publicdata.sync.processor.CreateComplexProcessor
 import com.metamong.batch.jobs.publicdata.sync.processor.MatchInfoRawProcessor
+import com.metamong.batch.jobs.publicdata.sync.processor.MatchLicenseRawProcessor
+import com.metamong.batch.jobs.publicdata.sync.processor.SyncRentProcessor
+import com.metamong.batch.jobs.publicdata.sync.processor.SyncTradeProcessor
 import com.metamong.batch.jobs.publicdata.sync.reader.RentRawDistinctAptSeqReader
 import com.metamong.batch.jobs.publicdata.sync.reader.RentRawPagingReader
 import com.metamong.batch.jobs.publicdata.sync.reader.TradeRawDistinctAptSeqReader
@@ -16,19 +19,20 @@ import com.metamong.batch.jobs.publicdata.sync.tasklet.CacheWarmingTasklet
 import com.metamong.batch.jobs.publicdata.sync.tasklet.CreateUnitTypeTasklet
 import com.metamong.batch.jobs.publicdata.sync.writer.ComplexWriter
 import com.metamong.batch.jobs.publicdata.sync.writer.MatchResultWriter
+import com.metamong.batch.jobs.publicdata.sync.writer.RentWriter
+import com.metamong.batch.jobs.publicdata.sync.writer.TradeWriter
 import com.metamong.domain.apartment.model.ApartmentComplexEntity
 import com.metamong.domain.apartment.model.ApartmentRentEntity
 import com.metamong.domain.apartment.model.ApartmentTradeEntity
 import com.metamong.model.document.publicdata.ApartmentRentRawDocumentEntity
 import com.metamong.model.document.publicdata.ApartmentTradeRawDocumentEntity
 import com.metamong.service.apartment.dto.ComplexWithApartmentSequence
+import com.metamong.service.apartment.dto.MatchResult
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.job.builder.FlowBuilder
 import org.springframework.batch.core.job.flow.Flow
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
-import org.springframework.batch.item.ItemProcessor
-import org.springframework.batch.item.ItemWriter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.task.TaskExecutor
@@ -112,7 +116,7 @@ class ApartmentMigrationStepConfig {
         matchResultWriter: MatchResultWriter,
     ): Step =
         StepBuilder("matchInfoRawStep", jobRepository)
-            .chunk<ApartmentComplexEntity, Boolean>(MATCH_CHUNK_SIZE, transactionManager)
+            .chunk<ApartmentComplexEntity, MatchResult?>(MATCH_CHUNK_SIZE, transactionManager)
             .reader(unmatchedInfoRawComplexReader)
             .processor(matchInfoRawProcessor)
             .writer(matchResultWriter)
@@ -123,11 +127,11 @@ class ApartmentMigrationStepConfig {
         jobRepository: JobRepository,
         transactionManager: PlatformTransactionManager,
         unmatchedLicenseRawComplexReader: UnmatchedLicenseRawComplexReader,
-        matchLicenseRawProcessor: ItemProcessor<ApartmentComplexEntity, Boolean>,
+        matchLicenseRawProcessor: MatchLicenseRawProcessor,
         matchResultWriter: MatchResultWriter,
     ): Step =
         StepBuilder("matchLicenseRawStep", jobRepository)
-            .chunk<ApartmentComplexEntity, Boolean>(MATCH_CHUNK_SIZE, transactionManager)
+            .chunk<ApartmentComplexEntity, MatchResult?>(MATCH_CHUNK_SIZE, transactionManager)
             .reader(unmatchedLicenseRawComplexReader)
             .processor(matchLicenseRawProcessor)
             .writer(matchResultWriter)
@@ -138,8 +142,8 @@ class ApartmentMigrationStepConfig {
         jobRepository: JobRepository,
         transactionManager: PlatformTransactionManager,
         tradeRawPagingReader: TradeRawPagingReader,
-        syncTradeProcessor: ItemProcessor<ApartmentTradeRawDocumentEntity, ApartmentTradeEntity?>,
-        tradeWriter: ItemWriter<ApartmentTradeEntity?>,
+        syncTradeProcessor: SyncTradeProcessor,
+        tradeWriter: TradeWriter,
         apartmentMigrationSkipListener: ApartmentMigrationSkipListener,
         apartmentMigrationRetryListener: ApartmentMigrationRetryListener,
         syncStepTaskExecutor: TaskExecutor,
@@ -165,8 +169,8 @@ class ApartmentMigrationStepConfig {
         jobRepository: JobRepository,
         transactionManager: PlatformTransactionManager,
         rentRawPagingReader: RentRawPagingReader,
-        syncRentProcessor: ItemProcessor<ApartmentRentRawDocumentEntity, ApartmentRentEntity?>,
-        rentWriter: ItemWriter<ApartmentRentEntity?>,
+        syncRentProcessor: SyncRentProcessor,
+        rentWriter: RentWriter,
         apartmentMigrationSkipListener: ApartmentMigrationSkipListener,
         apartmentMigrationRetryListener: ApartmentMigrationRetryListener,
         syncStepTaskExecutor: TaskExecutor,

@@ -1,6 +1,6 @@
 package com.metamong.domain.apartment.model
 
-import com.metamong.domain.base.ExtendedBaseEntity
+import com.metamong.domain.base.BaseEntity
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -27,7 +27,7 @@ class ApartmentComplexEntity(
     var floorAreaRatio: BigDecimal? = null,
     var buildingCoverageRatio: BigDecimal? = null,
     var heatingType: String? = null,
-) : ExtendedBaseEntity() {
+) : BaseEntity() {
     fun updateFromLicenseRaw(
         floorAreaRatio: BigDecimal?,
         buildingCoverageRatio: BigDecimal?,
