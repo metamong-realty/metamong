@@ -1,27 +1,24 @@
 package com.metamong.batch.jobs.publicdata.sync.tasklet
 
-import com.metamong.common.cache.CacheType
+import com.metamong.batch.jobs.publicdata.sync.cache.InMemoryMigrationCache
 import com.metamong.domain.apartment.model.ApartmentUnitTypeEntity
 import com.metamong.infra.persistence.apartment.repository.ApartmentUnitTypeJdbcRepository
 import com.metamong.infra.persistence.mongo.publicdata.repository.ApartmentRentRawRepository
 import com.metamong.infra.persistence.mongo.publicdata.repository.ApartmentTradeRawRepository
-import com.metamong.service.apartment.ApartmentComplexQueryService
 import com.metamong.util.apartment.AreaConverter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.batch.core.StepContribution
 import org.springframework.batch.core.scope.context.ChunkContext
 import org.springframework.batch.core.step.tasklet.Tasklet
 import org.springframework.batch.repeat.RepeatStatus
-import org.springframework.cache.CacheManager
 import org.springframework.stereotype.Component
 
 @Component
 class CreateUnitTypeTasklet(
     private val tradeRawRepository: ApartmentTradeRawRepository,
     private val rentRawRepository: ApartmentRentRawRepository,
-    private val apartmentComplexQueryService: ApartmentComplexQueryService,
+    private val inMemoryMigrationCache: InMemoryMigrationCache,
     private val apartmentUnitTypeJdbcRepository: ApartmentUnitTypeJdbcRepository,
-    private val cacheManager: CacheManager,
 ) : Tasklet {
     override fun execute(
         contribution: StepContribution,
@@ -48,43 +45,26 @@ class CreateUnitTypeTasklet(
         return (tradePairs + rentPairs).toSet()
     }
 
-    private fun buildNewUnitTypeEntities(distinctPairs: Set<Pair<String, String>>): List<ApartmentUnitTypeEntity> {
-        val unitTypeCache = cacheManager.getCache(CacheType.UNIT_TYPE)
-
-        return distinctPairs.mapNotNull { (aptSeq, excluUseAr) ->
-            val complexId = apartmentComplexQueryService.getComplexIdByApartmentSequence(aptSeq)
-            if (complexId == null) {
-                logger.debug { "Complex 없음: aptSeq=$aptSeq" }
-                return@mapNotNull null
+    private fun buildNewUnitTypeEntities(distinctPairs: Set<Pair<String, String>>): List<ApartmentUnitTypeEntity> =
+        distinctPairs
+            .mapNotNull { (aptSeq, excluUseAr) ->
+                val complexId = inMemoryMigrationCache.getComplexId(aptSeq) ?: return@mapNotNull null
+                val exclusiveArea = AreaConverter.parseExclusiveArea(excluUseAr) ?: return@mapNotNull null
+                val exclusivePyeong = AreaConverter.toPyeong(exclusiveArea) ?: return@mapNotNull null
+                complexId to exclusivePyeong
+            }.distinct()
+            .filter { (complexId, exclusivePyeong) ->
+                inMemoryMigrationCache.getUnitTypeId(complexId, exclusivePyeong) == null
+            }.map { (complexId, exclusivePyeong) ->
+                ApartmentUnitTypeEntity.create(complexId = complexId, exclusivePyeong = exclusivePyeong)
             }
-
-            val exclusiveArea = AreaConverter.parseExclusiveArea(excluUseAr)
-            if (exclusiveArea == null) {
-                logger.debug { "전용면적 파싱 실패: excluUseAr=$excluUseAr" }
-                return@mapNotNull null
-            }
-
-            val exclusivePyeong = AreaConverter.toPyeong(exclusiveArea) ?: return@mapNotNull null
-
-            val cacheKey = "$complexId:$exclusivePyeong"
-            if (unitTypeCache?.get(cacheKey) != null) {
-                return@mapNotNull null
-            }
-
-            ApartmentUnitTypeEntity.create(
-                complexId = complexId,
-                exclusivePyeong = exclusivePyeong,
-            )
-        }
-    }
 
     private fun addToCache(entities: List<ApartmentUnitTypeEntity>) {
-        val cache = cacheManager.getCache(CacheType.UNIT_TYPE) ?: return
-
-        entities.forEach { entity ->
-            val key = "${entity.complexId}:${entity.exclusivePyeong}"
-            cache.put(key, entity)
-        }
+        val newEntries =
+            entities.associate { entity ->
+                "${entity.complexId}:${entity.exclusivePyeong}" to entity.id
+            }
+        inMemoryMigrationCache.addUnitTypes(newEntries)
     }
 
     companion object {

@@ -10,6 +10,8 @@ import java.time.LocalDateTime
 @CompoundIndexes(
     CompoundIndex(name = "idx_lawdCd_dealYearMonth", def = "{'lawdCd': 1, 'dealYear': 1, 'dealMonth': 1}"),
     CompoundIndex(name = "idx_compositeKey", def = "{'compositeKey': 1}", unique = true),
+    CompoundIndex(name = "idx_dealYearMonth_id", def = "{'dealYear': 1, 'dealMonth': 1, '_id': 1}"),
+    CompoundIndex(name = "idx_aptSeq_excluUseAr", def = "{'aptSeq': 1, 'excluUseAr': 1}"),
 )
 data class ApartmentTradeRawDocumentEntity(
     @Id val id: String? = null,

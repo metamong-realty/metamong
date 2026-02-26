@@ -4,8 +4,6 @@ import com.metamong.batch.jobs.publicdata.sync.MigrationMode
 import com.metamong.service.apartment.ApartmentComplexQueryService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.batch.item.ItemReader
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 
 /**
  * MongoDB Raw 데이터에서 아파트 단지(Complex)를 생성할 때 사용하는 Reader.
@@ -18,18 +16,20 @@ import org.springframework.data.domain.Sort
  */
 class DistinctApartmentSequenceItemReader<T>(
     private val countFetcher: () -> Long,
-    private val pageFetcher: (PageRequest) -> List<T>,
+    private val cursorFetcher: (lastId: String?, pageSize: Int) -> List<T>,
+    private val idExtractor: (T) -> String?,
     private val queryService: ApartmentComplexQueryService,
     private val apartmentSequenceExtractor: (T) -> String?,
     private val logPrefix: String,
     private val mode: MigrationMode,
 ) : ItemReader<T> {
-    private var currentPage = 0
+    private var lastId: String? = null
     private val processedApartmentSequences = mutableSetOf<String>()
     private var initialized = false
     private var filteredItems: MutableList<T> = mutableListOf()
     private var filteredIndex = 0
 
+    @Synchronized
     override fun read(): T? {
         if (!initialized) {
             val totalCount = countFetcher()
@@ -44,13 +44,14 @@ class DistinctApartmentSequenceItemReader<T>(
             }
 
             // 새 페이지 로드 및 배치 필터링
-            val pageable = PageRequest.of(currentPage, PAGE_SIZE, Sort.by("_id"))
-            val pageData = pageFetcher(pageable)
-            currentPage++
+            val pageData = cursorFetcher(lastId, PAGE_SIZE)
 
             if (pageData.isEmpty()) {
                 return null
             }
+
+            // cursor 위치 갱신 (필터링 전 원본 페이지 기준)
+            idExtractor(pageData.last())?.let { lastId = it }
 
             // 페이지 내 모든 고유 aptSeq 수집
             val pageAptSeqs =

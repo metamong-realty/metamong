@@ -2,12 +2,15 @@ package com.metamong.infra.persistence.mongo.publicdata.repository
 
 import com.metamong.model.document.publicdata.ApartmentTradeRawDocumentEntity
 import org.bson.Document
+import org.bson.types.ObjectId
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.aggregation.Aggregation
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 
 @Repository
 class ApartmentTradeRawRepositoryCustomImpl(
@@ -21,6 +24,44 @@ class ApartmentTradeRawRepositoryCustomImpl(
 
     override fun countByDealYearMonthRange(criteria: Criteria): Long =
         mongoTemplate.count(Query(criteria), ApartmentTradeRawDocumentEntity::class.java)
+
+    override fun findAllByCursor(
+        lastId: String?,
+        pageSize: Int,
+    ): List<ApartmentTradeRawDocumentEntity> {
+        val query = Query()
+        if (lastId != null) {
+            query.addCriteria(Criteria.where("_id").gt(ObjectId(lastId)))
+        }
+        query.with(Sort.by("_id")).limit(pageSize)
+        return mongoTemplate.find(query, ApartmentTradeRawDocumentEntity::class.java)
+    }
+
+    override fun findByCursorAndCollectedAtGte(
+        lastId: String?,
+        collectedAt: LocalDateTime,
+        pageSize: Int,
+    ): List<ApartmentTradeRawDocumentEntity> {
+        val query = Query(Criteria.where("collectedAt").gte(collectedAt))
+        if (lastId != null) {
+            query.addCriteria(Criteria.where("_id").gt(ObjectId(lastId)))
+        }
+        query.with(Sort.by("_id")).limit(pageSize)
+        return mongoTemplate.find(query, ApartmentTradeRawDocumentEntity::class.java)
+    }
+
+    override fun findByCursorAndDealYearMonthRange(
+        lastId: String?,
+        criteria: Criteria,
+        pageSize: Int,
+    ): List<ApartmentTradeRawDocumentEntity> {
+        val query = Query(criteria)
+        if (lastId != null) {
+            query.addCriteria(Criteria.where("_id").gt(ObjectId(lastId)))
+        }
+        query.with(Sort.by("_id")).limit(pageSize)
+        return mongoTemplate.find(query, ApartmentTradeRawDocumentEntity::class.java)
+    }
 
     override fun findDistinctAptSeqAndExcluUseAr(): List<Pair<String, String>> {
         val aggregation =
@@ -38,9 +79,10 @@ class ApartmentTradeRawRepositoryCustomImpl(
         return mongoTemplate
             .aggregate(aggregation, "ApartmentTradeRaw", Document::class.java)
             .mappedResults
-            .map { doc ->
-                val aptSeq = doc.getString("aptSeq")
-                val excluUseAr = doc.getString("excluUseAr")
+            .mapNotNull { doc ->
+                val id = doc.get("_id", Document::class.java) ?: return@mapNotNull null
+                val aptSeq = id.getString("aptSeq") ?: return@mapNotNull null
+                val excluUseAr = id.getString("excluUseAr") ?: return@mapNotNull null
                 aptSeq to excluUseAr
             }
     }

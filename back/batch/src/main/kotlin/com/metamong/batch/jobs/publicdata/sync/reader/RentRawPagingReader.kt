@@ -35,17 +35,19 @@ class RentRawPagingReader(
                         else -> apartmentRentRawRepository.count()
                     }
                 },
-                pageFetcher = { pageable ->
+                cursorFetcher = { lastId, pageSize ->
                     when {
                         yearMonthRange != null ->
-                            apartmentRentRawRepository.findByDealYearMonthRange(
+                            apartmentRentRawRepository.findByCursorAndDealYearMonthRange(
+                                lastId,
                                 yearMonthRange.buildCriteria(),
-                                pageable,
+                                pageSize,
                             )
-                        cutoffDate != null -> apartmentRentRawRepository.findByCollectedAtGreaterThanEqual(cutoffDate, pageable).content
-                        else -> apartmentRentRawRepository.findAllBy(pageable).content
+                        cutoffDate != null -> apartmentRentRawRepository.findByCursorAndCollectedAtGte(lastId, cutoffDate, pageSize)
+                        else -> apartmentRentRawRepository.findAllByCursor(lastId, pageSize)
                     }
                 },
+                idExtractor = { it.id },
                 logPrefix = "Rent 동기화 대상",
                 mode = mode,
             )

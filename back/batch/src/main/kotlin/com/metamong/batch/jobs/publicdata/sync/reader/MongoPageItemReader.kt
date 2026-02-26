@@ -3,16 +3,15 @@ package com.metamong.batch.jobs.publicdata.sync.reader
 import com.metamong.batch.jobs.publicdata.sync.MigrationMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.batch.item.ItemReader
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 
 class MongoPageItemReader<T>(
     private val countFetcher: () -> Long,
-    private val pageFetcher: (PageRequest) -> List<T>,
+    private val cursorFetcher: (lastId: String?, pageSize: Int) -> List<T>,
+    private val idExtractor: (T) -> String?,
     private val logPrefix: String,
     private val mode: MigrationMode,
 ) : ItemReader<T> {
-    private var currentPage = 0
+    private var lastId: String? = null
     private var currentPageData: List<T> = emptyList()
     private var currentIndex = 0
     private var initialized = false
@@ -26,17 +25,17 @@ class MongoPageItemReader<T>(
         }
 
         if (currentIndex >= currentPageData.size) {
-            val pageable = PageRequest.of(currentPage, PAGE_SIZE, Sort.by("_id"))
-            currentPageData = pageFetcher(pageable)
+            currentPageData = cursorFetcher(lastId, PAGE_SIZE)
             currentIndex = 0
-            currentPage++
 
             if (currentPageData.isEmpty()) {
                 return null
             }
         }
 
-        return currentPageData[currentIndex++]
+        val item = currentPageData[currentIndex++]
+        lastId = idExtractor(item) ?: lastId
+        return item
     }
 
     companion object {

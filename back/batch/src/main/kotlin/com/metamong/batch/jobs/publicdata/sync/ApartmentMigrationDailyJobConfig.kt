@@ -8,6 +8,7 @@ import org.springframework.batch.core.job.flow.Flow
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.task.TaskExecutor
 
 @Configuration
 class ApartmentMigrationDailyJobConfig {
@@ -20,12 +21,15 @@ class ApartmentMigrationDailyJobConfig {
         cacheWarmingStep: Step,
         createUnitTypeStep: Step,
         syncParallelFlow: Flow,
+        parallelFlowTaskExecutor: TaskExecutor,
     ): Job {
         val createComplexFlow =
             FlowBuilder<Flow>("createComplexFlow")
-                .start(createComplexStep)
-                .next(createComplexFromRentStep)
-                .build()
+                .split(parallelFlowTaskExecutor)
+                .add(
+                    FlowBuilder<Flow>("createComplexFromTradeFlow").start(createComplexStep).build(),
+                    FlowBuilder<Flow>("createComplexFromRentFlow").start(createComplexFromRentStep).build(),
+                ).build()
 
         return JobBuilder(JOB_NAME, jobRepository)
             .start(createComplexFlow)

@@ -37,17 +37,19 @@ class TradeRawDistinctAptSeqReader(
                         else -> apartmentTradeRawRepository.count()
                     }
                 },
-                pageFetcher = { pageable ->
+                cursorFetcher = { lastId, pageSize ->
                     when {
                         yearMonthRange != null ->
-                            apartmentTradeRawRepository.findByDealYearMonthRange(
+                            apartmentTradeRawRepository.findByCursorAndDealYearMonthRange(
+                                lastId,
                                 yearMonthRange.buildCriteria(),
-                                pageable,
+                                pageSize,
                             )
-                        cutoffDate != null -> apartmentTradeRawRepository.findByCollectedAtGreaterThanEqual(cutoffDate, pageable).content
-                        else -> apartmentTradeRawRepository.findAllBy(pageable).content
+                        cutoffDate != null -> apartmentTradeRawRepository.findByCursorAndCollectedAtGte(lastId, cutoffDate, pageSize)
+                        else -> apartmentTradeRawRepository.findAllByCursor(lastId, pageSize)
                     }
                 },
+                idExtractor = { it.id },
                 queryService = apartmentComplexQueryService,
                 apartmentSequenceExtractor = { it.aptSeq },
                 logPrefix = "TradeRaw 전체 데이터",

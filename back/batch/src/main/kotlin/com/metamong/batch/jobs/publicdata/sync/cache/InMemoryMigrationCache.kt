@@ -25,6 +25,10 @@ class InMemoryMigrationCache {
         exclusivePyeong: Short,
     ): Long? = unitTypeIdCache["$complexId:$exclusivePyeong"]
 
+    fun addUnitTypes(entries: Map<String, Long>) {
+        unitTypeIdCache = unitTypeIdCache + entries
+    }
+
     fun clear() {
         aptSeqToComplexId = emptyMap()
         unitTypeIdCache = emptyMap()
