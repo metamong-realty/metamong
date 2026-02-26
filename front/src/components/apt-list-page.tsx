@@ -15,7 +15,7 @@ export function AptListPage() {
   const [eupmyeondongCode, setEupmyeondongCode] = useQueryState('dong', { defaultValue: '' });
 
   const { data: complexesData, isLoading: isComplexesLoading } = useGetComplexes({
-    sidoSigunguCode: sigunguCode,
+    sidoSigunguCode: sidoCode + sigunguCode,
     eupmyeondongCode: eupmyeondongCode || undefined,
   });
 

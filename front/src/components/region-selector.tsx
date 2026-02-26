@@ -36,8 +36,10 @@ export function RegionSelector({
 }: RegionSelectorProps) {
   const { data: sidoList = [], isLoading: isSidoLoading } = useGetSidoList();
   const { data: sigunguList = [], isLoading: isSigunguLoading } = useGetSigunguList(sidoCode);
-  const { data: eupmyeondongList = [], isLoading: isEupmyeondongLoading } =
-    useGetEupmyeondongList(sigunguCode);
+  const { data: eupmyeondongList = [], isLoading: isEupmyeondongLoading } = useGetEupmyeondongList(
+    sidoCode,
+    sigunguCode,
+  );
 
   // --- 모바일 Sheet 상태 ---
   const [isSheetOpen, setIsSheetOpen] = useState(false);

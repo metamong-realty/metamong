@@ -57,7 +57,7 @@ export interface Rent {
   exclusiveArea: number;
   exclusivePyeong: number | null;
   floor: number | null;
-  rentType: 'JEONSE' | 'MONTHLY_RENT';
+  rentType: 'JEONSE' | 'MONTHLY';
   deposit: number;
   monthlyRent: number;
   isCanceled: boolean;

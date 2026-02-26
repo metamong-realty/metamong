@@ -16,10 +16,12 @@ export const useGetSigunguList = (sidoCode: string) =>
     enabled: !!sidoCode,
   });
 
-export const useGetEupmyeondongList = (sigunguCode: string) =>
+export const useGetEupmyeondongList = (sidoCode: string, sigunguCode: string) =>
   useQuery({
-    queryKey: ['regions', 'eupmyeondong', sigunguCode],
+    queryKey: ['regions', 'eupmyeondong', sidoCode, sigunguCode],
     queryFn: () =>
-      apiFetch<Region[]>(`/v1/apartments/regions/eupmyeondong?sigunguCode=${sigunguCode}`),
-    enabled: !!sigunguCode,
+      apiFetch<Region[]>(
+        `/v1/apartments/regions/eupmyeondong?sidoCode=${sidoCode}&sigunguCode=${sigunguCode}`,
+      ),
+    enabled: !!sidoCode && !!sigunguCode,
   });

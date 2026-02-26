@@ -6,7 +6,7 @@ import type { PaginatedResponse, Rent, TimePeriodFilter } from '@/types';
 interface UseGetRentsParams {
   unitTypeId?: number;
   period?: TimePeriodFilter;
-  rentType?: 'JEONSE' | 'MONTHLY_RENT';
+  rentType?: 'JEONSE' | 'MONTHLY';
   page?: number;
   size?: number;
 }
