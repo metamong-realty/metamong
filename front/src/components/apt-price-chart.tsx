@@ -3,10 +3,12 @@
 import { useMemo } from 'react';
 
 import {
+  BarController,
   BarElement,
   CategoryScale,
   Chart as ChartJS,
   Legend,
+  LineController,
   LineElement,
   LinearScale,
   PointElement,
@@ -19,13 +21,15 @@ import { Chart } from 'react-chartjs-2';
 import { formatPrice } from '@/lib/format';
 import type { TransactionTypeFilter } from '@/types';
 
-// Chart.js에 사용할 요소들을 등록
+// Chart.js에 사용할 요소들을 등록 (혼합 차트는 Controller도 필요)
 ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  LineController,
   BarElement,
+  BarController,
   Title,
   Tooltip,
   Legend,
