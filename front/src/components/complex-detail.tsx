@@ -35,7 +35,7 @@ import { useGetComplexDetail } from '@/hooks/use-complex-detail';
 import { useGetRents } from '@/hooks/use-rents';
 import { useGetTrades } from '@/hooks/use-trades';
 import { useGetUnitTypes } from '@/hooks/use-unit-types';
-import type { TransactionTypeFilter } from '@/types';
+import type { TimePeriodFilter, TransactionTypeFilter } from '@/types';
 
 interface ComplexDetailProps {
   complexId: string;
@@ -65,16 +65,17 @@ export function ComplexDetail({ complexId }: ComplexDetailProps) {
 
   const [manualUnitTypeId, setManualUnitTypeId] = useState<string>('');
   const [transactionType, setTransactionType] = useState<TransactionTypeFilter>('전체');
+  const [period, setPeriod] = useState<TimePeriodFilter>('RECENT_3YEARS');
 
   // 사용자가 직접 선택했으면 그 값, 아니면 첫 번째 평형을 기본값으로
   const selectedUnitTypeId =
     manualUnitTypeId || (unitTypes.length > 0 ? String(unitTypes[0].unitTypeId) : '');
 
   const unitTypeIdNum = selectedUnitTypeId ? parseInt(selectedUnitTypeId, 10) : undefined;
-  const { data: tradesData } = useGetTrades(numericId, { unitTypeId: unitTypeIdNum });
-  const { data: rentsData } = useGetRents(numericId, { unitTypeId: unitTypeIdNum });
-  const { data: tradeChartData } = useGetTradeChart(numericId, { unitTypeId: unitTypeIdNum });
-  const { data: rentChartData } = useGetRentChart(numericId, { unitTypeId: unitTypeIdNum });
+  const { data: tradesData } = useGetTrades(numericId, { unitTypeId: unitTypeIdNum, period });
+  const { data: rentsData } = useGetRents(numericId, { unitTypeId: unitTypeIdNum, period });
+  const { data: tradeChartData } = useGetTradeChart(numericId, { unitTypeId: unitTypeIdNum, period });
+  const { data: rentChartData } = useGetRentChart(numericId, { unitTypeId: unitTypeIdNum, period });
 
   // 매매 + 전세 차트 데이터를 하나의 ChartDataPoint[] 로 합치기
   const chartData = useMemo(() => {
@@ -200,24 +201,41 @@ export function ComplexDetail({ complexId }: ComplexDetailProps) {
             </CardContent>
           </Card>
 
-          {/* 평형 선택 */}
-          {unitTypes.length > 0 && (
+          {/* 필터 선택 */}
+          <div className="flex flex-wrap items-center gap-6">
+            {/* 평형 선택 */}
+            {unitTypes.length > 0 && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-gray-700">평형 선택</span>
+                <Select value={selectedUnitTypeId} onValueChange={setManualUnitTypeId}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="평형" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {unitTypes.map((ut) => (
+                      <SelectItem key={ut.unitTypeId} value={String(ut.unitTypeId)}>
+                        {ut.exclusivePyeong}평
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* 조회 기간 선택 */}
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-700">평형 선택</span>
-              <Select value={selectedUnitTypeId} onValueChange={setManualUnitTypeId}>
+              <span className="text-sm font-medium text-gray-700">조회 기간</span>
+              <Select value={period} onValueChange={(v) => setPeriod(v as TimePeriodFilter)}>
                 <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="평형" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {unitTypes.map((ut) => (
-                    <SelectItem key={ut.unitTypeId} value={String(ut.unitTypeId)}>
-                      {ut.exclusivePyeong}평
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="RECENT_3YEARS">최근 3년</SelectItem>
+                  <SelectItem value="ALL">전체</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-          )}
+          </div>
 
           {/* 거래 내역 */}
           <Card>
