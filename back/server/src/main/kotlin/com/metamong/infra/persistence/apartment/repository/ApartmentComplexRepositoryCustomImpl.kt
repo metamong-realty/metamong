@@ -25,7 +25,7 @@ class ApartmentComplexRepositoryCustomImpl :
     ): Page<ApartmentComplexListProjection> {
         val conditions =
             listOfNotNull(
-                complex.sidoSigunguCode.eq(sidoSigunguCode),
+                sidoSigunguCodeCondition(sidoSigunguCode),
                 eupmyeondongCondition(eupmyeondongCode),
                 keywordCondition(keyword),
             )
@@ -71,6 +71,17 @@ class ApartmentComplexRepositoryCustomImpl :
                 .containsIgnoreCase(it)
                 .or(complex.nameNormalized.containsIgnoreCase(it))
         }
+
+    private fun sidoSigunguCodeCondition(sidoSigunguCode: Int): BooleanExpression {
+        val codeString = sidoSigunguCode.toString()
+        return if (codeString.length == 5) {
+            // 시군구 레벨 검색 (예: 41170 → 41170, 41171, 41173 모두 매칭)
+            complex.sidoSigunguCode.stringValue().startsWith(codeString)
+        } else {
+            // 정확한 매칭
+            complex.sidoSigunguCode.eq(sidoSigunguCode)
+        }
+    }
 
     override fun findDistinctEupmyeondongCodes(sidoSigunguCode: Int): List<Int> =
         queryFactory
