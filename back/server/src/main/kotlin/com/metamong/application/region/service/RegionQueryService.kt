@@ -3,7 +3,6 @@ package com.metamong.application.region.service
 import com.metamong.application.region.response.EupmyeondongResponse
 import com.metamong.application.region.response.SidoResponse
 import com.metamong.application.region.response.SigunguResponse
-import com.metamong.common.vo.LegalCode
 import com.metamong.infra.persistence.apartment.repository.ApartmentComplexRepository
 import com.metamong.infra.persistence.region.repository.RegionLegalCodeRepository
 import org.springframework.cache.annotation.Cacheable
