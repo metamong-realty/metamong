@@ -110,6 +110,6 @@ class ApartmentComplexRepositoryCustomImpl :
             .distinct()
             .fetch()
             .filterNotNull()
-    }
             .sorted()
+    }
 }
