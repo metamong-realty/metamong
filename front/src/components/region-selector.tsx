@@ -149,6 +149,7 @@ export function RegionSelector({
             />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="ALL">전체</SelectItem>
             {eupmyeondongList.map((dong) => (
               <SelectItem key={dong.code} value={dong.code}>
                 {dong.name}
@@ -171,6 +172,18 @@ export function RegionSelector({
               <SheetTitle>{currentStep.title}</SheetTitle>
             </SheetHeader>
             <div className="mt-4 space-y-1 overflow-y-auto">
+              {mobileStep === 'eupmyeondong' && (
+                <button
+                  key="ALL"
+                  className={cn(
+                    'w-full rounded-lg px-4 py-3 text-left transition-colors hover:bg-gray-100',
+                    'ALL' === currentStep.selectedCode && 'bg-blue-50 font-medium text-blue-600',
+                  )}
+                  onClick={() => handleMobileSelect(mobileStep, 'ALL')}
+                >
+                  전체
+                </button>
+              )}
               {currentStep.list.map((item) => (
                 <button
                   key={item.code}

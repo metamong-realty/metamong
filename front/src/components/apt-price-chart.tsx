@@ -155,7 +155,7 @@ export function AptPriceChart({ chartData, transactionType }: AptPriceChartProps
           title: { display: true, text: '가격', font: { size: 12 } },
           ticks: {
             callback: (value: number | string) =>
-              `${Math.round((typeof value === 'string' ? parseFloat(value) : value) / 10000)}억`,
+              `${((typeof value === 'string' ? parseFloat(value) : value) / 10000).toFixed(1)}억`,
             font: { size: 11 },
           },
           grid: { color: 'rgba(229,231,235,0.5)' },
