@@ -3,6 +3,8 @@ package com.metamong.application.apartment.service
 import com.metamong.application.apartment.dto.ApartmentComplexDetailDto
 import com.metamong.application.apartment.dto.ApartmentComplexListDto
 import com.metamong.application.apartment.dto.ApartmentPriceSummaryDto
+import com.metamong.application.apartment.dto.RentPriceSummaryDto
+import com.metamong.application.apartment.dto.TradePriceSummaryDto
 import com.metamong.domain.apartment.model.RentType
 import com.metamong.infra.persistence.apartment.repository.ApartmentComplexRepository
 import com.metamong.infra.persistence.apartment.repository.ApartmentRentRepository
