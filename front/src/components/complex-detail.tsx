@@ -6,21 +6,16 @@ import Link from 'next/link';
 import {
   ArrowLeft,
   Building2,
-  Calendar,
-  Car,
   Check,
   Copy,
-  Home,
-  Layers,
   Loader2,
   MapPin,
-  Ruler,
 } from 'lucide-react';
 
+import { ApartmentSpecs } from '@/components/apartment-specs';
 import { AptPriceChart, type ChartDataPoint } from '@/components/apt-price-chart';
 import { PriceSummaryCard } from '@/components/price-summary-card';
 import { TransactionTable } from '@/components/transaction-table';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Select,
@@ -147,59 +142,29 @@ export function ComplexDetail({ complexId }: ComplexDetailProps) {
 
       <div className="px-4 py-6">
         <div className="mx-auto max-w-4xl space-y-6">
-          {/* 단지 기본 정보 카드 */}
+          {/* 주소 카드 */}
           <Card>
             <CardContent className="p-5">
-              {/* 주소 */}
               {address && (
-                <div className="mb-4 flex items-center text-sm text-gray-600">
+                <div className="flex items-center text-sm text-gray-600">
                   <MapPin className="mr-1.5 h-4 w-4 shrink-0" />
                   <span>{address}</span>
                   <CopyButton text={address} />
                 </div>
               )}
-
-              {/* 상세 정보 그리드 */}
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {complex.builtYear && (
-                  <InfoItem icon={Calendar} label="준공년도" value={`${complex.builtYear}년`} />
-                )}
-                {complex.totalHousehold && (
-                  <InfoItem
-                    icon={Home}
-                    label="총 세대수"
-                    value={`${complex.totalHousehold.toLocaleString()}세대`}
-                  />
-                )}
-                {complex.totalBuilding && (
-                  <InfoItem icon={Layers} label="총 동수" value={`${complex.totalBuilding}동`} />
-                )}
-                {complex.totalParking && (
-                  <InfoItem
-                    icon={Car}
-                    label="주차대수"
-                    value={`${complex.totalParking.toLocaleString()}대`}
-                  />
-                )}
-                {complex.floorAreaRatio && (
-                  <InfoItem icon={Ruler} label="용적률" value={`${complex.floorAreaRatio}%`} />
-                )}
-                {complex.buildingCoverageRatio && (
-                  <InfoItem
-                    icon={Ruler}
-                    label="건폐율"
-                    value={`${complex.buildingCoverageRatio}%`}
-                  />
-                )}
-              </div>
-
-              {complex.heatingType && (
-                <div className="mt-4">
-                  <Badge variant="secondary">{complex.heatingType}</Badge>
-                </div>
-              )}
             </CardContent>
           </Card>
+
+          {/* 단지 정보 (ApartmentSpecs 컴포넌트 사용) */}
+          <ApartmentSpecs
+            builtYear={complex.builtYear}
+            totalHousehold={complex.totalHousehold}
+            totalBuilding={complex.totalBuilding}
+            totalParking={complex.totalParking}
+            floorAreaRatio={complex.floorAreaRatio}
+            buildingCoverageRatio={complex.buildingCoverageRatio}
+            heatingType={complex.heatingType}
+          />
 
           {/* 필터 선택 */}
           <div className="flex flex-wrap items-center gap-6">
@@ -276,26 +241,6 @@ export function ComplexDetail({ complexId }: ComplexDetailProps) {
             transactionType={transactionType}
           />
         </div>
-      </div>
-    </div>
-  );
-}
-
-function InfoItem({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2">
-      <Icon className="h-4 w-4 text-gray-400" />
-      <div>
-        <p className="text-xs text-gray-500">{label}</p>
-        <p className="text-sm font-medium text-gray-900">{value}</p>
       </div>
     </div>
   );
