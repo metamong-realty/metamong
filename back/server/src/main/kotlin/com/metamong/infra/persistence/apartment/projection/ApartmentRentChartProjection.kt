@@ -1,8 +1,8 @@
 package com.metamong.infra.persistence.apartment.projection
 
 data class ApartmentRentChartProjection(
-    val contractYear: Short,
-    val contractMonth: Short,
+    val contractYear: Int,
+    val contractMonth: Int,
     val avgDeposit: Double,
     val maxDeposit: Int,
     val minDeposit: Int,

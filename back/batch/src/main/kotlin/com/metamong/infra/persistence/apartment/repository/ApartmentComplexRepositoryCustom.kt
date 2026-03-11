@@ -17,15 +17,15 @@ interface ApartmentComplexRepositoryCustom {
     fun findBySidoSigunguAndNameNormalizedAndBuiltYearBetween(
         sidoSigunguCode: Int,
         nameNormalized: String,
-        builtYearFrom: Short,
-        builtYearTo: Short,
+        builtYearFrom: Int,
+        builtYearTo: Int,
     ): ApartmentComplexEntity?
 
     fun findByJibun(
         sidoSigunguCode: Int,
         eupmyeondongRiCode: Int,
         platType: PlatType,
-        bonNo: Short,
-        buNo: Short,
+        bonNo: Int,
+        buNo: Int,
     ): ApartmentComplexEntity?
 }

@@ -66,7 +66,7 @@ class ApartmentComplexQueryService(
     )
     fun getUnitType(
         complexId: Long,
-        exclusivePyeong: Short,
+        exclusivePyeong: Int,
     ): ApartmentUnitTypeEntity? = apartmentUnitTypeRepository.findByComplexIdAndExclusivePyeong(complexId, exclusivePyeong)
 
     fun getUnitTypesByComplexId(complexId: Long): List<ApartmentUnitTypeEntity> = apartmentUnitTypeRepository.findAllByComplexId(complexId)
@@ -74,10 +74,10 @@ class ApartmentComplexQueryService(
     fun findComplexBySidoSigunguAndNameAndBuiltYear(
         sidoSigunguCode: Int,
         nameNormalized: String,
-        builtYear: Short,
+        builtYear: Int,
     ): ApartmentComplexEntity? {
-        val builtYearFrom = (builtYear - 1).toShort()
-        val builtYearTo = (builtYear + 1).toShort()
+        val builtYearFrom = (builtYear - 1).toInt()
+        val builtYearTo = (builtYear + 1).toInt()
 
         return apartmentComplexRepository.findBySidoSigunguAndNameNormalizedAndBuiltYearBetween(
             sidoSigunguCode,
@@ -91,8 +91,8 @@ class ApartmentComplexQueryService(
         sidoSigunguCode: Int,
         eupmyeondongRiCode: Int,
         platType: PlatType,
-        bonNo: Short,
-        buNo: Short,
+        bonNo: Int,
+        buNo: Int,
     ): ApartmentComplexEntity? = apartmentComplexRepository.findByJibun(sidoSigunguCode, eupmyeondongRiCode, platType, bonNo, buNo)
 
     companion object {

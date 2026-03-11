@@ -1,5 +1,5 @@
 ---
-description: "RESTful API 엔드포인트를 생성합니다 (Controller, DTO, Service 연동, Swagger 문서화)"
+description: "RESTful API 엔드포인트를 생성합니다 (Controller, DTO, Service 연동, Swagger 문서화). 사용자가 'API 만들어줘', '엔드포인트 추가', 'POST /api/v1/...' 형태로 API 생성을 요청할 때 사용합니다."
 disable-model-invocation: true
 argument-hint: "<method> <path>"
 ---

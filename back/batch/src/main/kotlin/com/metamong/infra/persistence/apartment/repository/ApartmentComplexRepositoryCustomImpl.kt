@@ -40,8 +40,8 @@ class ApartmentComplexRepositoryCustomImpl :
     override fun findBySidoSigunguAndNameNormalizedAndBuiltYearBetween(
         sidoSigunguCode: Int,
         nameNormalized: String,
-        builtYearFrom: Short,
-        builtYearTo: Short,
+        builtYearFrom: Int,
+        builtYearTo: Int,
     ): ApartmentComplexEntity? =
         from(complex)
             .select(complex)
@@ -55,8 +55,8 @@ class ApartmentComplexRepositoryCustomImpl :
         sidoSigunguCode: Int,
         eupmyeondongRiCode: Int,
         platType: PlatType,
-        bonNo: Short,
-        buNo: Short,
+        bonNo: Int,
+        buNo: Int,
     ): ApartmentComplexEntity? =
         from(complex)
             .select(complex)
