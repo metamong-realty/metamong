@@ -65,11 +65,11 @@ class ApartmentComplexJdbcRepositoryImpl(
         ps.setNullableString(idx++, entity.addressJibun)
         ps.setNullableInt(idx++, entity.eupmyeondongRiCode)
         ps.setString(idx++, entity.platType.name)
-        ps.setNullableShort(idx++, entity.bonNo)
-        ps.setNullableShort(idx++, entity.buNo)
+        ps.setNullableInt(idx++, entity.bonNo)
+        ps.setNullableInt(idx++, entity.buNo)
         ps.setString(idx++, entity.nameRaw)
         ps.setNullableString(idx++, entity.nameNormalized)
-        ps.setNullableShort(idx++, entity.builtYear)
+        ps.setNullableInt(idx++, entity.builtYear)
         ps.setNullableInt(idx++, entity.totalHousehold)
         ps.setNullableInt(idx++, entity.totalBuilding)
         ps.setNullableInt(idx++, entity.totalParking)
@@ -94,13 +94,6 @@ class ApartmentComplexJdbcRepositoryImpl(
         value: Int?,
     ) {
         if (value != null) setInt(index, value) else setNull(index, java.sql.Types.INTEGER)
-    }
-
-    private fun PreparedStatement.setNullableShort(
-        index: Int,
-        value: Short?,
-    ) {
-        if (value != null) setShort(index, value) else setNull(index, java.sql.Types.SMALLINT)
     }
 
     private fun PreparedStatement.setNullableBigDecimal(
@@ -144,8 +137,8 @@ class ApartmentComplexJdbcRepositoryImpl(
         ps.setNullableInt(idx++, entity.eupmyeondongRiCode)
         ps.setNullableString(idx++, entity.addressRoad)
         ps.setNullableString(idx++, entity.addressJibun)
-        ps.setNullableShort(idx++, entity.bonNo)
-        ps.setNullableShort(idx++, entity.buNo)
+        ps.setNullableInt(idx++, entity.bonNo)
+        ps.setNullableInt(idx++, entity.buNo)
         ps.setNullableInt(idx++, entity.totalHousehold)
         ps.setNullableInt(idx++, entity.totalBuilding)
         ps.setNullableString(idx++, entity.heatingType)

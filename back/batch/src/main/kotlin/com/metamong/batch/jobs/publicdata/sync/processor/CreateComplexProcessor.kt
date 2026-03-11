@@ -23,7 +23,7 @@ class CreateComplexProcessor : ItemProcessor<ApartmentTradeRawDocumentEntity, Co
                 item.roadNmBubun,
             )
         val jibunAddress = AddressParser.buildJibunAddress(item.umdNm, item.jibun)
-        val builtYear = item.buildYear?.toShortOrNull()
+        val builtYear = item.buildYear?.toIntOrNull()
 
         val complex =
             ApartmentComplexEntity.create(

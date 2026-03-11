@@ -63,7 +63,7 @@ class ApartmentUnitTypeJdbcRepositoryImpl(
     ) {
         var idx = 1
         ps.setLong(idx++, entity.complexId)
-        ps.setShort(idx++, entity.exclusivePyeong)
+        ps.setInt(idx++, entity.exclusivePyeong)
         ps.setString(idx++, auditUser)
         ps.setString(idx++, auditUser)
         ps.setTimestamp(idx++, Timestamp.valueOf(now))

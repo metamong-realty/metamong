@@ -22,7 +22,7 @@ class InMemoryMigrationCache {
 
     fun getUnitTypeId(
         complexId: Long,
-        exclusivePyeong: Short,
+        exclusivePyeong: Int,
     ): Long? = unitTypeIdCache["$complexId:$exclusivePyeong"]
 
     fun addUnitTypes(entries: Map<String, Long>) {

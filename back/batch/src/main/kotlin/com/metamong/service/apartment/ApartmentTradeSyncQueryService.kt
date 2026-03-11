@@ -29,7 +29,7 @@ class ApartmentTradeSyncQueryService(
             unitTypeId = unitTypeInfo.unitTypeId,
             exclusiveArea = unitTypeInfo.exclusiveArea,
             price = PriceParser.parsePriceOrZero(tradeRaw.dealAmount),
-            floor = tradeRaw.floor?.toShortOrNull(),
+            floor = tradeRaw.floor?.toIntOrNull(),
             contractYear = contractInfo.year,
             contractMonth = contractInfo.month,
             contractDay = contractInfo.day,
@@ -55,7 +55,7 @@ class ApartmentTradeSyncQueryService(
             rentType = RentType.fromMonthlyRent(monthlyRent),
             deposit = deposit,
             monthlyRent = monthlyRent,
-            floor = rentRaw.floor?.toShortOrNull(),
+            floor = rentRaw.floor?.toIntOrNull(),
             contractYear = contractInfo.year,
             contractMonth = contractInfo.month,
             contractDay = contractInfo.day,
@@ -114,28 +114,28 @@ class ApartmentTradeSyncQueryService(
         dealMonth: String?,
         dealDay: String?,
     ): ContractInfo? {
-        val year = dealYear?.toShortOrNull()
-        val month = dealMonth?.toShortOrNull()
+        val year = dealYear?.toIntOrNull()
+        val month = dealMonth?.toIntOrNull()
         if (year == null || month == null) {
             logger.warn { "계약 연월 파싱 실패: dealYear=$dealYear, dealMonth=$dealMonth" }
             return null
         }
-        val day = dealDay?.toShortOrNull()
+        val day = dealDay?.toIntOrNull()
         val date = buildContractDate(year, month, day)
         return ContractInfo(year, month, day, date)
     }
 
     private data class ContractInfo(
-        val year: Short,
-        val month: Short,
-        val day: Short?,
+        val year: Int,
+        val month: Int,
+        val day: Int?,
         val date: LocalDate?,
     )
 
     private fun buildContractDate(
-        year: Short,
-        month: Short,
-        day: Short?,
+        year: Int,
+        month: Int,
+        day: Int?,
     ): LocalDate? {
         if (day == null || day < 1 || day > 31) return null
         return try {

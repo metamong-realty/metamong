@@ -7,7 +7,7 @@ data class ApartmentComplexDetailDto(
     val name: String,
     val addressRoad: String?,
     val addressJibun: String?,
-    val builtYear: Short?,
+    val builtYear: Int?,
     val totalHousehold: Int?,
     val totalBuilding: Int?,
     val totalParking: Int?,

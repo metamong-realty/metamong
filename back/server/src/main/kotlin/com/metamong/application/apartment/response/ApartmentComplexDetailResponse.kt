@@ -15,7 +15,7 @@ data class ApartmentComplexDetailResponse(
     @Schema(description = "지번주소", example = "서울특별시 강남구 역삼동 123-45")
     val addressJibun: String?,
     @Schema(description = "준공연도", example = "2010")
-    val builtYear: Short?,
+    val builtYear: Int?,
     @Schema(description = "세대수", example = "226")
     val totalHousehold: Int?,
     @Schema(description = "동수", example = "5")

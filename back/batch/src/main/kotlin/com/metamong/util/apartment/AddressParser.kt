@@ -6,8 +6,8 @@ object AddressParser {
     private val ROADNM_PATTERN = Regex("""^(.+?)\s+(\d+)(?:-(\d+))?$""")
 
     data class JibunResult(
-        val bonNo: Short,
-        val buNo: Short,
+        val bonNo: Int,
+        val buNo: Int,
     )
 
     data class RoadAddressResult(
@@ -21,12 +21,12 @@ object AddressParser {
 
         val match = JIBUN_PATTERN.find(jibun.trim()) ?: return null
 
-        val bonNo = match.groupValues[1].toShortOrNull() ?: return null
+        val bonNo = match.groupValues[1].toIntOrNull() ?: return null
         val buNo =
             match.groupValues
                 .getOrNull(2)
                 ?.takeIf { it.isNotEmpty() }
-                ?.toShortOrNull() ?: 0
+                ?.toIntOrNull() ?: 0
 
         return JibunResult(bonNo, buNo)
     }
@@ -36,12 +36,12 @@ object AddressParser {
 
         val match = KAPT_ADDR_JIBUN_PATTERN.find(kaptAddr) ?: return null
 
-        val bonNo = match.groupValues[1].toShortOrNull() ?: return null
+        val bonNo = match.groupValues[1].toIntOrNull() ?: return null
         val buNo =
             match.groupValues
                 .getOrNull(2)
                 ?.takeIf { it.isNotEmpty() }
-                ?.toShortOrNull() ?: 0
+                ?.toIntOrNull() ?: 0
 
         return JibunResult(bonNo, buNo)
     }
