@@ -3,6 +3,8 @@ package com.metamong.application.apartment.service
 import com.metamong.application.apartment.dto.ApartmentComplexDetailDto
 import com.metamong.application.apartment.dto.ApartmentComplexListDto
 import com.metamong.application.apartment.dto.ApartmentPriceSummaryDto
+import com.metamong.application.apartment.dto.RentPriceSummaryDto
+import com.metamong.application.apartment.dto.TradePriceSummaryDto
 import com.metamong.domain.apartment.model.RentType
 import com.metamong.infra.persistence.apartment.repository.ApartmentComplexRepository
 import com.metamong.infra.persistence.apartment.repository.ApartmentRentRepository
@@ -138,10 +140,72 @@ class ApartmentComplexQueryService(
         unitTypeId: Long?,
         lookbackMonths: Int,
     ): ApartmentPriceSummaryDto {
-        // TODO: 가격 요약 로직 구현 필요
+        val now = LocalDate.now()
+        val recentStartDate = now.minusMonths(1)
+        val lookbackStartDate = now.minusMonths(lookbackMonths.toLong() + 1)
+        val lookbackEndDate = now.minusMonths(lookbackMonths.toLong())
+
+        // 최근 1개월 매매 데이터
+        val recentTrades = apartmentTradeRepository.findTradesForChart(
+            complexId = complexId,
+            unitTypeId = unitTypeId,
+            startDate = recentStartDate,
+        )
+
+        // lookback 기준 1개월 매매 데이터
+        val lookbackTrades = apartmentTradeRepository.findTradesForChart(
+            complexId = complexId,
+            unitTypeId = unitTypeId,
+            startDate = lookbackStartDate,
+        ).filter { it.contractYear * 12 + it.contractMonth < lookbackEndDate.year * 12 + lookbackEndDate.monthValue }
+
+        // 최근 1개월 전월세 데이터
+        val recentRents = apartmentRentRepository.findRentsForChart(
+            complexId = complexId,
+            unitTypeId = unitTypeId,
+            rentType = null,
+            startDate = recentStartDate,
+        )
+
+        // lookback 기준 1개월 전월세 데이터
+        val lookbackRents = apartmentRentRepository.findRentsForChart(
+            complexId = complexId,
+            unitTypeId = unitTypeId,
+            rentType = null,
+            startDate = lookbackStartDate,
+        ).filter { it.contractYear * 12 + it.contractMonth < lookbackEndDate.year * 12 + lookbackEndDate.monthValue }
+
+        val tradeSummary = if (recentTrades.isNotEmpty() && lookbackTrades.isNotEmpty()) {
+            val recentAvg = recentTrades.mapNotNull { it.avgPrice }.average().toLong()
+            val lookbackAvg = lookbackTrades.mapNotNull { it.avgPrice }.average().toLong()
+            val changeRate = if (lookbackAvg > 0) {
+                ((recentAvg - lookbackAvg).toBigDecimal().divide(lookbackAvg.toBigDecimal(), 4, java.math.RoundingMode.HALF_UP) * 100.toBigDecimal())
+            } else null
+
+            TradePriceSummaryDto(
+                recentMonthAvgPrice = recentAvg,
+                lookbackMonthAvgPrice = lookbackAvg,
+                priceChangeRate = changeRate,
+            )
+        } else null
+
+        val rentSummary = if (recentRents.isNotEmpty() && lookbackRents.isNotEmpty()) {
+            val recentAvg = recentRents.mapNotNull { it.avgDeposit }.average().toLong()
+            val lookbackAvg = lookbackRents.mapNotNull { it.avgDeposit }.average().toLong()
+            val changeRate = if (lookbackAvg > 0) {
+                ((recentAvg - lookbackAvg).toBigDecimal().divide(lookbackAvg.toBigDecimal(), 4, java.math.RoundingMode.HALF_UP) * 100.toBigDecimal())
+            } else null
+
+            RentPriceSummaryDto(
+                recentMonthAvgDeposit = recentAvg,
+                lookbackMonthAvgDeposit = lookbackAvg,
+                depositChangeRate = changeRate,
+            )
+        } else null
+
         return ApartmentPriceSummaryDto(
-            trade = null,
-            rent = null,
+            trade = tradeSummary,
+            rent = rentSummary,
         )
     }
 }

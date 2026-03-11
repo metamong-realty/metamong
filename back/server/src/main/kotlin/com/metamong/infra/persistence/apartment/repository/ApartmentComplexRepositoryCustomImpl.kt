@@ -83,12 +83,33 @@ class ApartmentComplexRepositoryCustomImpl :
         }
     }
 
-    override fun findDistinctEupmyeondongCodes(sidoSigunguCode: Int): List<Int> =
+    override fun findDistinctSidoCodes(): List<Int> =
         queryFactory
-            .select(complex.eupmyeondongRiCode.divide(100))
+            .select(complex.sidoSigunguCode.divide(1000))
             .from(complex)
-            .where(complex.sidoSigunguCode.eq(sidoSigunguCode))
             .distinct()
             .fetch()
             .filterNotNull()
+            .sorted()
+
+    override fun findDistinctSidoSigunguCodes(): List<Int> =
+        queryFactory
+            .select(complex.sidoSigunguCode)
+            .from(complex)
+            .distinct()
+            .fetch()
+            .filterNotNull()
+            .sorted()
+
+    override fun findDistinctEupmyeondongCodes(sidoSigunguCode: Int): List<Int> {
+        val condition = sidoSigunguCodeCondition(sidoSigunguCode)
+        return queryFactory
+            .select(complex.eupmyeondongRiCode.divide(100))
+            .from(complex)
+            .where(condition)
+            .distinct()
+            .fetch()
+            .filterNotNull()
+    }
+            .sorted()
 }
