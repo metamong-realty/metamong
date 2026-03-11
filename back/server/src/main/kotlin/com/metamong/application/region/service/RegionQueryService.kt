@@ -1,6 +1,7 @@
 package com.metamong.application.region.service
 
 import com.metamong.application.region.response.EupmyeondongResponse
+import com.metamong.application.region.response.RegionAllResponse
 import com.metamong.application.region.response.SidoResponse
 import com.metamong.application.region.response.SigunguResponse
 import com.metamong.common.util.toFullSidoSigunguCode
@@ -81,5 +82,30 @@ class RegionQueryService(
                 EupmyeondongResponse(code = code, name = name)
             }.distinctBy { it.code }
             .sortedBy { it.code }
+    }
+
+    @Cacheable("region:all")
+    fun getAllRegions(): RegionAllResponse {
+        val sidoList = getSidoList()
+
+        // 모든 시군구 조회 후 시도별로 그룹화
+        val sigunguMap = sidoList.associate { sido ->
+            sido.code to getSigunguList(sido.code)
+        }
+
+        // 모든 읍면동 조회 후 시도시군구별로 그룹화
+        val eupmyeondongMap = mutableMapOf<String, List<EupmyeondongResponse>>()
+        sigunguMap.forEach { (sidoCode, sigunguList) ->
+            sigunguList.forEach { sigungu ->
+                val key = sidoCode + sigungu.code
+                eupmyeondongMap[key] = getEupmyeondongList(sidoCode, sigungu.code)
+            }
+        }
+
+        return RegionAllResponse(
+            sido = sidoList,
+            sigungu = sigunguMap,
+            eupmyeondong = eupmyeondongMap,
+        )
     }
 }
