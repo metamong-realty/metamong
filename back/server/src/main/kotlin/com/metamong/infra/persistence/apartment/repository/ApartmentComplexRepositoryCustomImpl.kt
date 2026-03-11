@@ -65,13 +65,15 @@ class ApartmentComplexRepositoryCustomImpl :
                         JPAExpressions
                             .select(trade.count())
                             .from(trade)
-                            .join(unitType).on(trade.unitTypeId.eq(unitType.id))
+                            .join(unitType)
+                            .on(trade.unitTypeId.eq(unitType.id))
                             .where(unitType.complexId.eq(complex.id)),
                         // 최근 3년 거래 건수
                         JPAExpressions
                             .select(trade.count())
                             .from(trade)
-                            .join(unitType).on(trade.unitTypeId.eq(unitType.id))
+                            .join(unitType)
+                            .on(trade.unitTypeId.eq(unitType.id))
                             .where(
                                 unitType.complexId.eq(complex.id),
                                 trade.contractYear.goe(threeYearsAgo),
