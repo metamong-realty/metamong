@@ -1,6 +1,7 @@
 #!/bin/bash
 # PostToolUse hook: Write|Edit 후 파일 패턴에 따라 자동 액션 실행
 # - .kt 파일: ktlintFormat
+# - .tsx/.ts 파일 (front/): prettier
 set -euo pipefail
 
 INPUT=$(cat)
@@ -17,6 +18,15 @@ if [[ "$FILE_PATH" == *.kt ]]; then
   RELATIVE_PATH="${FILE_PATH#$CLAUDE_PROJECT_DIR/}"
   ./gradlew ktlintFormat -PktlintFiles="$RELATIVE_PATH" --quiet 2>/dev/null || \
     ./gradlew ktlintFormat --quiet 2>/dev/null || true
+  exit 0
+fi
+
+# TypeScript/React 파일 편집 시 prettier 포맷팅
+if [[ "$FILE_PATH" == *.tsx || "$FILE_PATH" == *.ts ]]; then
+  if [[ "$FILE_PATH" == */front/* ]]; then
+    cd "$CLAUDE_PROJECT_DIR/front"
+    npx prettier --write "$FILE_PATH" --log-level silent 2>/dev/null || true
+  fi
   exit 0
 fi
 

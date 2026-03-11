@@ -40,6 +40,15 @@ class ApartmentComplexRepositoryCustomImpl :
                 .from(complex)
                 .where(*conditions.toTypedArray())
 
+
+        // 서브쿼리용 엔티티 별칭
+        val unitType = QApartmentUnitTypeEntity.apartmentUnitTypeEntity
+        val trade = QApartmentTradeEntity.apartmentTradeEntity
+
+        // 현재 연도 계산 (최근 3년 필터용)
+        val currentYear = LocalDate.now().year
+        val threeYearsAgo = currentYear - 3
+
         val total = countQuery.fetchOne() ?: 0L
 
         // 서브쿼리용 엔티티 별칭
@@ -140,3 +149,4 @@ class ApartmentComplexRepositoryCustomImpl :
             .sorted()
     }
 }
+
