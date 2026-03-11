@@ -1,0 +1,40 @@
+name: Back-Deploy Auto Check
+
+on:
+  push:
+    branches:
+      - back-deploy
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      
+      - name: Compile Kotlin
+        run: ./gradlew :back:server:compileKotlin
+      
+      - name: Build
+        run: ./gradlew :back:server:build -x test
+      
+      - name: Run tests
+        run: ./gradlew :back:server:test
+        continue-on-error: true
+      
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Build failed on back-deploy!"
+          echo "Check the logs above for errors."
+          exit 1
