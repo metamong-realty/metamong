@@ -11,4 +11,7 @@ fun LocalDate.toMonthValue(): Int = this.year * 12 + this.monthValue
 /**
  * 년월을 월 단위 정수로 변환 (contractYear, contractMonth용)
  */
-fun toMonthValue(year: Int, month: Int): Int = year * 12 + month
+fun toMonthValue(
+    year: Int,
+    month: Int,
+): Int = year * 12 + month
