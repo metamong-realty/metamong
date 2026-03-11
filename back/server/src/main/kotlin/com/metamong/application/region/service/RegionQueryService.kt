@@ -19,12 +19,12 @@ class RegionQueryService(
         // 실제로 단지가 존재하는 시도 코드만 조회
         val existingSidoCodes = apartmentComplexRepository.findDistinctSidoCodes()
 
-        return regionLegalCodeRepository.findAll()
+        return regionLegalCodeRepository
+            .findAll()
             .filter { entity ->
                 val sidoCodeInt = entity.sidoCode.code.toIntOrNull() ?: return@filter false
                 existingSidoCodes.contains(sidoCodeInt)
-            }
-            .map { SidoResponse(code = it.sidoCode.code, name = it.sidoName) }
+            }.map { SidoResponse(code = it.sidoCode.code, name = it.sidoName) }
             .distinctBy { it.code }
             .sortedBy { it.code }
     }
@@ -36,7 +36,8 @@ class RegionQueryService(
 
         val sidoCodeInt = sidoCode.toIntOrNull() ?: return emptyList()
 
-        return regionLegalCodeRepository.findAll()
+        return regionLegalCodeRepository
+            .findAll()
             .filter { entity ->
                 val entitySidoCode = entity.sidoCode.code.toIntOrNull() ?: return@filter false
                 if (entitySidoCode != sidoCodeInt) return@filter false
@@ -44,13 +45,11 @@ class RegionQueryService(
                 val sigunguCode = entity.sigunguCode?.code?.toIntOrNull() ?: return@filter false
                 val fullCode = toFullSidoSigunguCode(entitySidoCode, sigunguCode)
                 existingSidoSigunguCodes.contains(fullCode)
-            }
-            .mapNotNull { entity ->
+            }.mapNotNull { entity ->
                 val code = entity.sigunguCode?.code ?: return@mapNotNull null
                 val name = entity.sigunguName ?: return@mapNotNull null
                 SigunguResponse(code = code, name = name)
-            }
-            .distinctBy { it.code }
+            }.distinctBy { it.code }
             .sortedBy { it.code }
     }
 
@@ -66,7 +65,8 @@ class RegionQueryService(
         // 실제로 단지가 존재하는 읍면동 코드만 조회
         val existingEupmyeondongCodes = apartmentComplexRepository.findDistinctEupmyeondongCodes(sidoSigunguCode)
 
-        return regionLegalCodeRepository.findAll()
+        return regionLegalCodeRepository
+            .findAll()
             .filter { entity ->
                 val entitySidoCode = entity.sidoCode.code.toIntOrNull() ?: return@filter false
                 val entitySigunguCode = entity.sigunguCode?.code?.toIntOrNull() ?: return@filter false
@@ -75,13 +75,11 @@ class RegionQueryService(
                 entitySidoCode == sidoCodeInt &&
                     entitySigunguCode == sigunguCodeInt &&
                     existingEupmyeondongCodes.contains(eupmyeondongCode)
-            }
-            .mapNotNull { entity ->
+            }.mapNotNull { entity ->
                 val code = entity.eupmyeondongCode?.code ?: return@mapNotNull null
                 val name = entity.eupmyeondongName ?: return@mapNotNull null
                 EupmyeondongResponse(code = code, name = name)
-            }
-            .distinctBy { it.code }
+            }.distinctBy { it.code }
             .sortedBy { it.code }
     }
 }
