@@ -7,9 +7,10 @@ import com.metamong.domain.apartment.model.QApartmentTradeEntity
 import com.metamong.domain.apartment.model.QApartmentUnitTypeEntity
 import com.metamong.infra.persistence.apartment.projection.ApartmentComplexListProjection
 import com.metamong.support.QuerydslRepositorySupport
+import com.querydsl.core.types.Order
+import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
-import com.querydsl.core.types.dsl.NumberExpression
 import com.querydsl.jpa.JPAExpressions
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -54,14 +55,13 @@ class ApartmentComplexRepositoryCustomImpl :
         val threeYearsAgo = currentYear - 3
 
         // 전체 거래 건수 서브쿼리 (정렬용)
-        val totalTradeCountSubQuery: NumberExpression<Long> =
+        val totalTradeCountSubQuery =
             JPAExpressions
                 .select(trade.count())
                 .from(trade)
-                .join(unitType).on(trade.unitTypeId.eq(unitType.id))
+                .join(unitType)
+                .on(trade.unitTypeId.eq(unitType.id))
                 .where(unitType.complexId.eq(complex.id))
-                .asNumber()
-                .longValue()
 
         val query =
             queryFactory
@@ -80,7 +80,8 @@ class ApartmentComplexRepositoryCustomImpl :
                         JPAExpressions
                             .select(trade.count())
                             .from(trade)
-                            .join(unitType).on(trade.unitTypeId.eq(unitType.id))
+                            .join(unitType)
+                            .on(trade.unitTypeId.eq(unitType.id))
                             .where(
                                 unitType.complexId.eq(complex.id),
                                 trade.contractYear.goe(threeYearsAgo),
@@ -91,7 +92,7 @@ class ApartmentComplexRepositoryCustomImpl :
 
         // 정렬 조건 적용
         when (sortOrder) {
-            SortOrder.TRADE_COUNT -> query.orderBy(totalTradeCountSubQuery.desc())
+            SortOrder.TRADE_COUNT -> query.orderBy(OrderSpecifier(Order.DESC, totalTradeCountSubQuery))
             SortOrder.BUILT_YEAR -> query.orderBy(complex.builtYear.desc())
             SortOrder.DEFAULT -> query.orderBy(complex.nameRaw.asc())
         }
