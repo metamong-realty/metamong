@@ -66,8 +66,7 @@ class ApartmentComplexRepositoryCustomImpl :
                             .select(trade.count())
                             .from(trade)
                             .join(unitType).on(trade.unitTypeId.eq(unitType.id))
-                            .where(unitType.complexId.eq(complex.id))
-                            .asNumber(),
+                            .where(unitType.complexId.eq(complex.id)),
                         // 최근 3년 거래 건수
                         JPAExpressions
                             .select(trade.count())
@@ -76,7 +75,7 @@ class ApartmentComplexRepositoryCustomImpl :
                             .where(
                                 unitType.complexId.eq(complex.id),
                                 trade.contractYear.goe(threeYearsAgo),
-                            ).asNumber(),
+                            ),
                     ),
                 ).from(complex)
                 .where(*conditions.toTypedArray())
