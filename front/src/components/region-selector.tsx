@@ -37,6 +37,12 @@ export function RegionSelector({
   const { data: sidoList = [], isLoading: isSidoLoading } = useGetSidoList();
   const { data: sigunguList = [], isLoading: isSigunguLoading } = useGetSigunguList(sidoCode);
   const { data: eupmyeondongList = [], isLoading: isEupmyeondongLoading } = useGetEupmyeondongList(
+
+  // META-002: 빈 배열일 때 "전체"만 표시
+  const eupmyeondongOptions =
+    eupmyeondongList.length === 0
+      ? [{ code: '', name: '전체' }]
+      : [{ code: '', name: '전체' }, ...eupmyeondongList];
     sidoCode,
     sigunguCode,
   );
