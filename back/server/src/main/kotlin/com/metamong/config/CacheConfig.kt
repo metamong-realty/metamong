@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.cache.RedisCacheConfiguration
 import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.data.redis.connection.RedisConnectionFactory
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.RedisSerializationContext
 import org.springframework.data.redis.serializer.StringRedisSerializer
 import java.time.Duration
@@ -37,7 +37,7 @@ class CacheConfig {
                     RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer()),
                 ).serializeValuesWith(
                     RedisSerializationContext.SerializationPair.fromSerializer(
-                        GenericJackson2JsonRedisSerializer(cacheObjectMapper),
+                        Jackson2JsonRedisSerializer(cacheObjectMapper, Any::class.java),
                     ),
                 ).entryTtl(Duration.ofHours(1)) // 기본 TTL: 1시간
 
