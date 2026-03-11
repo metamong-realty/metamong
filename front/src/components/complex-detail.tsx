@@ -17,6 +17,7 @@ import {
   Ruler,
 } from 'lucide-react';
 
+import { AddressLink } from '@/components/address-link';
 import { AptPriceChart, type ChartDataPoint } from '@/components/apt-price-chart';
 import { PriceSummaryCard } from '@/components/price-summary-card';
 import { TransactionTable } from '@/components/transaction-table';
@@ -126,8 +127,6 @@ export function ComplexDetail({ complexId }: ComplexDetailProps) {
     );
   }
 
-  const address = complex.addressRoad ?? complex.addressJibun ?? '';
-
   return (
     <div className="min-h-screen bg-gray-50/50">
       {/* 상단 헤더 */}
@@ -151,11 +150,18 @@ export function ComplexDetail({ complexId }: ComplexDetailProps) {
           <Card>
             <CardContent className="p-5">
               {/* 주소 */}
-              {address && (
-                <div className="mb-4 flex items-center text-sm text-gray-600">
-                  <MapPin className="mr-1.5 h-4 w-4 shrink-0" />
-                  <span>{address}</span>
-                  <CopyButton text={address} />
+              {(complex.addressRoad || complex.addressJibun) && (
+                <div className="mb-4 space-y-1 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                  <div className="mb-2 flex items-center gap-1.5">
+                    <MapPin className="h-4 w-4 text-gray-500" />
+                    <span className="text-xs font-semibold text-gray-700">주소</span>
+                  </div>
+                  {complex.addressRoad && (
+                    <AddressLink address={complex.addressRoad} type="도로명" />
+                  )}
+                  {complex.addressJibun && (
+                    <AddressLink address={complex.addressJibun} type="지번" />
+                  )}
                 </div>
               )}
 
