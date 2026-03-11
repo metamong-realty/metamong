@@ -29,7 +29,8 @@ class ApartmentTradeRepositoryCustomImpl :
     ): Page<ApartmentTradeListProjection> {
         val conditions =
             listOfNotNull(
-                unitType.complexId.eq(complexId),
+                // unitTypeId가 제공되면 complexId 조건 불필요 (unitTypeId에 이미 complex 정보 포함)
+                if (unitTypeId == null) unitType.complexId.eq(complexId) else null,
                 unitTypeIdCondition(unitTypeId),
                 startDateCondition(startDate),
             )
@@ -76,7 +77,8 @@ class ApartmentTradeRepositoryCustomImpl :
     ): List<ApartmentTradeChartProjection> {
         val conditions =
             listOfNotNull(
-                unitType.complexId.eq(complexId),
+                // unitTypeId가 제공되면 complexId 조건 불필요 (unitTypeId에 이미 complex 정보 포함)
+                if (unitTypeId == null) unitType.complexId.eq(complexId) else null,
                 unitTypeIdCondition(unitTypeId),
                 startDateCondition(startDate),
                 trade.isCanceled.eq(false),
