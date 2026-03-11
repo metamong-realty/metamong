@@ -3,6 +3,7 @@ package com.metamong.application.region.service
 import com.metamong.application.region.response.EupmyeondongResponse
 import com.metamong.application.region.response.SidoResponse
 import com.metamong.application.region.response.SigunguResponse
+import com.metamong.common.util.toFullSidoSigunguCode
 import com.metamong.infra.persistence.apartment.repository.ApartmentComplexRepository
 import com.metamong.infra.persistence.region.repository.RegionLegalCodeRepository
 import org.springframework.cache.annotation.Cacheable
@@ -41,7 +42,7 @@ class RegionQueryService(
                 if (entitySidoCode != sidoCodeInt) return@filter false
 
                 val sigunguCode = entity.sigunguCode?.code?.toIntOrNull() ?: return@filter false
-                val fullCode = entitySidoCode * 1000 + sigunguCode
+                val fullCode = toFullSidoSigunguCode(entitySidoCode, sigunguCode)
                 existingSidoSigunguCodes.contains(fullCode)
             }
             .mapNotNull { entity ->
@@ -60,7 +61,7 @@ class RegionQueryService(
     ): List<EupmyeondongResponse> {
         val sidoCodeInt = sidoCode.toIntOrNull() ?: return emptyList()
         val sigunguCodeInt = sigunguCode.toIntOrNull() ?: return emptyList()
-        val sidoSigunguCode = sidoCodeInt * 1000 + sigunguCodeInt
+        val sidoSigunguCode = toFullSidoSigunguCode(sidoCodeInt, sigunguCodeInt)
 
         // 실제로 단지가 존재하는 읍면동 코드만 조회
         val existingEupmyeondongCodes = apartmentComplexRepository.findDistinctEupmyeondongCodes(sidoSigunguCode)
