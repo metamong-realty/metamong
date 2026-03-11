@@ -5,6 +5,7 @@ import com.metamong.application.apartment.dto.ApartmentComplexListDto
 import com.metamong.application.apartment.dto.ApartmentPriceSummaryDto
 import com.metamong.application.apartment.dto.RentPriceSummaryDto
 import com.metamong.application.apartment.dto.TradePriceSummaryDto
+import com.metamong.application.apartment.request.SortOrder
 import com.metamong.common.util.toMonthValue
 import com.metamong.domain.apartment.model.RentType
 import com.metamong.infra.persistence.apartment.repository.ApartmentComplexRepository
@@ -31,6 +32,7 @@ class ApartmentComplexQueryService(
         sidoSigunguCode: Int,
         eupmyeondongCode: Int?,
         keyword: String?,
+        sortOrder: SortOrder,
         pageable: Pageable,
     ): Page<ApartmentComplexListDto> {
         val complexes =
@@ -38,6 +40,7 @@ class ApartmentComplexQueryService(
                 sidoSigunguCode = sidoSigunguCode,
                 eupmyeondongCode = eupmyeondongCode,
                 keyword = keyword,
+                sortOrder = sortOrder,
                 pageable = pageable,
             )
 
