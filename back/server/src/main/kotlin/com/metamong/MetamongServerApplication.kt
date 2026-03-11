@@ -9,3 +9,4 @@ class MetamongServerApplication
 fun main(args: Array<String>) {
     runApplication<MetamongServerApplication>(*args)
 }
+// test
