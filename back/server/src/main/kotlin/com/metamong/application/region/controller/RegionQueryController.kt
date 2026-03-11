@@ -1,6 +1,7 @@
 package com.metamong.application.region.controller
 
 import com.metamong.application.region.response.EupmyeondongResponse
+import com.metamong.application.region.response.RegionAllResponse
 import com.metamong.application.region.response.SidoResponse
 import com.metamong.application.region.response.SigunguResponse
 import com.metamong.application.region.service.RegionQueryService
@@ -38,4 +39,11 @@ class RegionQueryController(
         @Parameter(description = "시군구 코드", example = "680")
         @RequestParam sigunguCode: String,
     ): ApiResponse<List<EupmyeondongResponse>> = ApiResponse.ok(regionQueryService.getEupmyeondongList(sidoCode, sigunguCode))
+
+    @Operation(
+        summary = "전체 지역 조회",
+        description = "시도, 시군구, 읍면동 전체 데이터를 한 번에 조회합니다. FE에서 캐싱하여 사용할 수 있습니다.",
+    )
+    @GetMapping("/all")
+    fun getAllRegions(): ApiResponse<RegionAllResponse> = ApiResponse.ok(regionQueryService.getAllRegions())
 }
