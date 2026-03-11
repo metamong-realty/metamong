@@ -1,11 +1,14 @@
 package com.metamong.infra.persistence.apartment.repository
 
+import com.metamong.application.apartment.request.SortOrder
 import com.metamong.domain.apartment.model.ApartmentComplexEntity
 import com.metamong.domain.apartment.model.QApartmentComplexEntity
 import com.metamong.domain.apartment.model.QApartmentTradeEntity
 import com.metamong.domain.apartment.model.QApartmentUnitTypeEntity
 import com.metamong.infra.persistence.apartment.projection.ApartmentComplexListProjection
 import com.metamong.support.QuerydslRepositorySupport
+import com.querydsl.core.types.Order
+import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.JPAExpressions
@@ -25,6 +28,7 @@ class ApartmentComplexRepositoryCustomImpl :
         sidoSigunguCode: Int,
         eupmyeondongCode: Int?,
         keyword: String?,
+        sortOrder: SortOrder,
         pageable: Pageable,
     ): Page<ApartmentComplexListProjection> {
         val conditions =
@@ -50,7 +54,16 @@ class ApartmentComplexRepositoryCustomImpl :
         val currentYear = LocalDate.now().year
         val threeYearsAgo = currentYear - 3
 
-        val content =
+        // 전체 거래 건수 서브쿼리 (정렬용)
+        val totalTradeCountSubQuery =
+            JPAExpressions
+                .select(trade.count())
+                .from(trade)
+                .join(unitType)
+                .on(trade.unitTypeId.eq(unitType.id))
+                .where(unitType.complexId.eq(complex.id))
+
+        val query =
             queryFactory
                 .select(
                     Projections.constructor(
@@ -62,12 +75,7 @@ class ApartmentComplexRepositoryCustomImpl :
                         complex.eupmyeondongRiCode,
                         complex.addressJibun,
                         // 전체 거래 건수
-                        JPAExpressions
-                            .select(trade.count())
-                            .from(trade)
-                            .join(unitType)
-                            .on(trade.unitTypeId.eq(unitType.id))
-                            .where(unitType.complexId.eq(complex.id)),
+                        totalTradeCountSubQuery,
                         // 최근 3년 거래 건수
                         JPAExpressions
                             .select(trade.count())
@@ -81,7 +89,16 @@ class ApartmentComplexRepositoryCustomImpl :
                     ),
                 ).from(complex)
                 .where(*conditions.toTypedArray())
-                .orderBy(complex.nameRaw.asc())
+
+        // 정렬 조건 적용
+        when (sortOrder) {
+            SortOrder.TRADE_COUNT -> query.orderBy(OrderSpecifier(Order.DESC, totalTradeCountSubQuery))
+            SortOrder.BUILT_YEAR -> query.orderBy(complex.builtYear.desc())
+            SortOrder.DEFAULT -> query.orderBy(complex.nameRaw.asc())
+        }
+
+        val content =
+            query
                 .offset(pageable.offset)
                 .limit(pageable.pageSize.toLong())
                 .fetch()

@@ -1,5 +1,6 @@
 package com.metamong.infra.persistence.apartment.repository
 
+import com.metamong.application.apartment.request.SortOrder
 import com.metamong.infra.persistence.apartment.projection.ApartmentComplexListProjection
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -9,6 +10,7 @@ interface ApartmentComplexRepositoryCustom {
         sidoSigunguCode: Int,
         eupmyeondongCode: Int?,
         keyword: String?,
+        sortOrder: SortOrder,
         pageable: Pageable,
     ): Page<ApartmentComplexListProjection>
 
