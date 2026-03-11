@@ -89,9 +89,10 @@ class RegionQueryService(
         val sidoList = getSidoList()
 
         // 모든 시군구 조회 후 시도별로 그룹화
-        val sigunguMap = sidoList.associate { sido ->
-            sido.code to getSigunguList(sido.code)
-        }
+        val sigunguMap =
+            sidoList.associate { sido ->
+                sido.code to getSigunguList(sido.code)
+            }
 
         // 모든 읍면동 조회 후 시도시군구별로 그룹화
         val eupmyeondongMap = mutableMapOf<String, List<EupmyeondongResponse>>()
