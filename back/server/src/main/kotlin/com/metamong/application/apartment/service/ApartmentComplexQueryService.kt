@@ -5,6 +5,7 @@ import com.metamong.application.apartment.dto.ApartmentComplexListDto
 import com.metamong.application.apartment.dto.ApartmentPriceSummaryDto
 import com.metamong.application.apartment.dto.RentPriceSummaryDto
 import com.metamong.application.apartment.dto.TradePriceSummaryDto
+import com.metamong.common.util.toMonthValue
 import com.metamong.domain.apartment.model.RentType
 import com.metamong.infra.persistence.apartment.repository.ApartmentComplexRepository
 import com.metamong.infra.persistence.apartment.repository.ApartmentRentRepository
@@ -157,7 +158,7 @@ class ApartmentComplexQueryService(
             complexId = complexId,
             unitTypeId = unitTypeId,
             startDate = lookbackStartDate,
-        ).filter { it.contractYear * 12 + it.contractMonth < lookbackEndDate.year * 12 + lookbackEndDate.monthValue }
+        ).filter { toMonthValue(it.contractYear, it.contractMonth) < lookbackEndDate.toMonthValue() }
 
         // 최근 1개월 전월세 데이터
         val recentRents = apartmentRentRepository.findRentsForChart(
@@ -173,7 +174,7 @@ class ApartmentComplexQueryService(
             unitTypeId = unitTypeId,
             rentType = null,
             startDate = lookbackStartDate,
-        ).filter { it.contractYear * 12 + it.contractMonth < lookbackEndDate.year * 12 + lookbackEndDate.monthValue }
+        ).filter { toMonthValue(it.contractYear, it.contractMonth) < lookbackEndDate.toMonthValue() }
 
         val tradeSummary = if (recentTrades.isNotEmpty() && lookbackTrades.isNotEmpty()) {
             val recentAvg = recentTrades.mapNotNull { it.avgPrice }.average().toLong()
