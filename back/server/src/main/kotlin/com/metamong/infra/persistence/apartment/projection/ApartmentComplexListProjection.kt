@@ -7,4 +7,6 @@ data class ApartmentComplexListProjection(
     val totalHousehold: Int?,
     val eupmyeondongRiCode: Int?,
     val addressJibun: String?,
+    val totalTradeCount: Long = 0,
+    val recent3YearsTradeCount: Long = 0,
 )
