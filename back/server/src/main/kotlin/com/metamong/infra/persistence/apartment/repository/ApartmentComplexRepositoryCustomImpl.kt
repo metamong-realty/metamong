@@ -40,7 +40,6 @@ class ApartmentComplexRepositoryCustomImpl :
                 .from(complex)
                 .where(*conditions.toTypedArray())
 
-
         val total = countQuery.fetchOne() ?: 0L
 
         // 서브쿼리용 엔티티 별칭
@@ -143,4 +142,3 @@ class ApartmentComplexRepositoryCustomImpl :
             .sorted()
     }
 }
-
