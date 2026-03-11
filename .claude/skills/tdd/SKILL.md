@@ -1,5 +1,5 @@
 ---
-description: "Test-Driven Development 워크플로를 구현합니다 (RED-GREEN-REFACTOR 사이클)"
+description: "Test-Driven Development 방식(RED-GREEN-REFACTOR)으로 기능을 구현합니다. 사용자가 'TDD로 구현', '테스트 먼저 작성', 'TDD 방식으로'를 요청하거나, 테스트 주도로 안전하게 기능을 개발하고 싶을 때 사용합니다."
 argument-hint: "<feature-description>"
 ---
 
