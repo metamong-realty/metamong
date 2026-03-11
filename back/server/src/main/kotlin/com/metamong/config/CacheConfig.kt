@@ -1,6 +1,6 @@
 package com.metamong.config
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.cache.CacheManager
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
@@ -15,17 +15,29 @@ import java.time.Duration
 
 @Configuration
 @EnableCaching
-@ConditionalOnProperty(name = ["spring.data.redis.url"], matchIfMissing = false)
-class CacheConfig {
+class CacheConfig(
+    private val objectMapper: ObjectMapper,
+) {
     @Bean
     fun cacheManager(redisConnectionFactory: RedisConnectionFactory): CacheManager {
+        val cacheObjectMapper =
+            objectMapper.copy().apply {
+                activateDefaultTyping(
+                    polymorphicTypeValidator,
+                    ObjectMapper.DefaultTyping.NON_FINAL,
+                    com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY,
+                )
+            }
+
         val defaultConfig =
             RedisCacheConfiguration
                 .defaultCacheConfig()
                 .serializeKeysWith(
                     RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer()),
                 ).serializeValuesWith(
-                    RedisSerializationContext.SerializationPair.fromSerializer(GenericJackson2JsonRedisSerializer()),
+                    RedisSerializationContext.SerializationPair.fromSerializer(
+                        GenericJackson2JsonRedisSerializer(cacheObjectMapper),
+                    ),
                 ).entryTtl(Duration.ofHours(1)) // 기본 TTL: 1시간
 
         val cacheConfigurations =
