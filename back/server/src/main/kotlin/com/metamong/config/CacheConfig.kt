@@ -1,6 +1,11 @@
 package com.metamong.config
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.cache.CacheManager
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
@@ -15,19 +20,17 @@ import java.time.Duration
 
 @Configuration
 @EnableCaching
-class CacheConfig(
-    private val objectMapper: ObjectMapper,
-) {
+@ConditionalOnProperty(name = ["spring.data.redis.url"], matchIfMissing = false)
+class CacheConfig {
     @Bean
     fun cacheManager(redisConnectionFactory: RedisConnectionFactory): CacheManager {
         val cacheObjectMapper =
-            objectMapper.copy().apply {
-                activateDefaultTyping(
-                    polymorphicTypeValidator,
-                    ObjectMapper.DefaultTyping.NON_FINAL,
-                    com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY,
-                )
-            }
+            ObjectMapper()
+                .registerKotlinModule()
+                .registerModule(JavaTimeModule())
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
+                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
         val defaultConfig =
             RedisCacheConfiguration
