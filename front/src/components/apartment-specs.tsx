@@ -4,13 +4,13 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface ApartmentSpecsProps {
-  builtYear?: number;
-  totalHousehold?: number;
-  totalBuilding?: number;
-  totalParking?: number;
-  floorAreaRatio?: number;
-  buildingCoverageRatio?: number;
-  heatingType?: string;
+  builtYear?: number | null;
+  totalHousehold?: number | null;
+  totalBuilding?: number | null;
+  totalParking?: number | null;
+  floorAreaRatio?: number | null;
+  buildingCoverageRatio?: number | null;
+  heatingType?: string | null;
 }
 
 export function ApartmentSpecs({
@@ -42,11 +42,7 @@ export function ApartmentSpecs({
           )}
           {totalBuilding && <InfoItem icon={Layers} label="총 동수" value={`${totalBuilding}동`} />}
           {totalParking && (
-            <InfoItem
-              icon={Car}
-              label="주차대수"
-              value={`${totalParking.toLocaleString()}대`}
-            />
+            <InfoItem icon={Car} label="주차대수" value={`${totalParking.toLocaleString()}대`} />
           )}
           {floorAreaRatio && <InfoItem icon={Ruler} label="용적률" value={`${floorAreaRatio}%`} />}
           {buildingCoverageRatio && (
