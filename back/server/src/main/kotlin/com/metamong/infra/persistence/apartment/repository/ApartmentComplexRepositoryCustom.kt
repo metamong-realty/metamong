@@ -32,4 +32,10 @@ interface ApartmentComplexRepositoryCustom {
      * @return 읍면동 코드 목록 (3자리, 중복 제거됨)
      */
     fun findDistinctEupmyeondongCodes(sidoSigunguCode: Int): List<Int>
+
+    /**
+     * 모든 시도시군구코드별 읍면동 코드 목록을 벌크로 조회합니다.
+     * @return 시도시군구코드(5자리) → 읍면동 코드(3자리) 목록 매핑
+     */
+    fun findAllDistinctSidoSigunguAndEupmyeondongCodes(): Map<Int, List<Int>>
 }

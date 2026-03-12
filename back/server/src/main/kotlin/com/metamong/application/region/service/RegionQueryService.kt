@@ -86,27 +86,78 @@ class RegionQueryService(
 
     @Cacheable("region:all")
     fun getAllRegions(): RegionAllResponse {
-        val sidoList = getSidoList()
+        val allRegions = regionLegalCodeRepository.findAll()
+        val existingSidoCodes = apartmentComplexRepository.findDistinctSidoCodes()
+        val existingSidoSigunguCodes = apartmentComplexRepository.findDistinctSidoSigunguCodes()
+        val eupmyeondongCodeMap = apartmentComplexRepository.findAllDistinctSidoSigunguAndEupmyeondongCodes()
 
-        // 모든 시군구 조회 후 시도별로 그룹화
+        // 시도 목록
+        val sidoList =
+            allRegions
+                .filter { entity ->
+                    val sidoCodeInt = entity.sidoCode.code.toIntOrNull() ?: return@filter false
+                    existingSidoCodes.contains(sidoCodeInt)
+                }.map { SidoResponse(code = it.sidoCode.code, name = it.sidoName) }
+                .distinctBy { it.code }
+                .sortedBy { it.code }
+
+        // 시군구 목록 (시도별 그룹)
         val sigunguMap =
             sidoList.associate { sido ->
-                sido.code to getSigunguList(sido.code)
+                val sidoCodeInt = sido.code.toIntOrNull() ?: return@associate sido.code to emptyList()
+                sido.code to
+                    allRegions
+                        .filter { entity ->
+                            val entitySidoCode = entity.sidoCode.code.toIntOrNull() ?: return@filter false
+                            if (entitySidoCode != sidoCodeInt) return@filter false
+
+                            val sigunguCode = entity.sigunguCode?.code?.toIntOrNull() ?: return@filter false
+                            val fullCode = toFullSidoSigunguCode(entitySidoCode, sigunguCode)
+                            existingSidoSigunguCodes.contains(fullCode)
+                        }.mapNotNull { entity ->
+                            val code = entity.sigunguCode?.code ?: return@mapNotNull null
+                            val name = entity.sigunguName ?: return@mapNotNull null
+                            SigunguResponse(code = code, name = name)
+                        }.distinctBy { it.code }
+                        .sortedBy { it.code }
             }
 
-        // 모든 읍면동 조회 후 시도시군구별로 그룹화
+        // 읍면동 목록 (시도시군구별 그룹)
         val eupmyeondongMap = mutableMapOf<String, List<EupmyeondongResponse>>()
         sigunguMap.forEach { (sidoCode, sigunguList) ->
+            val sidoCodeInt = sidoCode.toIntOrNull() ?: return@forEach
             sigunguList.forEach { sigungu ->
+                val sigunguCodeInt = sigungu.code.toIntOrNull() ?: return@forEach
+                val sidoSigunguCode = toFullSidoSigunguCode(sidoCodeInt, sigunguCodeInt)
+                val existingEupmyeondongCodes = eupmyeondongCodeMap[sidoSigunguCode] ?: emptyList()
+
                 val key = sidoCode + sigungu.code
-                eupmyeondongMap[key] = getEupmyeondongList(sidoCode, sigungu.code)
+                eupmyeondongMap[key] =
+                    allRegions
+                        .filter { entity ->
+                            val entitySidoCode = entity.sidoCode.code.toIntOrNull() ?: return@filter false
+                            val entitySigunguCode = entity.sigunguCode?.code?.toIntOrNull() ?: return@filter false
+                            val eupmyeondongCode =
+                                entity.eupmyeondongCode?.code?.toIntOrNull() ?: return@filter false
+
+                            entitySidoCode == sidoCodeInt &&
+                                entitySigunguCode == sigunguCodeInt &&
+                                existingEupmyeondongCodes.contains(eupmyeondongCode)
+                        }.mapNotNull { entity ->
+                            val code = entity.eupmyeondongCode?.code ?: return@mapNotNull null
+                            val name = entity.eupmyeondongName ?: return@mapNotNull null
+                            EupmyeondongResponse(code = code, name = name)
+                        }.distinctBy { it.code }
+                        .sortedBy { it.code }
             }
         }
 
+        // Kotlin의 emptyList()는 런타임에 kotlin.collections.EmptyList 싱글톤이라
+        // Jackson + DefaultTyping(NON_FINAL)에서 역직렬화 실패함 → ArrayList로 보장
         return RegionAllResponse(
-            sido = sidoList,
-            sigungu = sigunguMap,
-            eupmyeondong = eupmyeondongMap,
+            sido = ArrayList(sidoList),
+            sigungu = sigunguMap.mapValues { ArrayList(it.value) },
+            eupmyeondong = eupmyeondongMap.mapValues { ArrayList(it.value) },
         )
     }
 }

@@ -158,4 +158,17 @@ class ApartmentComplexRepositoryCustomImpl :
             .filterNotNull()
             .sorted()
     }
+
+    override fun findAllDistinctSidoSigunguAndEupmyeondongCodes(): Map<Int, List<Int>> {
+        val eupmyeondongCode = complex.eupmyeondongRiCode.divide(100)
+        return queryFactory
+            .select(complex.sidoSigunguCode, eupmyeondongCode)
+            .from(complex)
+            .distinct()
+            .fetch()
+            .groupBy(
+                { it.get(complex.sidoSigunguCode) ?: 0 },
+                { it.get(eupmyeondongCode) ?: 0 },
+            ).mapValues { (_, codes) -> codes.sorted() }
+    }
 }
