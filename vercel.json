@@ -1,0 +1,17 @@
+{
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "buildCommand": "npm run build",
+    "outputDirectory": ".next",
+    "installCommand": "npm install",
+    "framework": "nextjs",
+    "git": {
+          "deploymentEnabled": {
+                  "main": true
+          }
+    },
+    "github": {
+          "silent": true,
+          "autoJobCancelation": true
+    },
+    "ignoreCommand": "bash -c '[[ \"$VERCEL_GIT_COMMIT_REF\" == back* ]] && exit 0 || exit 1'"
+}
