@@ -3,25 +3,50 @@ import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api-client';
 import type { Region } from '@/types';
 
-export const useGetSidoList = () =>
+interface RegionAllResponse {
+  sido: Region[];
+  sigungu: Record<string, Region[]>;
+  eupmyeondong: Record<string, Region[]>;
+}
+
+// 전체 지역 데이터를 한 번에 로드
+export const useGetAllRegions = () =>
   useQuery({
-    queryKey: ['regions', 'sido'],
-    queryFn: () => apiFetch<Region[]>('/v1/apartments/regions/sido'),
+    queryKey: ['regions', 'all'],
+    queryFn: () => apiFetch<RegionAllResponse>('/v1/apartments/regions/all'),
   });
 
-export const useGetSigunguList = (sidoCode: string) =>
-  useQuery({
-    queryKey: ['regions', 'sigungu', sidoCode],
-    queryFn: () => apiFetch<Region[]>(`/v1/apartments/regions/sigungu?sidoCode=${sidoCode}`),
-    enabled: !!sidoCode,
-  });
+// 시도 목록
+export const useGetSidoList = () => {
+  const { data: allRegions, isLoading, error } = useGetAllRegions();
 
-export const useGetEupmyeondongList = (sidoCode: string, sigunguCode: string) =>
-  useQuery({
-    queryKey: ['regions', 'eupmyeondong', sidoCode, sigunguCode],
-    queryFn: () =>
-      apiFetch<Region[]>(
-        `/v1/apartments/regions/eupmyeondong?sidoCode=${sidoCode}&sigunguCode=${sigunguCode}`,
-      ),
-    enabled: !!sidoCode && !!sigunguCode,
-  });
+  return {
+    data: allRegions?.sido ?? [],
+    isLoading,
+    error,
+  };
+};
+
+// 시군구 목록 (시도 코드로 필터링)
+export const useGetSigunguList = (sidoCode: string) => {
+  const { data: allRegions, isLoading, error } = useGetAllRegions();
+
+  return {
+    data: sidoCode && allRegions ? (allRegions.sigungu[sidoCode] ?? []) : [],
+    isLoading,
+    error,
+  };
+};
+
+// 읍면동 목록 (시도+시군구 코드로 필터링)
+export const useGetEupmyeondongList = (sidoCode: string, sigunguCode: string) => {
+  const { data: allRegions, isLoading, error } = useGetAllRegions();
+
+  const key = sidoCode && sigunguCode ? sidoCode + sigunguCode : '';
+
+  return {
+    data: key && allRegions ? (allRegions.eupmyeondong[key] ?? []) : [],
+    isLoading,
+    error,
+  };
+};
