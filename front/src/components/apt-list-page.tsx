@@ -2,7 +2,7 @@
 
 import { Loader2, Search } from 'lucide-react';
 import Link from 'next/link';
-import { useQueryState } from 'nuqs';
+import { parseAsStringEnum, useQueryState } from 'nuqs';
 
 import { ComplexCard } from '@/components/complex-card';
 import { RegionSelector } from '@/components/region-selector';
@@ -14,9 +14,10 @@ export function AptListPage() {
   const [sidoCode, setSidoCode] = useQueryState('sido', { defaultValue: '' });
   const [sigunguCode, setSigunguCode] = useQueryState('sigungu', { defaultValue: '' });
   const [eupmyeondongCode, setEupmyeondongCode] = useQueryState('dong', { defaultValue: '' });
-  const [sortOrder, setSortOrder] = useQueryState<SortOrder>('sortOrder', {
-    defaultValue: 'TRADE_COUNT', // 거래량순으로 기본값 변경
-  });
+  const [sortOrder, setSortOrder] = useQueryState(
+    'sortOrder',
+    parseAsStringEnum<SortOrder>(['TRADE_COUNT']).withDefault('TRADE_COUNT'),
+  );
 
   const { data: complexesData, isLoading: isComplexesLoading } = useGetComplexes({
     sidoSigunguCode: sidoCode + sigunguCode,
