@@ -6,6 +6,7 @@ import { useQueryState } from 'nuqs';
 
 import { ComplexCard } from '@/components/complex-card';
 import { RegionSelector } from '@/components/region-selector';
+import { SortSelector, type SortOrder } from '@/components/sort-selector';
 import { useGetComplexes } from '@/hooks/use-complexes';
 
 export function AptListPage() {
@@ -13,11 +14,14 @@ export function AptListPage() {
   const [sidoCode, setSidoCode] = useQueryState('sido', { defaultValue: '' });
   const [sigunguCode, setSigunguCode] = useQueryState('sigungu', { defaultValue: '' });
   const [eupmyeondongCode, setEupmyeondongCode] = useQueryState('dong', { defaultValue: '' });
+  const [sortOrder, setSortOrder] = useQueryState<SortOrder>('sortOrder', {
+    defaultValue: 'TRADE_COUNT', // 거래량순으로 기본값 변경
+  });
 
   const { data: complexesData, isLoading: isComplexesLoading } = useGetComplexes({
     sidoSigunguCode: sidoCode + sigunguCode,
     eupmyeondongCode: eupmyeondongCode || undefined,
-    sortOrder: 'TRADE_COUNT', // 거래량 많은 순으로 고정
+    sortOrder,
   });
 
   const complexes = complexesData?.content ?? [];
@@ -44,14 +48,25 @@ export function AptListPage() {
             아파트 실거래가 조회
           </h1>
 
-          <RegionSelector
-            sidoCode={sidoCode}
-            sigunguCode={sigunguCode}
-            eupmyeondongCode={eupmyeondongCode}
-            onSidoChange={handleSidoChange}
-            onSigunguChange={handleSigunguChange}
-            onEupmyeondongChange={setEupmyeondongCode}
-          />
+          <div className="flex flex-col gap-4">
+            <RegionSelector
+              sidoCode={sidoCode}
+              sigunguCode={sigunguCode}
+              eupmyeondongCode={eupmyeondongCode}
+              onSidoChange={handleSidoChange}
+              onSigunguChange={handleSigunguChange}
+              onEupmyeondongChange={setEupmyeondongCode}
+            />
+
+            {/* 정렬 선택 */}
+            {sigunguCode && (
+              <SortSelector
+                value={sortOrder}
+                onChange={setSortOrder}
+                disabled={isComplexesLoading}
+              />
+            )}
+          </div>
         </div>
       </div>
 
@@ -74,7 +89,7 @@ export function AptListPage() {
           ) : (
             <>
               <p className="mb-4 text-sm text-gray-500">
-                총 {complexesData?.totalElements.toLocaleString()}개 단지 (거래량 많은 순)
+                총 {complexesData?.totalElements.toLocaleString()}개 단지
               </p>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {complexes.map((complex) => (
