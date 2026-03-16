@@ -17,7 +17,7 @@ export const useGetComplexes = ({
   eupmyeondongCode,
   page = 0,
   size = 100,
-  sortOrder = 'DEFAULT',
+  sortOrder = 'TRADE_COUNT',
 }: UseGetComplexesParams) => {
   const params = new URLSearchParams({
     sidoSigunguCode,

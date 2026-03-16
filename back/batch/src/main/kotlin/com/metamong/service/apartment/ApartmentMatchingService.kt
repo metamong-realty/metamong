@@ -115,7 +115,7 @@ class ApartmentMatchingService(
         val sidoSigunguCodeStr = sidoSigunguCode.toString().padStart(5, '0')
         return infoRawCacheBySidoSigungu.computeIfAbsent(sidoSigunguCode) {
             logger.debug { "InfoRaw 캐시 로드: sidoSigunguCode=$sidoSigunguCode" }
-            apartmentComplexInfoRawRepository.findByBjdCodeStartingWith("^$sidoSigunguCodeStr")
+            apartmentComplexInfoRawRepository.findByBjdCodeStartingWith(sidoSigunguCodeStr)
         }
     }
 

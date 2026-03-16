@@ -67,14 +67,16 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration()
-        config.allowedOrigins =
+        config.allowedOriginPatterns =
             listOf(
                 "http://localhost:3000",
                 "https://metamong-seven.vercel.app",
+                "https://metamong-*.vercel.app",
             )
         config.allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
         config.allowedHeaders = listOf("*")
         config.allowCredentials = true
+        config.maxAge = 3600
 
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", config)
