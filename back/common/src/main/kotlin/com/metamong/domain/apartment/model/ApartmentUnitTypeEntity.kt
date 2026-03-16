@@ -8,12 +8,12 @@ import jakarta.persistence.Table
 @Table(name = "apartment_unit_types")
 class ApartmentUnitTypeEntity(
     val complexId: Long,
-    val exclusivePyeong: Short,
+    val exclusivePyeong: Int,
 ) : BaseEntity() {
     companion object {
         fun create(
             complexId: Long,
-            exclusivePyeong: Short,
+            exclusivePyeong: Int,
         ): ApartmentUnitTypeEntity =
             ApartmentUnitTypeEntity(
                 complexId = complexId,

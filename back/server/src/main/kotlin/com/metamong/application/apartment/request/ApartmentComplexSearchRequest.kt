@@ -11,4 +11,6 @@ data class ApartmentComplexSearchRequest(
     val eupmyeondongCode: String? = null,
     @Schema(description = "검색어 (단지명)", example = "래미안")
     val keyword: String? = null,
+    @Schema(description = "정렬 기준", example = "DEFAULT", defaultValue = "DEFAULT")
+    val sortOrder: SortOrder = SortOrder.TRADE_COUNT,
 )

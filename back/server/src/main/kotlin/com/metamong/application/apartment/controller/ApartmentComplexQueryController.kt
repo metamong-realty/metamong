@@ -52,6 +52,7 @@ class ApartmentComplexQueryController(
                 sidoSigunguCode = request.sidoSigunguCode.toInt(),
                 eupmyeondongCode = request.eupmyeondongCode?.toIntOrNull(),
                 keyword = request.keyword,
+                sortOrder = request.sortOrder,
                 pageable = pageable,
             )
         return ApiResponse.ok(result.map { ApartmentComplexListResponse.from(it) })

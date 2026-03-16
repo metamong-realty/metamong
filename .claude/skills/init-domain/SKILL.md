@@ -1,5 +1,5 @@
 ---
-description: "새 도메인의 전체 구조를 자동 생성합니다 (Entity, Repository, Service, Controller, DTO, Test)"
+description: "새 도메인의 전체 DDD 레이어 구조를 자동 생성합니다 (Entity, Repository, Service, Controller, DTO, Test). 사용자가 '도메인 생성', '새 도메인 만들어줘'를 요청할 때 사용합니다."
 disable-model-invocation: true
 argument-hint: "<domain-name>"
 ---

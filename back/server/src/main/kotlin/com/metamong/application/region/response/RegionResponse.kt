@@ -25,3 +25,13 @@ data class EupmyeondongResponse(
     @Schema(description = "읍면동명", example = "역삼동")
     val name: String,
 )
+
+@Schema(description = "전체 지역 조회 응답")
+data class RegionAllResponse(
+    @Schema(description = "시도 목록")
+    val sido: List<SidoResponse>,
+    @Schema(description = "시군구 목록 (시도 코드별 그룹)")
+    val sigungu: Map<String, List<SigunguResponse>>,
+    @Schema(description = "읍면동 목록 (시도시군구 코드별 그룹)")
+    val eupmyeondong: Map<String, List<EupmyeondongResponse>>,
+)

@@ -100,7 +100,7 @@ class ApartmentMatchingService(
     private fun findMatchingInfoRaw(
         sidoSigunguCode: Int,
         nameNormalized: String,
-        builtYear: Short,
+        builtYear: Int,
         addressRoad: String?,
     ): ApartmentComplexInfoRawDocumentEntity? {
         val candidates = getInfoRawCandidates(sidoSigunguCode)
@@ -122,7 +122,7 @@ class ApartmentMatchingService(
     private fun findByExactName(
         candidates: List<ApartmentComplexInfoRawDocumentEntity>,
         nameNormalized: String,
-        builtYear: Short,
+        builtYear: Int,
     ): ApartmentComplexInfoRawDocumentEntity? =
         candidates.firstOrNull { infoRaw ->
             val infoNameNormalized = ApartmentNameNormalizer.normalize(infoRaw.kaptName)
@@ -132,7 +132,7 @@ class ApartmentMatchingService(
     private fun findByPartialName(
         candidates: List<ApartmentComplexInfoRawDocumentEntity>,
         nameNormalized: String,
-        builtYear: Short,
+        builtYear: Int,
     ): ApartmentComplexInfoRawDocumentEntity? {
         val matches =
             candidates.filter { infoRaw ->
@@ -148,7 +148,7 @@ class ApartmentMatchingService(
 
     private fun findByRoadAddress(
         candidates: List<ApartmentComplexInfoRawDocumentEntity>,
-        builtYear: Short,
+        builtYear: Int,
         addressRoad: String?,
     ): ApartmentComplexInfoRawDocumentEntity? {
         if (addressRoad.isNullOrBlank()) return null
@@ -168,7 +168,7 @@ class ApartmentMatchingService(
 
     private fun isBuiltYearMatch(
         infoRaw: ApartmentComplexInfoRawDocumentEntity,
-        builtYear: Short,
+        builtYear: Int,
     ): Boolean {
         val infoBuiltYear = parseBuiltYear(infoRaw.kaptUsedate) ?: return false
         return abs(infoBuiltYear - builtYear) <= 1
@@ -180,8 +180,8 @@ class ApartmentMatchingService(
         sidoSigunguCode: Int,
         eupmyeondongRiCode: Int,
         platType: PlatType,
-        bonNo: Short,
-        buNo: Short,
+        bonNo: Int,
+        buNo: Int,
     ): HousingLicenseRawDocumentEntity? {
         val cacheKey = "$sidoSigunguCode:$eupmyeondongRiCode"
         val sidoSigunguCodeStr = sidoSigunguCode.toString().padStart(5, '0')
@@ -196,8 +196,8 @@ class ApartmentMatchingService(
         val candidates =
             allCandidates.filter { raw ->
                 PlatType.fromCode(raw.platGbCd) == platType &&
-                    raw.bun?.toShortOrNull() == bonNo &&
-                    raw.ji?.toShortOrNull() == buNo &&
+                    raw.bun?.toIntOrNull() == bonNo &&
+                    raw.ji?.toIntOrNull() == buNo &&
                     raw.mainPurpsCdNm == "공동주택"
             }
 
@@ -209,9 +209,9 @@ class ApartmentMatchingService(
         }
     }
 
-    private fun parseBuiltYear(kaptUsedate: String?): Short? {
+    private fun parseBuiltYear(kaptUsedate: String?): Int? {
         if (kaptUsedate.isNullOrBlank() || kaptUsedate.length < 4) return null
-        return kaptUsedate.substring(0, 4).toShortOrNull()
+        return kaptUsedate.substring(0, 4).toIntOrNull()
     }
 
     private fun calculateFloorAreaRatio(licenseRaw: HousingLicenseRawDocumentEntity): BigDecimal? {

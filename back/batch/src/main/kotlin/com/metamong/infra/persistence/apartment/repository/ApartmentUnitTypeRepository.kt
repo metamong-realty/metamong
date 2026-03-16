@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface ApartmentUnitTypeRepository : JpaRepository<ApartmentUnitTypeEntity, Long> {
     fun findByComplexIdAndExclusivePyeong(
         complexId: Long,
-        exclusivePyeong: Short,
+        exclusivePyeong: Int,
     ): ApartmentUnitTypeEntity?
 
     fun findAllByComplexId(complexId: Long): List<ApartmentUnitTypeEntity>

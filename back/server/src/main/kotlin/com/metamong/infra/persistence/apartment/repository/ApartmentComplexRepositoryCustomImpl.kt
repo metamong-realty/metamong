@@ -1,15 +1,22 @@
 package com.metamong.infra.persistence.apartment.repository
 
+import com.metamong.application.apartment.request.SortOrder
 import com.metamong.domain.apartment.model.ApartmentComplexEntity
 import com.metamong.domain.apartment.model.QApartmentComplexEntity
+import com.metamong.domain.apartment.model.QApartmentTradeEntity
+import com.metamong.domain.apartment.model.QApartmentUnitTypeEntity
 import com.metamong.infra.persistence.apartment.projection.ApartmentComplexListProjection
 import com.metamong.support.QuerydslRepositorySupport
+import com.querydsl.core.types.Order
+import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
+import com.querydsl.jpa.JPAExpressions
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Repository
+import java.time.LocalDate
 
 @Repository
 class ApartmentComplexRepositoryCustomImpl :
@@ -21,11 +28,12 @@ class ApartmentComplexRepositoryCustomImpl :
         sidoSigunguCode: Int,
         eupmyeondongCode: Int?,
         keyword: String?,
+        sortOrder: SortOrder,
         pageable: Pageable,
     ): Page<ApartmentComplexListProjection> {
         val conditions =
             listOfNotNull(
-                complex.sidoSigunguCode.eq(sidoSigunguCode),
+                sidoSigunguCodeCondition(sidoSigunguCode),
                 eupmyeondongCondition(eupmyeondongCode),
                 keywordCondition(keyword),
             )
@@ -36,6 +44,7 @@ class ApartmentComplexRepositoryCustomImpl :
                 .from(complex)
                 .where(*conditions.toTypedArray())
 
+        val total = countQuery.fetchOne() ?: 0L
 
         // 서브쿼리용 엔티티 별칭
         val unitType = QApartmentUnitTypeEntity.apartmentUnitTypeEntity
@@ -45,9 +54,16 @@ class ApartmentComplexRepositoryCustomImpl :
         val currentYear = LocalDate.now().year
         val threeYearsAgo = currentYear - 3
 
-        val total = countQuery.fetchOne() ?: 0L
+        // 전체 거래 건수 서브쿼리 (정렬용)
+        val totalTradeCountSubQuery =
+            JPAExpressions
+                .select(trade.count())
+                .from(trade)
+                .join(unitType)
+                .on(trade.unitTypeId.eq(unitType.id))
+                .where(unitType.complexId.eq(complex.id))
 
-        val content =
+        val query =
             queryFactory
                 .select(
                     Projections.constructor(
@@ -59,16 +75,13 @@ class ApartmentComplexRepositoryCustomImpl :
                         complex.eupmyeondongRiCode,
                         complex.addressJibun,
                         // 전체 거래 건수
-                        JPAExpressions
-                            .select(trade.count())
-                            .from(trade)
-                            .join(unitType).on(trade.unitTypeId.eq(unitType.id))
-                            .where(unitType.complexId.eq(complex.id)),
+                        totalTradeCountSubQuery,
                         // 최근 3년 거래 건수
                         JPAExpressions
                             .select(trade.count())
                             .from(trade)
-                            .join(unitType).on(trade.unitTypeId.eq(unitType.id))
+                            .join(unitType)
+                            .on(trade.unitTypeId.eq(unitType.id))
                             .where(
                                 unitType.complexId.eq(complex.id),
                                 trade.contractYear.goe(threeYearsAgo),
@@ -76,7 +89,16 @@ class ApartmentComplexRepositoryCustomImpl :
                     ),
                 ).from(complex)
                 .where(*conditions.toTypedArray())
-                .orderBy(complex.nameRaw.asc())
+
+        // 정렬 조건 적용
+        when (sortOrder) {
+            SortOrder.TRADE_COUNT -> query.orderBy(OrderSpecifier(Order.DESC, totalTradeCountSubQuery))
+            SortOrder.BUILT_YEAR -> query.orderBy(complex.builtYear.desc())
+            SortOrder.DEFAULT -> query.orderBy(complex.nameRaw.asc())
+        }
+
+        val content =
+            query
                 .offset(pageable.offset)
                 .limit(pageable.pageSize.toLong())
                 .fetch()
@@ -96,13 +118,57 @@ class ApartmentComplexRepositoryCustomImpl :
                 .or(complex.nameNormalized.containsIgnoreCase(it))
         }
 
-    override fun findDistinctEupmyeondongCodes(sidoSigunguCode: Int): List<Int> =
+    private fun sidoSigunguCodeCondition(sidoSigunguCode: Int): BooleanExpression {
+        val codeString = sidoSigunguCode.toString()
+        return if (codeString.length == 5) {
+            // 시군구 레벨 검색 (예: 41170 → 41170, 41171, 41173 모두 매칭)
+            complex.sidoSigunguCode.stringValue().startsWith(codeString)
+        } else {
+            // 정확한 매칭
+            complex.sidoSigunguCode.eq(sidoSigunguCode)
+        }
+    }
+
+    override fun findDistinctSidoCodes(): List<Int> =
         queryFactory
-            .select(complex.eupmyeondongRiCode.divide(100))
+            .select(complex.sidoSigunguCode.divide(1000))
             .from(complex)
-            .where(complex.sidoSigunguCode.eq(sidoSigunguCode))
             .distinct()
             .fetch()
             .filterNotNull()
-}
+            .sorted()
 
+    override fun findDistinctSidoSigunguCodes(): List<Int> =
+        queryFactory
+            .select(complex.sidoSigunguCode)
+            .from(complex)
+            .distinct()
+            .fetch()
+            .filterNotNull()
+            .sorted()
+
+    override fun findDistinctEupmyeondongCodes(sidoSigunguCode: Int): List<Int> {
+        val condition = sidoSigunguCodeCondition(sidoSigunguCode)
+        return queryFactory
+            .select(complex.eupmyeondongRiCode.divide(100))
+            .from(complex)
+            .where(condition)
+            .distinct()
+            .fetch()
+            .filterNotNull()
+            .sorted()
+    }
+
+    override fun findAllDistinctSidoSigunguAndEupmyeondongCodes(): Map<Int, List<Int>> {
+        val eupmyeondongCode = complex.eupmyeondongRiCode.divide(100)
+        return queryFactory
+            .select(complex.sidoSigunguCode, eupmyeondongCode)
+            .from(complex)
+            .distinct()
+            .fetch()
+            .groupBy(
+                { it.get(complex.sidoSigunguCode) ?: 0 },
+                { it.get(eupmyeondongCode) ?: 0 },
+            ).mapValues { (_, codes) -> codes.sorted() }
+    }
+}
