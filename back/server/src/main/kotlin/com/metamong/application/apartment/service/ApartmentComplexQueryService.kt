@@ -48,8 +48,8 @@ class ApartmentComplexQueryService(
             ApartmentComplexListDto.from(
                 projection = projection,
                 eupmyeondongName = "읍면동", // TODO: 지역 서비스 연동 필요
-                totalTradeCount = 0L, // TODO: 거래 건수 조회 로직 추가
-                recent3YearsTradeCount = 0L, // TODO: 최근 3년 거래 건수 조회 로직 추가
+                totalTradeCount = projection.totalTradeCount,
+                recent3YearsTradeCount = projection.recent3YearsTradeCount,
             )
         }
     }
