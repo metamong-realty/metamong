@@ -1,3 +1,11 @@
+// === 유저 ===
+export interface User {
+  id: number;
+  email: string;
+  name: string | null;
+  profileImageUrl: string | null;
+}
+
 // === 지역 ===
 export interface Region {
   name: string;
