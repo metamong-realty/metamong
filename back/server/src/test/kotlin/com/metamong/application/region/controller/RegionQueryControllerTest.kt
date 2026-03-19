@@ -44,11 +44,12 @@ class RegionQueryControllerTest {
     private lateinit var regionQueryService: RegionQueryService
 
     private fun stubAllRegions() {
-        every { regionQueryService.getAllRegions() } returns RegionAllResponse(
-            sido = listOf(SidoResponse("11", "서울특별시")),
-            sigungu = mapOf("11" to listOf(SigunguResponse("680", "강남구"))),
-            eupmyeondong = mapOf("11680" to listOf(EupmyeondongResponse("101", "역삼동"))),
-        )
+        every { regionQueryService.getAllRegions() } returns
+            RegionAllResponse(
+                sido = listOf(SidoResponse("11", "서울특별시")),
+                sigungu = mapOf("11" to listOf(SigunguResponse("680", "강남구"))),
+                eupmyeondong = mapOf("11680" to listOf(EupmyeondongResponse("101", "역삼동"))),
+            )
     }
 
     @Test
