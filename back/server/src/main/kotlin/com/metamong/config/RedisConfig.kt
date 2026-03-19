@@ -21,23 +21,28 @@ class RedisConfig {
     @Bean(destroyMethod = "shutdown")
     fun redissonClient(): RedissonClient {
         val config = Config()
-        val uri = java.net.URI(redisUrl)
+
+        // redis://[user:password@]host:port 또는 rediss://... 형식 파싱
+        // java.net.URI는 특수문자 비밀번호에서 실패하므로 정규식으로 직접 파싱
+        val regex = Regex("^(rediss?)://(?:[^:@]+:([^@]*)@)?([^:]+):(\\d+)$")
+        val match =
+            regex.matchEntire(redisUrl)
+                ?: throw IllegalArgumentException("Invalid Redis URL format: $redisUrl")
+
+        val scheme = match.groupValues[1] // redis 또는 rediss
+        val password = match.groupValues[2].ifEmpty { null }
+        val host = match.groupValues[3]
+        val port = match.groupValues[4]
 
         config.useSingleServer().apply {
-            setAddress("redis://${uri.host}:${uri.port}")
+            setAddress("$scheme://$host:$port")
+            password?.let { setPassword(it) }
             setConnectionMinimumIdleSize(2)
             setConnectionPoolSize(10)
             setConnectTimeout(10000)
             setTimeout(3000)
             setRetryAttempts(3)
             setRetryInterval(1500)
-
-            uri.userInfo?.let { userInfo ->
-                val password = if (userInfo.contains(":")) userInfo.substringAfter(":") else userInfo
-                if (password.isNotEmpty()) {
-                    setPassword(password)
-                }
-            }
         }
 
         return Redisson.create(config)

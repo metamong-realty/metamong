@@ -22,6 +22,7 @@ class OAuth2AuthenticationFailureHandler(
                 .fromUriString(redirectUri)
                 .queryParam("error", exception.localizedMessage)
                 .build()
+                .encode()
                 .toUriString()
 
         redirectStrategy.sendRedirect(request, response, targetUrl)
