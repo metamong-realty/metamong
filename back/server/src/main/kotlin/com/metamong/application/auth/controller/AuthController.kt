@@ -30,20 +30,22 @@ class AuthController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ): ApiResponse<TokenResponse> {
-        val refreshToken = request.cookies
-            ?.firstOrNull { it.name == "refreshToken" }
-            ?.value
-            ?: throw IllegalArgumentException("Refresh token cookie not found")
+        val refreshToken =
+            request.cookies
+                ?.firstOrNull { it.name == "refreshToken" }
+                ?.value
+                ?: throw IllegalArgumentException("Refresh token cookie not found")
 
         val result = authCommandService.refresh(refreshToken)
 
         // 새 refresh token을 cookie에 갱신
-        val cookie = Cookie("refreshToken", result.refreshToken).apply {
-            isHttpOnly = true
-            secure = cookieSecure
-            path = "/"
-            maxAge = 7 * 24 * 60 * 60
-        }
+        val cookie =
+            Cookie("refreshToken", result.refreshToken).apply {
+                isHttpOnly = true
+                secure = cookieSecure
+                path = "/"
+                maxAge = 7 * 24 * 60 * 60
+            }
         response.addCookie(cookie)
 
         return ApiResponse.ok(result)
@@ -59,12 +61,13 @@ class AuthController(
         authCommandService.logout(userId, accessToken)
 
         // refresh token cookie 삭제
-        val cookie = Cookie("refreshToken", "").apply {
-            isHttpOnly = true
-            secure = cookieSecure
-            path = "/"
-            maxAge = 0
-        }
+        val cookie =
+            Cookie("refreshToken", "").apply {
+                isHttpOnly = true
+                secure = cookieSecure
+                path = "/"
+                maxAge = 0
+            }
         response.addCookie(cookie)
 
         return ApiResponse.ok(Unit)
