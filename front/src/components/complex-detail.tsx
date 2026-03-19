@@ -68,8 +68,8 @@ export function ComplexDetail({ complexId }: ComplexDetailProps) {
     manualUnitTypeId || (unitTypes.length > 0 ? String(unitTypes[0].unitTypeId) : '');
 
   const unitTypeIdNum = selectedUnitTypeId ? parseInt(selectedUnitTypeId, 10) : undefined;
-  const { data: tradesData } = useGetTrades(numericId, { unitTypeId: unitTypeIdNum, period });
-  const { data: rentsData } = useGetRents(numericId, { unitTypeId: unitTypeIdNum, period });
+  const { data: tradesData, isLoading: isTradesLoading } = useGetTrades(numericId, { unitTypeId: unitTypeIdNum, period });
+  const { data: rentsData, isLoading: isRentsLoading } = useGetRents(numericId, { unitTypeId: unitTypeIdNum, period });
   const { data: tradeChartData } = useGetTradeChart(numericId, { unitTypeId: unitTypeIdNum, period });
   const { data: rentChartData } = useGetRentChart(numericId, { unitTypeId: unitTypeIdNum, period });
 
@@ -231,11 +231,17 @@ export function ComplexDetail({ complexId }: ComplexDetailProps) {
                   </div>
 
                   {/* 거래 내역 테이블 */}
-                  <TransactionTable
-                    trades={tradesData?.content ?? []}
-                    rents={rentsData?.content ?? []}
-                    transactionType={transactionType}
-                  />
+                  {isTradesLoading || isRentsLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                    </div>
+                  ) : (
+                    <TransactionTable
+                      trades={tradesData?.content ?? []}
+                      rents={rentsData?.content ?? []}
+                      transactionType={transactionType}
+                    />
+                  )}
                 </TabsContent>
               </Tabs>
             </CardContent>
