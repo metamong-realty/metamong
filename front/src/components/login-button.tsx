@@ -33,7 +33,9 @@ export function LoginButton() {
 
   const handleLogin = (provider: string) => {
     // 현재 페이지 저장 (로그인 후 복원)
-    sessionStorage.setItem('oauth_redirect', window.location.pathname + window.location.search);
+    // /login 페이지에서 로그인하면 메인으로, 그 외엔 현재 페이지로 복원
+    const redirectTo = window.location.pathname === '/login' ? '/' : window.location.pathname + window.location.search;
+    sessionStorage.setItem('oauth_redirect', redirectTo);
     // BE OAuth2 endpoint로 이동
     window.location.href = `${API_BASE}/oauth2/authorization/${provider}`;
   };
