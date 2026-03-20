@@ -7,7 +7,6 @@ import com.metamong.application.auth.service.AuthQueryService
 import com.metamong.common.response.ApiResponse
 import com.metamong.infra.security.CurrentUser
 import io.swagger.v3.oas.annotations.Hidden
-import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
@@ -38,15 +37,23 @@ class AuthController(
 
         val result = authCommandService.refresh(refreshToken)
 
-        // 새 refresh token을 cookie에 갱신
-        val cookie =
-            Cookie("refreshToken", result.refreshToken).apply {
-                isHttpOnly = true
-                secure = cookieSecure
-                path = "/"
-                maxAge = 7 * 24 * 60 * 60
+        // 새 refresh token cookie 갱신 (SameSite=None for cross-site)
+        val maxAge = 7 * 24 * 60 * 60
+        val newToken = result.refreshToken ?: refreshToken
+        val cookieHeader =
+            buildString {
+                append("refreshToken=$newToken")
+                append("; HttpOnly")
+                append("; Path=/")
+                append("; Max-Age=$maxAge")
+                if (cookieSecure) {
+                    append("; Secure")
+                    append("; SameSite=None")
+                } else {
+                    append("; SameSite=Lax")
+                }
             }
-        response.addCookie(cookie)
+        response.addHeader("Set-Cookie", cookieHeader)
 
         return ApiResponse.ok(result)
     }
@@ -61,14 +68,20 @@ class AuthController(
         authCommandService.logout(userId, accessToken)
 
         // refresh token cookie 삭제
-        val cookie =
-            Cookie("refreshToken", "").apply {
-                isHttpOnly = true
-                secure = cookieSecure
-                path = "/"
-                maxAge = 0
+        val deleteCookie =
+            buildString {
+                append("refreshToken=")
+                append("; HttpOnly")
+                append("; Path=/")
+                append("; Max-Age=0")
+                if (cookieSecure) {
+                    append("; Secure")
+                    append("; SameSite=None")
+                } else {
+                    append("; SameSite=Lax")
+                }
             }
-        response.addCookie(cookie)
+        response.addHeader("Set-Cookie", deleteCookie)
 
         return ApiResponse.ok(Unit)
     }

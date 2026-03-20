@@ -2,7 +2,6 @@ package com.metamong.infra.security.oauth2
 
 import com.metamong.infra.security.JwtTokenProvider
 import com.metamong.infra.security.RefreshTokenService
-import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
@@ -34,14 +33,22 @@ class OAuth2AuthenticationSuccessHandler(
         refreshTokenService.save(userId, refreshToken)
 
         // refresh token → httpOnly cookie (JS 접근 불가, XSS 안전)
-        val cookie =
-            Cookie("refreshToken", refreshToken).apply {
-                isHttpOnly = true
-                secure = cookieSecure
-                path = "/"
-                maxAge = 7 * 24 * 60 * 60 // 7일
+        // cross-site 요청을 위해 SameSite=None; Secure 필요 (FE/BE 도메인 다를 때)
+        val maxAge = 7 * 24 * 60 * 60
+        val cookieHeader =
+            buildString {
+                append("refreshToken=$refreshToken")
+                append("; HttpOnly")
+                append("; Path=/")
+                append("; Max-Age=$maxAge")
+                if (cookieSecure) {
+                    append("; Secure")
+                    append("; SameSite=None")
+                } else {
+                    append("; SameSite=Lax")
+                }
             }
-        response.addCookie(cookie)
+        response.addHeader("Set-Cookie", cookieHeader)
 
         // access token만 URL param으로 전달 (FE에서 메모리에 저장)
         val targetUrl =
