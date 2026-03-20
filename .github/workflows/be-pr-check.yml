@@ -9,6 +9,11 @@ on:
       - 'back/**'
       - '!back/**/README.md'
 
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
