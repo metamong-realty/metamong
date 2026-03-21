@@ -24,7 +24,7 @@ data class NotificationResponse(
                 exclusivePyeong = dto.exclusivePyeong,
                 price = dto.price,
                 contractDate = dto.contractDate,
-                isRead = dto.status != NotificationStatus.PENDING,
+                isRead = dto.status == NotificationStatus.READ,
                 createdAt = dto.createdAt,
             )
     }

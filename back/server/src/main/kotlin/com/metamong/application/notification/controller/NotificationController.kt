@@ -25,39 +25,39 @@ class NotificationController(
     @Operation(summary = "내 알림 목록 조회")
     @GetMapping
     fun getNotifications(
-        @CurrentUser userId: Long,
+        @CurrentUser userId: Long?,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "30") size: Int,
     ): ApiResponse<List<NotificationResponse>> {
-        val result = notificationQueryService.getNotifications(userId, page, size)
+        val result = notificationQueryService.getNotifications(userId ?: 0L, page, size)
         return ApiResponse.ok(result)
     }
 
     @Operation(summary = "읽지 않은 알림 수 조회")
     @GetMapping("/unread-count")
     fun getUnreadCount(
-        @CurrentUser userId: Long,
+        @CurrentUser userId: Long?,
     ): ApiResponse<UnreadCountResponse> {
-        val count = notificationQueryService.getUnreadCount(userId)
+        val count = notificationQueryService.getUnreadCount(userId ?: 0L)
         return ApiResponse.ok(UnreadCountResponse(count))
     }
 
     @Operation(summary = "알림 읽음 처리")
     @PutMapping("/{id}/read")
     fun markAsRead(
-        @CurrentUser userId: Long,
+        @CurrentUser userId: Long?,
         @PathVariable id: Long,
     ): ApiResponse<Unit> {
-        notificationCommandService.markAsRead(userId, id)
+        notificationCommandService.markAsRead(userId ?: 0L, id)
         return ApiResponse.ok(Unit)
     }
 
     @Operation(summary = "전체 알림 읽음 처리")
     @PutMapping("/read-all")
     fun markAllAsRead(
-        @CurrentUser userId: Long,
+        @CurrentUser userId: Long?,
     ): ApiResponse<Unit> {
-        notificationCommandService.markAllAsRead(userId)
+        notificationCommandService.markAllAsRead(userId ?: 0L)
         return ApiResponse.ok(Unit)
     }
 }

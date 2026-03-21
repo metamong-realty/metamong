@@ -56,16 +56,17 @@ class NotificationEventRepositoryCustomImpl :
     ): Long =
         queryFactory
             .update(notification)
-            .set(notification.status, NotificationStatus.SENT)
+            .set(notification.status, NotificationStatus.READ)
             .where(
                 notification.id.eq(notificationId),
                 notification.userId.eq(userId),
+                notification.status.eq(NotificationStatus.PENDING),
             ).execute()
 
     override fun markAllAsRead(userId: Long): Long =
         queryFactory
             .update(notification)
-            .set(notification.status, NotificationStatus.SENT)
+            .set(notification.status, NotificationStatus.READ)
             .where(
                 notification.userId.eq(userId),
                 notification.status.eq(NotificationStatus.PENDING),
