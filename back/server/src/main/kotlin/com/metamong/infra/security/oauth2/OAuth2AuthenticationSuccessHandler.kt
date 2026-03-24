@@ -1,6 +1,7 @@
 package com.metamong.infra.security.oauth2
 
 import com.metamong.infra.security.JwtTokenProvider
+import com.metamong.infra.security.OAuthCodeService
 import com.metamong.infra.security.RefreshTokenService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -14,8 +15,8 @@ import org.springframework.web.util.UriComponentsBuilder
 class OAuth2AuthenticationSuccessHandler(
     private val jwtTokenProvider: JwtTokenProvider,
     private val refreshTokenService: RefreshTokenService,
+    private val oAuthCodeService: OAuthCodeService,
     @Value("\${app.oauth2.redirect-uri}") private val redirectUri: String,
-    @Value("\${app.oauth2.cookie-secure:false}") private val cookieSecure: Boolean,
 ) : SimpleUrlAuthenticationSuccessHandler() {
     override fun onAuthenticationSuccess(
         request: HttpServletRequest,
@@ -32,29 +33,15 @@ class OAuth2AuthenticationSuccessHandler(
 
         refreshTokenService.save(userId, refreshToken)
 
-        // refresh token → httpOnly cookie (JS 접근 불가, XSS 안전)
-        // cross-site 요청을 위해 SameSite=None; Secure 필요 (FE/BE 도메인 다를 때)
-        val maxAge = 7 * 24 * 60 * 60
-        val cookieHeader =
-            buildString {
-                append("refreshToken=$refreshToken")
-                append("; HttpOnly")
-                append("; Path=/")
-                append("; Max-Age=$maxAge")
-                if (cookieSecure) {
-                    append("; Secure")
-                    append("; SameSite=None")
-                } else {
-                    append("; SameSite=Lax")
-                }
-            }
-        response.addHeader("Set-Cookie", cookieHeader)
+        // 단기 code 발급 (30초 TTL, 1회용)
+        // FE /oauth/callback → POST /api/v1/auth/exchange → BE Set-Cookie
+        // API Route proxy를 통해 FE 도메인으로 httpOnly cookie set
+        val code = oAuthCodeService.create(userId, refreshToken, accessToken)
 
-        // access token만 URL param으로 전달 (FE에서 메모리에 저장)
         val targetUrl =
             UriComponentsBuilder
                 .fromUriString(redirectUri)
-                .queryParam("accessToken", accessToken)
+                .queryParam("code", code)
                 .build()
                 .toUriString()
 
