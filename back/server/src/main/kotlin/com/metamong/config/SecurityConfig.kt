@@ -45,6 +45,7 @@ class SecurityConfig(
                         "/login/oauth2/**",
                         "/v1/auth/refresh",
                         "/v1/auth/exchange",
+                        "/v1/auth/test/**", // local/dev 전용 테스트 로그인
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
                         "/actuator/**",
