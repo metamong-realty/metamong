@@ -1,4 +1,5 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+// Vercel rewrites를 통해 /api/* → BE 프록시 (same-origin cookie 해결)
+const API_BASE = '/api';
 
 export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const headers: HeadersInit = { ...options?.headers };
@@ -8,7 +9,7 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
   }
 
   const res = await fetch(`${API_BASE}${path}`, {
-    credentials: 'include', // refresh token cookie 자동 전송
+    credentials: 'include', // same-origin이라 cookie 정상 전송
     headers,
     ...options,
   });
