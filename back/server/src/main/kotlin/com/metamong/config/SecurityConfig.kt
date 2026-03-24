@@ -48,10 +48,13 @@ class SecurityConfig(
                         "/v3/api-docs/**",
                         "/actuator/**",
                     ).permitAll()
+                    // 인증 필수 API
+                    .requestMatchers(
+                        "/v1/subscriptions/**",
+                        "/v1/notifications/**",
+                    ).authenticated()
                     .requestMatchers("/v1/**")
                     .permitAll()
-//                    .requestMatchers("/v1/**") // : TODO: 인증이 필요한 API가 생기면 여기에 추가하고, anyRequest().permitAll() 제거하기
-//                    .authenticated()
                     .anyRequest()
                     .permitAll()
             }.oauth2Login { oauth2 ->
