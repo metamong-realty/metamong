@@ -4,9 +4,6 @@ server:
 spring:
   application:
     name: metamong-server
-  profiles:
-    active: local
-
   data:
     redis:
       url: ${REDIS_URL}
