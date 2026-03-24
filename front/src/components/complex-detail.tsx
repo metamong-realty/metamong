@@ -5,8 +5,6 @@ import Link from 'next/link';
 
 import {
   ArrowLeft,
-  Bell,
-  BellOff,
   Building2,
   Check,
   Copy,
@@ -33,8 +31,6 @@ import { useGetComplexDetail } from '@/hooks/use-complex-detail';
 import { useGetRents } from '@/hooks/use-rents';
 import { useGetTrades } from '@/hooks/use-trades';
 import { useGetUnitTypes } from '@/hooks/use-unit-types';
-import { useMySubscriptions, useSubscribeComplex, useUnsubscribe } from '@/hooks/use-subscription';
-import { useAuth } from '@/lib/auth-context';
 import type { TimePeriodFilter, TransactionTypeFilter } from '@/types';
 
 interface ComplexDetailProps {
@@ -59,20 +55,11 @@ function CopyButton({ text }: { text: string }) {
 
 export function ComplexDetail({ complexId }: ComplexDetailProps) {
   const numericId = parseInt(complexId, 10);
-  const { user } = useAuth();
 
   const { data: complex, isLoading } = useGetComplexDetail(numericId);
   const { data: unitTypes = [] } = useGetUnitTypes(numericId);
 
   const [manualUnitTypeId, setManualUnitTypeId] = useState<string>('');
-
-  const { data: subscriptions = [] } = useMySubscriptions();
-  const { mutate: subscribe, isPending: isSubscribing } = useSubscribeComplex();
-  const { mutate: unsubscribe, isPending: isUnsubscribing } = useUnsubscribe();
-
-  const mySubscription = subscriptions.find(
-    (s) => s.type === 'COMPLEX' && s.apartmentComplexId === numericId,
-  );
   const [transactionType, setTransactionType] = useState<TransactionTypeFilter>('전체');
   const [period, setPeriod] = useState<TimePeriodFilter>('RECENT_3YEARS');
 
@@ -140,47 +127,14 @@ export function ComplexDetail({ complexId }: ComplexDetailProps) {
       {/* 상단 헤더 */}
       <div className="sticky top-0 z-10 border-b bg-white/80 px-4 py-4 backdrop-blur-md">
         <div className="mx-auto max-w-4xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link href="/" className="rounded-lg p-1.5 hover:bg-gray-100">
-                <ArrowLeft className="h-5 w-5 text-gray-600" />
-              </Link>
-              <div className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-blue-600" />
-                <h1 className="text-xl font-bold text-gray-900">{complex.name}</h1>
-              </div>
+          <div className="flex items-center gap-3">
+            <Link href="/" className="rounded-lg p-1.5 hover:bg-gray-100">
+              <ArrowLeft className="h-5 w-5 text-gray-600" />
+            </Link>
+            <div className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-blue-600" />
+              <h1 className="text-xl font-bold text-gray-900">{complex.name}</h1>
             </div>
-
-            {/* 구독 버튼 */}
-            {user && (
-              <button
-                onClick={() => {
-                  if (mySubscription) {
-                    unsubscribe(mySubscription.id);
-                  } else {
-                    subscribe(numericId);
-                  }
-                }}
-                disabled={isSubscribing || isUnsubscribing}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition-colors ${
-                  mySubscription
-                    ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                {mySubscription ? (
-                  <>
-                    <Bell className="h-4 w-4" />
-                    구독 중
-                  </>
-                ) : (
-                  <>
-                    <BellOff className="h-4 w-4" />
-                    구독
-                  </>
-                )}
-              </button>
-            )}
           </div>
         </div>
       </div>

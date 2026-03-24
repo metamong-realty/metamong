@@ -8,7 +8,6 @@ import { ComplexCard } from '@/components/complex-card';
 import { RegionSelector } from '@/components/region-selector';
 import { SortSelector, type SortOrder } from '@/components/sort-selector';
 import { useGetComplexes } from '@/hooks/use-complexes';
-import { NotificationBell } from '@/components/notification-bell';
 import { useAuth } from '@/lib/auth-context';
 
 export function AptListPage() {
@@ -54,8 +53,7 @@ export function AptListPage() {
               아파트 실거래가 조회
             </h1>
             {user ? (
-              <div className="flex items-center gap-2">
-                <NotificationBell />
+              <div className="flex items-center gap-3">
                 <span className="text-sm text-gray-600">{user.email}</span>
                 <button
                   onClick={logout}
