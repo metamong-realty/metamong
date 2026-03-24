@@ -44,6 +44,7 @@ class SecurityConfig(
                         "/oauth2/**",
                         "/login/oauth2/**",
                         "/v1/auth/refresh",
+                        "/v1/auth/exchange",
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
                         "/actuator/**",

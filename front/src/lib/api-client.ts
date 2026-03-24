@@ -8,6 +8,7 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
   }
 
   const res = await fetch(`${API_BASE}${path}`, {
+    credentials: 'include', // refresh token cookie 자동 전송
     headers,
     ...options,
   });

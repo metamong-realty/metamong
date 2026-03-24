@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2, Search } from 'lucide-react';
+import { Loader2, LogIn, LogOut, Search } from 'lucide-react';
 import Link from 'next/link';
 import { parseAsStringEnum, useQueryState } from 'nuqs';
 
@@ -8,6 +8,8 @@ import { ComplexCard } from '@/components/complex-card';
 import { RegionSelector } from '@/components/region-selector';
 import { SortSelector, type SortOrder } from '@/components/sort-selector';
 import { useGetComplexes } from '@/hooks/use-complexes';
+import { NotificationBell } from '@/components/notification-bell';
+import { useAuth } from '@/lib/auth-context';
 
 export function AptListPage() {
   // URL에 지역 선택 상태를 저장 (뒤로가기 시 복원됨)
@@ -18,6 +20,8 @@ export function AptListPage() {
     'sortOrder',
     parseAsStringEnum<SortOrder>(['TRADE_COUNT']).withDefault('TRADE_COUNT'),
   );
+
+  const { user, logout } = useAuth();
 
   const { data: complexesData, isLoading: isComplexesLoading } = useGetComplexes({
     sidoSigunguCode: sidoCode + sigunguCode,
@@ -45,9 +49,32 @@ export function AptListPage() {
       {/* 상단 고정 헤더 */}
       <div className="sticky top-0 z-10 border-b bg-white/80 px-4 py-4 backdrop-blur-md">
         <div className="mx-auto max-w-6xl">
-          <h1 className="mb-4 text-2xl font-bold tracking-tight text-gray-900">
-            아파트 실거래가 조회
-          </h1>
+          <div className="mb-4 flex items-center justify-between">
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+              아파트 실거래가 조회
+            </h1>
+            {user ? (
+              <div className="flex items-center gap-2">
+                <NotificationBell />
+                <span className="text-sm text-gray-600">{user.email}</span>
+                <button
+                  onClick={logout}
+                  className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100"
+                >
+                  <LogOut className="h-4 w-4" />
+                  로그아웃
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50"
+              >
+                <LogIn className="h-4 w-4" />
+                로그인
+              </Link>
+            )}
+          </div>
 
           <div className="flex flex-col gap-4">
             <RegionSelector
