@@ -13,15 +13,32 @@ export default function OAuthCallbackPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const accessToken = params.get('accessToken');
+    const code = params.get('code');
     const redirectTo = sessionStorage.getItem('oauth_redirect') ?? '/';
     sessionStorage.removeItem('oauth_redirect');
 
-    if (accessToken) {
-      setAccessToken(accessToken);
+    if (!code) {
+      router.replace(redirectTo);
+      return;
     }
 
-    router.replace(redirectTo);
+    // code → token exchange (API Route proxy 통해 → Set-Cookie가 FE 도메인으로 set)
+    fetch('/api/v1/auth/exchange', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ code }),
+    })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.data?.accessToken) {
+          setAccessToken(json.data.accessToken);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        router.replace(redirectTo);
+      });
   }, [setAccessToken, router]);
 
   return (
