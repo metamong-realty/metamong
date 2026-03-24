@@ -93,6 +93,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // 앱 초기화: refresh token cookie로 silent refresh 시도
   useEffect(() => {
+    // 개발 환경 mock user (스크린샷/테스트용)
+    if (process.env.NEXT_PUBLIC_DEV_MOCK_USER === 'true') {
+      setState({
+        user: { id: 1, email: 'dev@metamong.com', name: '개발자', profileImageUrl: null },
+        accessToken: 'mock-token',
+        isLoading: false,
+      });
+      return;
+    }
     refreshAccessToken().finally(() =>
       setState((prev) => ({ ...prev, isLoading: false })),
     );
