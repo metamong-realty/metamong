@@ -102,6 +102,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       return;
     }
+
+    // OAuth 콜백 페이지에서는 code 교환으로 토큰을 새로 발급받으므로 기존 쿠키로 리프레시 시도 안 함
+    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/oauth/callback')) {
+      return;
+    }
+
     refreshAccessToken().finally(() =>
       setState((prev) => ({ ...prev, isLoading: false })),
     );
