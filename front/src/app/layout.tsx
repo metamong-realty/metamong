@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
 import { Providers } from './providers';
@@ -17,6 +17,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: '아파트 실거래가 조회',
   description: '아파트 매매/전세 실거래가를 조회하세요',
+};
+
+// 모바일 viewport 설정 — 페이지 전체 줌 방지, 차트 핀치줌은 JS로 별도 처리
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
