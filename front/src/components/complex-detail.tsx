@@ -266,7 +266,7 @@ export function ComplexDetail({ complexId }: ComplexDetailProps) {
                   <TabsList>
                     <TabsTrigger value="전체">전체</TabsTrigger>
                     <TabsTrigger value="매매">매매</TabsTrigger>
-                    <TabsTrigger value="전세">전세</TabsTrigger>
+                    <TabsTrigger value="전세">전월세</TabsTrigger>
                   </TabsList>
                 </div>
 
