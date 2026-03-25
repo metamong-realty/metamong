@@ -29,13 +29,22 @@ export default function OAuthCallbackPage() {
       credentials: 'include',
       body: JSON.stringify({ code }),
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) {
+          const err = await res.text();
+          console.error('Exchange failed:', res.status, err);
+          throw new Error('Exchange failed');
+        }
+        return res.json();
+      })
       .then((json) => {
         if (json.data?.accessToken) {
           setAccessToken(json.data.accessToken);
         }
       })
-      .catch(() => {})
+      .catch((e) => {
+        console.error('OAuth Callback Error:', e);
+      })
       .finally(() => {
         router.replace(redirectTo);
       });
