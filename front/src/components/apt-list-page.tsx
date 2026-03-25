@@ -13,12 +13,13 @@ import { useAuth } from '@/lib/auth-context';
 
 export function AptListPage() {
   // URL에 지역 선택 상태를 저장 (뒤로가기 시 복원됨)
-  const [sidoCode, setSidoCode] = useQueryState('sido', { defaultValue: '' });
-  const [sigunguCode, setSigunguCode] = useQueryState('sigungu', { defaultValue: '' });
-  const [eupmyeondongCode, setEupmyeondongCode] = useQueryState('dong', { defaultValue: '' });
+  // history: 'push' — 뒤로가기 시 지역 선택 상태 복원
+  const [sidoCode, setSidoCode] = useQueryState('sido', { defaultValue: '', history: 'push' });
+  const [sigunguCode, setSigunguCode] = useQueryState('sigungu', { defaultValue: '', history: 'push' });
+  const [eupmyeondongCode, setEupmyeondongCode] = useQueryState('dong', { defaultValue: '', history: 'push' });
   const [sortOrder, setSortOrder] = useQueryState(
     'sortOrder',
-    parseAsStringEnum<SortOrder>(['TRADE_COUNT']).withDefault('TRADE_COUNT'),
+    parseAsStringEnum<SortOrder>(['TRADE_COUNT']).withDefault('TRADE_COUNT').withOptions({ history: 'push' }),
   );
 
   const { user, logout } = useAuth();
