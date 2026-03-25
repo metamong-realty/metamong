@@ -16,12 +16,12 @@ import {
   Tooltip,
   type TooltipItem,
 } from 'chart.js';
+import zoomPlugin from 'chartjs-plugin-zoom';
 import { Chart } from 'react-chartjs-2';
 
 import { formatPrice } from '@/lib/format';
 import type { TransactionTypeFilter } from '@/types';
 
-// Chart.js에 사용할 요소들을 등록 (혼합 차트는 Controller도 필요)
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -33,6 +33,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
+  zoomPlugin,
 );
 
 export interface ChartDataPoint {
@@ -56,7 +57,6 @@ export function AptPriceChart({ chartData, transactionType }: AptPriceChartProps
     const labels = chartData.map((d) => d.month);
     const datasets = [];
 
-    // 막대 차트 (거래량) — order 2로 뒤에 그려짐
     if (showSale) {
       datasets.push({
         type: 'bar' as const,
@@ -79,8 +79,6 @@ export function AptPriceChart({ chartData, transactionType }: AptPriceChartProps
         order: 2,
       });
     }
-
-    // 라인 차트 (가격) — order 1로 앞에 그려짐
     if (showSale) {
       datasets.push({
         type: 'line' as const,
@@ -140,6 +138,21 @@ export function AptPriceChart({ chartData, transactionType }: AptPriceChartProps
                 ? `${label}: ${formatPrice(value)}`
                 : `${label}: ${value}건`;
             },
+          },
+        },
+        // 핀치줌 + 휠줌 설정
+        zoom: {
+          pan: {
+            enabled: true,
+            mode: 'x' as const,
+          },
+          zoom: {
+            wheel: { enabled: true },
+            pinch: { enabled: true },
+            mode: 'x' as const,
+          },
+          limits: {
+            x: { minRange: 3 }, // 최소 3개월 표시
           },
         },
       },
@@ -211,9 +224,14 @@ export function AptPriceChart({ chartData, transactionType }: AptPriceChartProps
         )}
       </div>
 
-      {/* 차트 */}
-      <div className="h-[350px] w-full sm:h-[400px]">
-        <Chart type="bar" data={{ labels, datasets }} options={options} />
+      {/* 차트 — 모바일: 핀치줌, PC: 휠줌 + 드래그 pan */}
+      <div className="relative">
+        <div className="h-[350px] w-full sm:h-[400px]">
+          <Chart type="bar" data={{ labels, datasets }} options={options} />
+        </div>
+        <p className="mt-1 text-center text-xs text-gray-400">
+          📱 핀치로 확대/축소 &nbsp;·&nbsp; 🖥️ 휠로 확대/축소, 드래그로 이동
+        </p>
       </div>
     </div>
   );
