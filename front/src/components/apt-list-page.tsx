@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+
 import { Loader2, LogIn, LogOut, Search } from 'lucide-react';
 import Link from 'next/link';
 import { parseAsStringEnum, useQueryState } from 'nuqs';
@@ -24,13 +26,37 @@ export function AptListPage() {
 
   const { user, logout } = useAuth();
 
-  const { data: complexesData, isLoading: isComplexesLoading } = useGetComplexes({
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = useGetComplexes({
     sidoSigunguCode: sidoCode + sigunguCode,
     eupmyeondongCode: eupmyeondongCode || undefined,
     sortOrder,
   });
 
-  const complexes = complexesData?.content ?? [];
+  const complexes = data?.pages.flatMap((page) => page.content) ?? [];
+  const totalElements = data?.pages[0]?.totalElements ?? 0;
+
+  // IntersectionObserver — 마지막 카드 진입 시 다음 페이지 fetch
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: '200px' },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // 시도 변경 → 하위 선택 초기화
   const handleSidoChange = (code: string) => {
@@ -92,7 +118,7 @@ export function AptListPage() {
               <SortSelector
                 value={sortOrder}
                 onChange={setSortOrder}
-                disabled={isComplexesLoading}
+                disabled={isLoading}
               />
             )}
           </div>
@@ -107,7 +133,7 @@ export function AptListPage() {
               <Search className="mb-4 h-12 w-12" />
               <p className="text-lg">시/도와 시/군/구를 선택해주세요</p>
             </div>
-          ) : isComplexesLoading ? (
+          ) : isLoading ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
             </div>
@@ -118,7 +144,7 @@ export function AptListPage() {
           ) : (
             <>
               <p className="mb-4 text-sm text-gray-500">
-                총 {complexesData?.totalElements.toLocaleString()}개 단지
+                총 {totalElements.toLocaleString()}개 단지
               </p>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {complexes.map((complex) => (
@@ -126,6 +152,15 @@ export function AptListPage() {
                     <ComplexCard complex={complex} />
                   </Link>
                 ))}
+              </div>
+
+              {/* 무한 스크롤 sentinel */}
+              <div ref={sentinelRef} className="py-4">
+                {isFetchingNextPage && (
+                  <div className="flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
+                  </div>
+                )}
               </div>
             </>
           )}
