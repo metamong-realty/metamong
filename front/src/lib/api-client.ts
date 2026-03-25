@@ -8,10 +8,12 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
     (headers as Record<string, string>)['Content-Type'] = 'application/json';
   }
 
+  // options spread 후 headers 덮어쓰기 방지 — headers는 항상 merge된 값 사용
+  const { headers: _ignore, ...restOptions } = options ?? {};
   const res = await fetch(`${API_BASE}${path}`, {
     credentials: 'include', // same-origin이라 cookie 정상 전송
-    headers,
-    ...options,
+    ...restOptions,
+    headers, // Content-Type + Authorization 등 merge된 헤더
   });
 
   if (!res.ok) {
