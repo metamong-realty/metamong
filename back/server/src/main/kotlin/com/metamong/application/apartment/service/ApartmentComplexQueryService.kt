@@ -28,6 +28,8 @@ class ApartmentComplexQueryService(
     private val apartmentRentRepository: ApartmentRentRepository,
     private val apartmentSubscriptionRepository: ApartmentSubscriptionRepository,
 ) {
+    fun getAllComplexIds(): List<Long> = apartmentComplexRepository.findAllComplexIds()
+
     fun getComplexes(
         sidoSigunguCode: Int,
         eupmyeondongCode: Int?,

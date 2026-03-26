@@ -159,6 +159,13 @@ class ApartmentComplexRepositoryCustomImpl :
             .sorted()
     }
 
+    override fun findAllComplexIds(): List<Long> =
+        queryFactory
+            .select(complex.id)
+            .from(complex)
+            .orderBy(complex.id.asc())
+            .fetch()
+
     override fun findAllDistinctSidoSigunguAndEupmyeondongCodes(): Map<Int, List<Int>> {
         val eupmyeondongCode = complex.eupmyeondongRiCode.divide(100)
         return queryFactory
