@@ -41,6 +41,10 @@ import java.time.LocalDate
 class ApartmentComplexQueryController(
     private val apartmentComplexQueryService: ApartmentComplexQueryService,
 ) {
+    @Operation(summary = "Sitemap용 단지 ID 목록 조회", description = "전체 아파트 단지 ID 목록을 반환합니다. sitemap.xml 생성용 공개 API입니다.")
+    @GetMapping("/sitemap-ids")
+    fun getSitemapIds(): ApiResponse<List<Long>> = ApiResponse.ok(apartmentComplexQueryService.getAllComplexIds())
+
     @Operation(summary = "아파트 단지 목록 조회", description = "지역 기반으로 아파트 단지 목록을 조회합니다.")
     @GetMapping
     fun getComplexes(

@@ -38,4 +38,10 @@ interface ApartmentComplexRepositoryCustom {
      * @return 시도시군구코드(5자리) → 읍면동 코드(3자리) 목록 매핑
      */
     fun findAllDistinctSidoSigunguAndEupmyeondongCodes(): Map<Int, List<Int>>
+
+    /**
+     * 전체 아파트 단지 ID 목록을 조회합니다. (sitemap 생성용)
+     * @return 단지 ID 목록
+     */
+    fun findAllComplexIds(): List<Long>
 }
