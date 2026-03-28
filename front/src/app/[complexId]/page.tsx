@@ -31,6 +31,14 @@ export async function generateMetadata({ params }: ComplexDetailPageProps): Prom
       openGraph: {
         title: `${complex.name} 실거래가`,
         description: `${address} ${complex.name}의 실거래가, 시세, 매매/전세 정보`,
+        images: [
+          {
+            url: `/api/og?complexId=${complexId}`,
+            width: 1200,
+            height: 630,
+            alt: `${complex.name} 실거래가`,
+          },
+        ],
       },
     };
   } catch {
